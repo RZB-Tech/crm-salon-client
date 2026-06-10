@@ -14,20 +14,6 @@
   justify-content: space-between;
 }
 
-.stats {
-  flex-shrink: 0;
-}
-
-.statIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--mantine-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .filters {
   flex-shrink: 0;
 }
@@ -38,16 +24,9 @@
 }
 
 .tableCard {
-  flex: 1;
   overflow: hidden;
 }
 
-.tableRow {
-  cursor: pointer;
-}
-
-@media (max-width: 900px) {
-  .stats {
-    grid-template-columns: 1fr 1fr;
-  }
+.tableRow:hover {
+  background: var(--mantine-color-gray-0);
 }

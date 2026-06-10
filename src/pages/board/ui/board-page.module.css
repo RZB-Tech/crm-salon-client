@@ -6,8 +6,6 @@
   overflow: hidden;
 }
 
-/* ── Toolbar ─────────────────────────────────────── */
-
 .toolbar {
   display: flex;
   align-items: center;
@@ -28,22 +26,16 @@
   align-items: center;
 }
 
-/* ── Grid scroll container ───────────────────────── */
-
 .gridScroll {
   flex: 1;
   overflow: auto;
   background: var(--mantine-color-white);
 }
 
-/* ── Grid layout ─────────────────────────────────── */
-
 .grid {
   display: grid;
   min-width: 720px;
 }
-
-/* ── Header row ──────────────────────────────────── */
 
 .cornerCell {
   position: sticky;
@@ -71,8 +63,6 @@
   min-width: 0;
 }
 
-/* ── Body row ────────────────────────────────────── */
-
 .timeColumn {
   position: relative;
   border-right: 1px solid var(--mantine-color-gray-2);
@@ -90,8 +80,6 @@
   border-right: 1px solid var(--mantine-color-gray-2);
 }
 
-/* ── Grid lines ──────────────────────────────────── */
-
 .hourLine {
   position: absolute;
   left: 0;
@@ -108,8 +96,6 @@
   background: var(--mantine-color-gray-1);
   border-top: 1px dashed var(--mantine-color-gray-2);
 }
-
-/* ── Current time ────────────────────────────────── */
 
 .currentTimeLine {
   position: absolute;
@@ -132,8 +118,6 @@
   border-radius: 50%;
   background: #ef4444;
 }
-
-/* ── Appointment cards ───────────────────────────── */
 
 .appt {
   position: absolute;

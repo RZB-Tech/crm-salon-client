@@ -2,9 +2,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/shared/ui/layout';
 import { BoardPage } from '@/pages/board';
-import { ClientsPage } from '@/pages/clients';
 import { ServicesPage } from '@/pages/services';
-import { EmployeesPage } from '@/pages/employees';
+import { EmployeesPage, EmployeeProfilePage } from '@/pages/employees';
+import { ClientsPage } from '@/pages/clients';
 
 export const AppRouter: React.FC = () => (
   <Routes>
@@ -14,6 +14,8 @@ export const AppRouter: React.FC = () => (
       <Route path="/clients" element={<ClientsPage />} />
       <Route path="/services" element={<ServicesPage />} />
       <Route path="/employees" element={<EmployeesPage />} />
+      <Route path="/employees/:id" element={<EmployeeProfilePage />} />
+      <Route path="*" element={<Navigate to="/board" replace />} />
     </Route>
   </Routes>
 );

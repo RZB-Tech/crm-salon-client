@@ -4,248 +4,279 @@ import {
   Text,
   TextInput,
   Button,
-  Badge,
   Avatar,
   Card,
-  SimpleGrid,
   Table,
   ActionIcon,
   Menu,
+  Modal,
   Select,
+  Textarea,
+  Skeleton,
+  Alert,
 } from '@mantine/core';
+import { MagnifyingGlass, Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
 import {
-  MagnifyingGlass,
-  Plus,
-  DotsThree,
-  CalendarBlank,
-  Phone,
-  ArrowUp,
-  ArrowDown,
-  UserPlus,
-  ArrowsCounterClockwise,
-  CurrencyDollar,
-} from '@phosphor-icons/react';
+  useClients,
+  useCreateClient,
+  useUpdateClient,
+  useDeleteClient,
+} from '@/shared/api/hooks/useClients';
+import type { Client, CreateClientPayload, PatchedClient, Sex } from '@/shared/api/types';
+import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import {
+  getClientFullName,
+  getClientInitials,
+  getEmployeeColor,
+  SEX_LABELS,
+  SEX_OPTIONS,
+} from '@/shared/lib/format';
 import styles from './clients-page.module.css';
 
-interface Client {
-  id: string;
-  name: string;
+interface ClientFormState {
+  firstname: string;
+  lastname: string;
+  middlename: string;
+  sex: Sex;
   phone: string;
-  lastVisit: string;
-  totalSpent: number;
-  visits: number;
-  status: 'active' | 'new' | 'inactive';
-  initials: string;
-  color: string;
+  email: string;
+  birthDate: string;
+  city: string;
+  notes: string;
 }
 
-const CLIENTS: Client[] = [
-  { id: '1', name: 'Камола Юсупова', phone: '+998 90 123-45-67', lastVisit: '07.06.2026', totalSpent: 450000, visits: 12, status: 'active', initials: 'КЮ', color: '#6366f1' },
-  { id: '2', name: 'Жахонгир Рашидов', phone: '+998 91 234-56-78', lastVisit: '05.06.2026', totalSpent: 180000, visits: 5, status: 'active', initials: 'ЖР', color: '#0ea5e9' },
-  { id: '3', name: 'Зулфия Каримова', phone: '+998 93 345-67-89', lastVisit: '01.06.2026', totalSpent: 320000, visits: 8, status: 'active', initials: 'ЗК', color: '#8b5cf6' },
-  { id: '4', name: 'Бобур Тошматов', phone: '+998 94 456-78-90', lastVisit: '28.05.2026', totalSpent: 95000, visits: 3, status: 'new', initials: 'БТ', color: '#f59e0b' },
-  { id: '5', name: 'Малика Назарова', phone: '+998 99 567-89-01', lastVisit: '25.05.2026', totalSpent: 680000, visits: 21, status: 'active', initials: 'МН', color: '#10b981' },
-  { id: '6', name: 'Нилуфар Каримова', phone: '+998 90 678-90-12', lastVisit: '20.05.2026', totalSpent: 540000, visits: 15, status: 'active', initials: 'НК', color: '#ec4899' },
-  { id: '7', name: 'Тимур Рашидов', phone: '+998 91 789-01-23', lastVisit: '10.04.2026', totalSpent: 60000, visits: 2, status: 'inactive', initials: 'ТР', color: '#64748b' },
-  { id: '8', name: 'Феруза Юсупова', phone: '+998 93 890-12-34', lastVisit: '06.06.2026', totalSpent: 220000, visits: 7, status: 'active', initials: 'ФЮ', color: '#14b8a6' },
-  { id: '9', name: 'Дилором Хасанова', phone: '+998 94 901-23-45', lastVisit: '03.06.2026', totalSpent: 390000, visits: 11, status: 'active', initials: 'ДХ', color: '#f97316' },
-  { id: '10', name: 'Шахло Абдуллаева', phone: '+998 99 012-34-56', lastVisit: '04.06.2026', totalSpent: 275000, visits: 9, status: 'new', initials: 'ША', color: '#a855f7' },
-];
+const emptyForm = (): ClientFormState => ({
+  firstname: '',
+  lastname: '',
+  middlename: '',
+  sex: 'female',
+  phone: '',
+  email: '',
+  birthDate: new Date().toISOString().slice(0, 10),
+  city: '',
+  notes: '',
+});
 
-const STATUS_CONFIG: Record<Client['status'], { label: string; color: string }> = {
-  active: { label: 'Активный', color: 'green' },
-  new: { label: 'Новый', color: 'blue' },
-  inactive: { label: 'Неактивный', color: 'gray' },
-};
+const clientToForm = (client: Client): ClientFormState => ({
+  firstname: client.firstname,
+  lastname: client.lastname ?? '',
+  middlename: client.middlename ?? '',
+  sex: client.sex,
+  phone: client.phone ?? '',
+  email: client.email ?? '',
+  birthDate: client.birthDate,
+  city: client.city ?? '',
+  notes: client.notes ?? '',
+});
 
-const formatCurrency = (value: number): string =>
-  new Intl.NumberFormat('ru-RU').format(value) + ' сум';
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  trend?: string;
-  trendUp?: boolean;
-  Icon: React.ElementType;
-  color: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ label, value, trend, trendUp, Icon, color }) => (
-  <Card padding="lg" radius="lg" shadow="xs">
-    <Group justify="space-between" align="flex-start">
-      <div>
-        <Text size="xs" c="dimmed" fw={500} tt="uppercase" style={{ letterSpacing: '0.5px' }}>
-          {label}
-        </Text>
-        <Text size="xl" fw={700} mt={4}>
-          {value}
-        </Text>
-        {trend && (
-          <Group gap={4} mt={4}>
-            {trendUp ? (
-              <ArrowUp size={12} color="var(--mantine-color-green-6)" weight="bold" />
-            ) : (
-              <ArrowDown size={12} color="var(--mantine-color-red-6)" weight="bold" />
-            )}
-            <Text size="xs" c={trendUp ? 'green' : 'red'} fw={500}>
-              {trend}
-            </Text>
-          </Group>
-        )}
-      </div>
-      <div className={styles.statIcon} style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, white)` }}>
-        <Icon size={20} color={color} weight="duotone" />
-      </div>
-    </Group>
-  </Card>
-);
+const formToPayload = (form: ClientFormState): CreateClientPayload => ({
+  firstname: form.firstname,
+  lastname: form.lastname || null,
+  middlename: form.middlename || null,
+  sex: form.sex,
+  phone: form.phone || null,
+  email: form.email || null,
+  birthDate: form.birthDate,
+  city: form.city || null,
+  notes: form.notes,
+});
 
 export const ClientsPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
-  const [statusFilter, setStatusFilter] = React.useState<string | null>(null);
+  const [formOpen, setFormOpen] = React.useState(false);
+  const [editing, setEditing] = React.useState<Client | null>(null);
+  const [form, setForm] = React.useState<ClientFormState>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
+
+  const { data: clients, isLoading, isError } = useClients();
+  const createClient = useCreateClient();
+  const updateClient = useUpdateClient();
+  const deleteClient = useDeleteClient();
+
+  const openCreate = React.useCallback(() => {
+    setEditing(null);
+    setForm(emptyForm());
+    setFormOpen(true);
+  }, []);
+
+  const openEdit = React.useCallback((client: Client) => {
+    setEditing(client);
+    setForm(clientToForm(client));
+    setFormOpen(true);
+  }, []);
+
+  const closeForm = React.useCallback(() => {
+    setFormOpen(false);
+    setEditing(null);
+  }, []);
+
+  const handleSubmit = React.useCallback(() => {
+    const payload = formToPayload(form);
+    if (editing) {
+      updateClient.mutate({ id: editing.id, payload: payload as PatchedClient }, { onSuccess: closeForm });
+    } else {
+      createClient.mutate(payload, { onSuccess: closeForm });
+    }
+  }, [form, editing, createClient, updateClient, closeForm]);
+
+  const handleDelete = React.useCallback(() => {
+    if (!deleteTarget) return;
+    deleteClient.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) });
+  }, [deleteTarget, deleteClient]);
 
   const filtered = React.useMemo(() => {
-    return CLIENTS.filter((c) => {
-      const matchSearch =
-        !search ||
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.includes(search);
-      const matchStatus = !statusFilter || c.status === statusFilter;
-      return matchSearch && matchStatus;
+    return (clients ?? []).filter((client) => {
+      const name = getClientFullName(client).toLowerCase();
+      const q = search.toLowerCase();
+      return !q || name.includes(q) || (client.phone ?? '').includes(q) || (client.email ?? '').includes(q);
     });
-  }, [search, statusFilter]);
+  }, [clients, search]);
 
-  const rows = filtered.map((client) => {
-    const statusCfg = STATUS_CONFIG[client.status];
+  const isSaving = createClient.isPending || updateClient.isPending;
+
+  if (isLoading) {
     return (
-      <Table.Tr key={client.id} className={styles.tableRow}>
-        <Table.Td>
-          <Group gap={10}>
-            <Avatar size="sm" radius="md" style={{ backgroundColor: client.color }}>
-              <Text size="xs" fw={700} c="white">
-                {client.initials}
-              </Text>
-            </Avatar>
-            <div>
-              <Text size="sm" fw={600}>
-                {client.name}
-              </Text>
-            </div>
-          </Group>
-        </Table.Td>
-        <Table.Td>
-          <Group gap={6}>
-            <Phone size={13} color="var(--mantine-color-gray-5)" />
-            <Text size="sm" c="dimmed">
-              {client.phone}
-            </Text>
-          </Group>
-        </Table.Td>
-        <Table.Td>
-          <Group gap={6}>
-            <CalendarBlank size={13} color="var(--mantine-color-gray-5)" />
-            <Text size="sm" c="dimmed">
-              {client.lastVisit}
-            </Text>
-          </Group>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm" fw={500}>
-            {client.visits}
-          </Text>
-        </Table.Td>
-        <Table.Td>
-          <Text size="sm" fw={600}>
-            {formatCurrency(client.totalSpent)}
-          </Text>
-        </Table.Td>
-        <Table.Td>
-          <Badge color={statusCfg.color} variant="light" size="sm" radius="sm">
-            {statusCfg.label}
-          </Badge>
-        </Table.Td>
-        <Table.Td>
-          <Menu shadow="sm" width={180} radius="md">
-            <Menu.Target>
-              <ActionIcon variant="subtle" color="gray" size="sm">
-                <DotsThree size={16} weight="bold" />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item leftSection={<CalendarBlank size={14} />}>Записать</Menu.Item>
-              <Menu.Item leftSection={<Phone size={14} />}>Позвонить</Menu.Item>
-              <Menu.Divider />
-              <Menu.Item color="red">Удалить</Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        </Table.Td>
-      </Table.Tr>
+      <div className={styles.page}>
+        <Skeleton height={48} />
+        <Skeleton height={400} radius="lg" />
+      </div>
     );
-  });
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.page}>
+        <Alert color="red" title="Не удалось загрузить клиентов">
+          Проверьте доступность API
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
-      {/* Page header */}
       <div className={styles.pageHeader}>
         <div>
           <Text size="xl" fw={700}>Клиенты</Text>
-          <Text size="sm" c="dimmed" mt={2}>
-            {CLIENTS.length} клиентов в базе
-          </Text>
+          <Text size="sm" c="dimmed" mt={2}>{filtered.length} клиентов</Text>
         </div>
-        <Button leftSection={<Plus size={16} />}>Добавить клиента</Button>
+        <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить клиента</Button>
       </div>
 
-      {/* Stats */}
-      <SimpleGrid cols={4} spacing="md" className={styles.stats}>
-        <StatCard label="Всего клиентов" value="247" trend="+12% за месяц" trendUp Icon={UserPlus} color="#6366f1" />
-        <StatCard label="Новых за месяц" value="18" trend="+3 за неделю" trendUp Icon={ArrowUp} color="#10b981" />
-        <StatCard label="Возвращаемость" value="89%" trend="стабильно" Icon={ArrowsCounterClockwise} color="#0ea5e9" />
-        <StatCard label="Средний чек" value="145 000" trend="+5% к прошлому мес." trendUp Icon={CurrencyDollar} color="#f59e0b" />
-      </SimpleGrid>
-
-      {/* Filters */}
       <Group gap="sm" className={styles.filters}>
         <TextInput
-          placeholder="Поиск по имени или телефону..."
+          placeholder="Поиск по имени, телефону, email..."
           leftSection={<MagnifyingGlass size={15} />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           className={styles.searchInput}
           size="sm"
         />
-        <Select
-          placeholder="Статус"
-          data={[
-            { value: 'active', label: 'Активный' },
-            { value: 'new', label: 'Новый' },
-            { value: 'inactive', label: 'Неактивный' },
-          ]}
-          value={statusFilter}
-          onChange={setStatusFilter}
-          clearable
-          size="sm"
-          style={{ width: 160 }}
-        />
       </Group>
 
-      {/* Table */}
       <Card padding={0} radius="lg" shadow="xs" className={styles.tableCard}>
         <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Клиент</Table.Th>
               <Table.Th>Телефон</Table.Th>
-              <Table.Th>Последний визит</Table.Th>
-              <Table.Th>Визитов</Table.Th>
-              <Table.Th>Сумма</Table.Th>
-              <Table.Th>Статус</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>Пол</Table.Th>
+              <Table.Th>Город</Table.Th>
+              <Table.Th>Дата рождения</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
+          <Table.Tbody>
+            {filtered.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={7}>
+                  <Text c="dimmed" ta="center" py="md">Клиенты не найдены</Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              filtered.map((client) => {
+                const color = getEmployeeColor(client.id);
+                return (
+                  <Table.Tr key={client.id} className={styles.tableRow}>
+                    <Table.Td>
+                      <Group gap={10}>
+                        <Avatar size="sm" radius="md" style={{ backgroundColor: color }}>
+                          <Text size="xs" fw={700} c="white">{getClientInitials(client)}</Text>
+                        </Avatar>
+                        <Text size="sm" fw={600}>{getClientFullName(client)}</Text>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{client.phone ?? '—'}</Text></Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{client.email ?? '—'}</Text></Table.Td>
+                    <Table.Td><Text size="sm">{SEX_LABELS[client.sex]}</Text></Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{client.city ?? '—'}</Text></Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{client.birthDate}</Text></Table.Td>
+                    <Table.Td>
+                      <Menu shadow="sm" width={160} radius="md">
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" color="gray" size="sm">
+                            <DotsThree size={16} weight="bold" />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(client)}>
+                            Редактировать
+                          </Menu.Item>
+                          <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(client)}>
+                            Удалить
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            )}
+          </Table.Tbody>
         </Table>
       </Card>
+
+      <Modal
+        opened={formOpen}
+        onClose={closeForm}
+        title={editing ? 'Редактировать клиента' : 'Новый клиент'}
+        radius="md"
+        size="lg"
+      >
+        <Group grow mb="md">
+          <TextInput label="Имя" required value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })} />
+          <TextInput label="Фамилия" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })} />
+        </Group>
+        <Group grow mb="md">
+          <TextInput label="Отчество" value={form.middlename} onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })} />
+          <Select label="Пол" required data={[...SEX_OPTIONS]} value={form.sex} onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })} />
+        </Group>
+        <Group grow mb="md">
+          <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
+          <TextInput label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.currentTarget.value })} />
+        </Group>
+        <Group grow mb="md">
+          <TextInput label="Дата рождения" type="date" required value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.currentTarget.value })} />
+          <TextInput label="Город" value={form.city} onChange={(e) => setForm({ ...form, city: e.currentTarget.value })} />
+        </Group>
+        <Textarea label="Заметки" mb="lg" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
+        <Group justify="flex-end">
+          <Button variant="subtle" color="gray" onClick={closeForm}>Отмена</Button>
+          <Button onClick={handleSubmit} loading={isSaving} disabled={!form.firstname || !form.birthDate}>
+            {editing ? 'Сохранить' : 'Создать'}
+          </Button>
+        </Group>
+      </Modal>
+
+      <ConfirmModal
+        opened={Boolean(deleteTarget)}
+        title="Удалить клиента"
+        message={`Удалить ${deleteTarget ? getClientFullName(deleteTarget) : ''}?`}
+        loading={deleteClient.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 };

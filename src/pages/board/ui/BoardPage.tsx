@@ -8,8 +8,18 @@ import {
   SegmentedControl,
   Avatar,
   Tooltip,
+  Skeleton,
+  Alert,
 } from '@mantine/core';
 import { CaretLeft, CaretRight, Plus, Users } from '@phosphor-icons/react';
+import { useEmployees } from '@/shared/api/hooks/useEmployees';
+import type { Employee } from '@/shared/api/types';
+import {
+  getEmployeeColor,
+  getEmployeeFullName,
+  getEmployeeInitials,
+  getEmployeeLightColor,
+} from '@/shared/lib/format';
 import styles from './board-page.module.css';
 
 const SLOT_HEIGHT = 96;
@@ -18,7 +28,7 @@ const TIME_END = 22;
 const MINUTE_HEIGHT = SLOT_HEIGHT / 60;
 const TOTAL_HEIGHT = (TIME_END - TIME_START) * SLOT_HEIGHT;
 
-interface Employee {
+interface BoardEmployee {
   id: number;
   name: string;
   role: string;
@@ -38,13 +48,6 @@ interface Appointment {
   status: 'confirmed' | 'pending' | 'cancelled';
 }
 
-const EMPLOYEES: Employee[] = [
-  { id: 1, name: 'Азизбек Каримов', role: 'Барбер', color: '#6366f1', lightColor: '#eef2ff', initials: 'АК' },
-  { id: 2, name: 'Дилноза Рашидова', role: 'Стилист', color: '#8b5cf6', lightColor: '#f5f3ff', initials: 'ДР' },
-  { id: 3, name: 'Сардор Тошматов', role: 'Барбер', color: '#0ea5e9', lightColor: '#f0f9ff', initials: 'СТ' },
-  { id: 4, name: 'Мохира Назарова', role: 'Косметолог', color: '#10b981', lightColor: '#ecfdf5', initials: 'МН' },
-];
-
 const APPOINTMENTS: Appointment[] = [
   { id: '1', employeeId: 1, startHour: 9, startMinute: 0, duration: 90, client: 'Камола Юсупова', service: 'Стрижка + укладка', status: 'confirmed' },
   { id: '2', employeeId: 2, startHour: 9, startMinute: 30, duration: 45, client: 'Жахонгир Рашидов', service: 'Мужская стрижка', status: 'confirmed' },
@@ -60,8 +63,6 @@ const APPOINTMENTS: Appointment[] = [
   { id: '12', employeeId: 4, startHour: 17, startMinute: 0, duration: 90, client: 'Гулнора Юсупова', service: 'Наращивание ресниц', status: 'confirmed' },
 ];
 
-const TODAY = new Date(2026, 5, 8);
-
 const HOUR_LABELS = Array.from({ length: TIME_END - TIME_START + 1 }, (_, i) => ({
   hour: TIME_START + i,
   top: i * SLOT_HEIGHT,
@@ -76,9 +77,34 @@ const isSameDay = (a: Date, b: Date): boolean =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
+const mapEmployee = (employee: Employee): BoardEmployee => {
+  const color = getEmployeeColor(employee.id);
+  return {
+    id: employee.id,
+    name: getEmployeeFullName(employee),
+    role: employee.active ? 'Сотрудник' : 'Неактивен',
+    color,
+    lightColor: getEmployeeLightColor(color),
+    initials: getEmployeeInitials(employee),
+  };
+};
+
+interface ApptDimensions {
+  top: number;
+  height: number;
+}
+
 export const BoardPage: React.FC = () => {
-  const [date, setDate] = React.useState(TODAY);
+  const { data: apiEmployees, isLoading, isError } = useEmployees();
+  const [date, setDate] = React.useState(() => new Date());
   const [view] = React.useState<'day' | 'week'>('day');
+
+  const today = React.useMemo(() => new Date(), []);
+
+  const employees = React.useMemo(
+    () => (apiEmployees ?? []).filter((e) => e.active).map(mapEmployee),
+    [apiEmployees],
+  );
 
   const prevDay = React.useCallback(() => {
     setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1));
@@ -89,46 +115,58 @@ export const BoardPage: React.FC = () => {
   }, []);
 
   const goToday = React.useCallback(() => {
-    setDate(TODAY);
+    setDate(new Date());
   }, []);
 
-  const isToday = isSameDay(date, TODAY);
+  const isToday = isSameDay(date, today);
 
-  const now = TODAY;
-  const currentTimeMinutes = isToday
-    ? now.getHours() * 60 + now.getMinutes()
-    : -1;
+  const currentTimeMinutes = isToday ? today.getHours() * 60 + today.getMinutes() : -1;
   const currentTimeTop =
     currentTimeMinutes >= TIME_START * 60 && currentTimeMinutes <= TIME_END * 60
       ? (currentTimeMinutes - TIME_START * 60) * MINUTE_HEIGHT
       : -1;
 
-  interface ApptDimensions {
-    top: number;
-    height: number;
-  }
-
-  const getApptStyle = React.useCallback(
-    (appt: Appointment): ApptDimensions => {
-      const startMinutes = appt.startHour * 60 + appt.startMinute - TIME_START * 60;
-      return {
-        top: startMinutes * MINUTE_HEIGHT,
-        height: Math.max(appt.duration * MINUTE_HEIGHT - 4, 32),
-      };
-    },
-    [],
-  );
+  const getApptStyle = React.useCallback((appt: Appointment): ApptDimensions => {
+    const startMinutes = appt.startHour * 60 + appt.startMinute - TIME_START * 60;
+    return {
+      top: startMinutes * MINUTE_HEIGHT,
+      height: Math.max(appt.duration * MINUTE_HEIGHT - 4, 32),
+    };
+  }, []);
 
   const getEmployee = React.useCallback(
-    (id: number): Employee => EMPLOYEES.find((e) => e.id === id) ?? EMPLOYEES[0],
-    [],
+    (id: number): BoardEmployee | undefined => employees.find((e) => e.id === id),
+    [employees],
   );
 
-  const totalColumns = EMPLOYEES.length;
+  const visibleAppointments = React.useMemo(
+    () => APPOINTMENTS.filter((a) => employees.some((e) => e.id === a.employeeId)),
+    [employees],
+  );
+
+  if (isLoading) {
+    return (
+      <div className={styles.page}>
+        <Skeleton height={56} radius={0} />
+        <Skeleton height="100%" radius={0} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.page}>
+        <Alert color="red" title="Не удалось загрузить сотрудников" m="md">
+          Проверьте доступность API
+        </Alert>
+      </div>
+    );
+  }
+
+  const totalColumns = Math.max(employees.length, 1);
 
   return (
     <div className={styles.page}>
-      {/* Toolbar */}
       <div className={styles.toolbar}>
         <Group gap="xs">
           <ActionIcon variant="subtle" color="gray" size="lg" onClick={prevDay}>
@@ -158,26 +196,28 @@ export const BoardPage: React.FC = () => {
         </Group>
 
         <Group gap="sm">
-          <Group gap={6} className={styles.employeeChips}>
-            <Tooltip label="Все сотрудники" withArrow>
-              <ActionIcon variant="light" color="gray" size="sm" radius="xl">
-                <Users size={14} />
-              </ActionIcon>
-            </Tooltip>
-            {EMPLOYEES.map((emp) => (
-              <Tooltip key={emp.id} label={emp.name} withArrow>
-                <Avatar
-                  size={28}
-                  radius="xl"
-                  style={{ backgroundColor: emp.color, cursor: 'pointer', border: `2px solid white` }}
-                >
-                  <Text size="xs" fw={700} c="white">
-                    {emp.initials}
-                  </Text>
-                </Avatar>
+          {employees.length > 0 && (
+            <Group gap={6} className={styles.employeeChips}>
+              <Tooltip label="Все сотрудники" withArrow>
+                <ActionIcon variant="light" color="gray" size="sm" radius="xl">
+                  <Users size={14} />
+                </ActionIcon>
               </Tooltip>
-            ))}
-          </Group>
+              {employees.map((emp) => (
+                <Tooltip key={emp.id} label={emp.name} withArrow>
+                  <Avatar
+                    size={28}
+                    radius="xl"
+                    style={{ backgroundColor: emp.color, cursor: 'pointer', border: '2px solid white' }}
+                  >
+                    <Text size="xs" fw={700} c="white">
+                      {emp.initials}
+                    </Text>
+                  </Avatar>
+                </Tooltip>
+              ))}
+            </Group>
+          )}
 
           <SegmentedControl
             size="xs"
@@ -188,116 +228,106 @@ export const BoardPage: React.FC = () => {
             ]}
           />
 
-          <Button leftSection={<Plus size={15} />} size="sm">
+          <Button leftSection={<Plus size={15} />} size="sm" disabled>
             Новая запись
           </Button>
         </Group>
       </div>
 
-      {/* Schedule grid */}
-      <div className={styles.gridScroll}>
-        <div
-          className={styles.grid}
-          style={{ gridTemplateColumns: `72px repeat(${totalColumns}, 1fr)` }}
-        >
-          {/* Header: corner + employee columns */}
-          <div className={styles.cornerCell} />
-          {EMPLOYEES.map((emp) => (
-            <div key={emp.id} className={styles.employeeHeader}>
-              <Avatar
-                size={36}
-                radius="md"
-                style={{ backgroundColor: emp.color }}
-              >
-                <Text size="xs" fw={700} c="white">
-                  {emp.initials}
-                </Text>
-              </Avatar>
-              <div className={styles.employeeInfo}>
-                <Text size="sm" fw={600} lineClamp={1}>
-                  {emp.name}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {emp.role}
-                </Text>
-              </div>
-            </div>
-          ))}
-
-          {/* Time column */}
-          <div className={styles.timeColumn} style={{ height: TOTAL_HEIGHT }}>
-            {HOUR_LABELS.map(({ label, top }) => (
-              <div key={label} className={styles.timeLabel} style={{ top }}>
-                <Text size="xs" c="dimmed" fw={500}>
-                  {label}
-                </Text>
+      {employees.length === 0 ? (
+        <Alert color="gray" title="Нет активных сотрудников" m="md">
+          Добавьте сотрудников через API, чтобы отобразить рабочий стол
+        </Alert>
+      ) : (
+        <div className={styles.gridScroll}>
+          <div
+            className={styles.grid}
+            style={{ gridTemplateColumns: `72px repeat(${totalColumns}, 1fr)` }}
+          >
+            <div className={styles.cornerCell} />
+            {employees.map((emp) => (
+              <div key={emp.id} className={styles.employeeHeader}>
+                <Avatar size={36} radius="md" style={{ backgroundColor: emp.color }}>
+                  <Text size="xs" fw={700} c="white">
+                    {emp.initials}
+                  </Text>
+                </Avatar>
+                <div className={styles.employeeInfo}>
+                  <Text size="sm" fw={600} lineClamp={1}>
+                    {emp.name}
+                  </Text>
+                  <Text size="xs" c="dimmed">
+                    {emp.role}
+                  </Text>
+                </div>
               </div>
             ))}
-          </div>
 
-          {/* Employee appointment columns */}
-          {EMPLOYEES.map((emp) => {
-            const empAppts = APPOINTMENTS.filter((a) => a.employeeId === emp.id);
+            <div className={styles.timeColumn} style={{ height: TOTAL_HEIGHT }}>
+              {HOUR_LABELS.map(({ label, top }) => (
+                <div key={label} className={styles.timeLabel} style={{ top }}>
+                  <Text size="xs" c="dimmed" fw={500}>
+                    {label}
+                  </Text>
+                </div>
+              ))}
+            </div>
 
-            return (
-              <div key={emp.id} className={styles.apptColumn} style={{ height: TOTAL_HEIGHT }}>
-                {/* Hour lines */}
-                {HOUR_LABELS.map(({ hour, top }) => (
-                  <div
-                    key={hour}
-                    className={styles.hourLine}
-                    style={{ top }}
-                  />
-                ))}
-                {/* Half-hour lines */}
-                {HOUR_LABELS.slice(0, -1).map(({ hour, top }) => (
-                  <div
-                    key={`half-${hour}`}
-                    className={styles.halfHourLine}
-                    style={{ top: top + SLOT_HEIGHT / 2 }}
-                  />
-                ))}
+            {employees.map((emp) => {
+              const empAppts = visibleAppointments.filter((a) => a.employeeId === emp.id);
 
-                {/* Current time indicator */}
-                {currentTimeTop >= 0 && (
-                  <div className={styles.currentTimeLine} style={{ top: currentTimeTop }} />
-                )}
-
-                {/* Appointments */}
-                {empAppts.map((appt) => {
-                  const apptStyle = getApptStyle(appt);
-                  const employee = getEmployee(appt.employeeId);
-                  return (
+              return (
+                <div key={emp.id} className={styles.apptColumn} style={{ height: TOTAL_HEIGHT }}>
+                  {HOUR_LABELS.map(({ hour, top }) => (
+                    <div key={hour} className={styles.hourLine} style={{ top }} />
+                  ))}
+                  {HOUR_LABELS.slice(0, -1).map(({ hour, top }) => (
                     <div
-                      key={appt.id}
-                      className={`${styles.appt} ${styles[`appt_${appt.status}`]}`}
-                      style={{
-                        ...apptStyle,
-                        borderLeftColor: employee.color,
-                        backgroundColor: employee.lightColor,
-                      }}
-                    >
-                      <Text size="xs" fw={700} lineClamp={1} style={{ color: employee.color }}>
-                        {appt.client}
-                      </Text>
-                      {apptStyle.height > 48 && (
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                          {appt.service}
+                      key={`half-${hour}`}
+                      className={styles.halfHourLine}
+                      style={{ top: top + SLOT_HEIGHT / 2 }}
+                    />
+                  ))}
+
+                  {currentTimeTop >= 0 && (
+                    <div className={styles.currentTimeLine} style={{ top: currentTimeTop }} />
+                  )}
+
+                  {empAppts.map((appt) => {
+                    const apptStyle = getApptStyle(appt);
+                    const employee = getEmployee(appt.employeeId) ?? emp;
+                    return (
+                      <div
+                        key={appt.id}
+                        className={`${styles.appt} ${styles[`appt_${appt.status}`]}`}
+                        style={{
+                          ...apptStyle,
+                          borderLeftColor: employee.color,
+                          backgroundColor: employee.lightColor,
+                        }}
+                      >
+                        <Text size="xs" fw={700} lineClamp={1} style={{ color: employee.color }}>
+                          {appt.client}
                         </Text>
-                      )}
-                      {apptStyle.height > 72 && (
-                        <Text size="xs" c="dimmed" mt="auto">
-                          {`${appt.startHour.toString().padStart(2, '0')}:${appt.startMinute.toString().padStart(2, '0')} · ${appt.duration} мин`}
-                        </Text>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                        {apptStyle.height > 48 && (
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            {appt.service}
+                          </Text>
+                        )}
+                        {apptStyle.height > 72 && (
+                          <Text size="xs" c="dimmed" mt="auto">
+                            {`${appt.startHour.toString().padStart(2, '0')}:${appt.startMinute.toString().padStart(2, '0')} · ${appt.duration} мин`}
+                          </Text>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
