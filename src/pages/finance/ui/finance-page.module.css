@@ -1,0 +1,23 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--mantine-color-gray-0);
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.tableCard {
+  overflow: hidden;
+}
+
+.tableRow:hover {
+  background: var(--mantine-color-gray-0);
+}

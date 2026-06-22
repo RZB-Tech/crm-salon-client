@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack, Text, Tooltip } from '@mantine/core';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Scissors, UserList, SquaresFour, Users } from '@phosphor-icons/react';
+import { Scissors, UserList, SquaresFour, Users, Package, CurrencyCircleDollar, Bell } from '@phosphor-icons/react';
 import styles from './sidebar.module.css';
 
 interface SidebarProps {
@@ -19,6 +19,9 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/clients', label: 'Клиенты', Icon: Users },
   { path: '/services', label: 'Услуги', Icon: Scissors },
   { path: '/employees', label: 'Сотрудники', Icon: UserList },
+  { path: '/materials', label: 'Склад', Icon: Package },
+  { path: '/finance', label: 'Финансы', Icon: CurrencyCircleDollar },
+  { path: '/notifications', label: 'Уведомления', Icon: Bell },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {

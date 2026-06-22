@@ -14,7 +14,9 @@ import {
   TextInput,
 } from '@mantine/core';
 import { Plus, Trash } from '@phosphor-icons/react';
-import type { Client } from '@/shared/api/types';
+import type { Appointment, Client } from '@/shared/api/types';
+import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { PayAppointmentPanel } from '@/shared/ui/PayAppointmentPanel';
 import { formatPrice } from '@/shared/lib/format';
 import {
   applyStartTimeChange,
@@ -33,6 +35,7 @@ interface AppointmentFormModalProps {
   mode: 'create' | 'edit';
   loading?: boolean;
   paid?: boolean;
+  appointment?: Appointment | null;
   values: AppointmentFormValues;
   clientOptions: { value: string; label: string }[];
   clients: Client[];
@@ -51,6 +54,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
   mode,
   loading = false,
   paid = false,
+  appointment = null,
   values,
   clientOptions,
   clients,
@@ -293,6 +297,19 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
           onChange={(event) => onChange({ ...values, notes: event.currentTarget.value })}
         />
       </div>
+
+      {mode === 'edit' && appointment && (
+        <>
+          <div className={styles.section}>
+            <Text className={styles.sectionTitle}>Оплата</Text>
+            <PayAppointmentPanel appointment={appointment} />
+          </div>
+          <div className={styles.section}>
+            <Text className={styles.sectionTitle}>История изменений</Text>
+            <AuditLogsPanel tableName="appointments" recordId={appointment.id} />
+          </div>
+        </>
+      )}
 
       <div className={styles.footer}>
         <Button variant="subtle" color="gray" onClick={onClose}>

@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   apiDelete,
   apiFetchAllPost,
+  apiGetPaginated,
   apiPatch,
   apiPost,
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
+  Appointment,
   Client,
   ClientCreatePayload,
   ClientDepositPayload,
@@ -25,6 +27,19 @@ export const useClient = (id: number) =>
   useQuery({
     queryKey: queryKeys.clients.detail(id),
     queryFn: () => apiRequest<Client>(`/api/v1/clients/${id}`),
+    enabled: id > 0,
+  });
+
+export const useClientAppointments = (id: number) =>
+  useQuery({
+    queryKey: queryKeys.clients.appointments(id),
+    queryFn: async () => {
+      const data = await apiGetPaginated<Appointment>(`/api/v1/clients/${id}/appointments`, {
+        page: 1,
+        pageSize: 100,
+      });
+      return data.items;
+    },
     enabled: id > 0,
   });
 

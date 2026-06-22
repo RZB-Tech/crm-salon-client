@@ -21,3 +21,11 @@ export const useLogout = () =>
       window.location.href = '/login';
     },
   });
+
+export const useRefreshToken = () =>
+  useMutation({
+    mutationFn: () => apiPost<void, Record<string, never>>('/api/v1/auth/refresh', {}),
+    onSuccess: () => {
+      authStorage.setAuthenticated(true);
+    },
+  });

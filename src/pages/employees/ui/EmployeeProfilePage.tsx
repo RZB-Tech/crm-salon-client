@@ -19,6 +19,7 @@ import {
   useDeleteEmployee,
 } from '@/shared/api/hooks/useEmployees';
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
+import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { getEmployeeColor, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
@@ -29,7 +30,7 @@ import { FinanceTab } from './tabs/FinanceTab';
 import { ServicesTab } from './tabs/ServicesTab';
 import styles from './employee-profile.module.css';
 
-const TAB_VALUES = ['overview', 'schedule', 'payments', 'finance', 'services'] as const;
+const TAB_VALUES = ['overview', 'schedule', 'payments', 'finance', 'services', 'audit'] as const;
 type TabValue = (typeof TAB_VALUES)[number];
 
 const isTabValue = (value: string | null): value is TabValue =>
@@ -144,6 +145,7 @@ export const EmployeeProfilePage: React.FC = () => {
           <Tabs.Tab value="payments">Выплаты</Tabs.Tab>
           <Tabs.Tab value="finance">Финансы</Tabs.Tab>
           <Tabs.Tab value="services">Услуги</Tabs.Tab>
+          <Tabs.Tab value="audit">История</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="overview" className={styles.tabPanel}>
@@ -160,6 +162,9 @@ export const EmployeeProfilePage: React.FC = () => {
         </Tabs.Panel>
         <Tabs.Panel value="services" className={styles.tabPanel}>
           <ServicesTab employee={employee} />
+        </Tabs.Panel>
+        <Tabs.Panel value="audit" className={styles.tabPanel}>
+          <AuditLogsPanel tableName="employees" recordId={employee.id} />
         </Tabs.Panel>
       </Tabs>
 

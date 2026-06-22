@@ -15,12 +15,14 @@ import {
   Modal,
   Select,
 } from '@mantine/core';
-import { Clock, MagnifyingGlass, Scissors, Sparkle, Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
+import { Clock, MagnifyingGlass, Scissors, Sparkle, Plus, DotsThree, PencilSimple, Trash, UploadSimple, Archive } from '@phosphor-icons/react';
 import {
+  useArchiveServiceCategory,
   useCreateService,
   useCreateServiceCategory,
   useDeleteService,
   useDeleteServiceCategory,
+  useImportServices,
   useServiceCategories,
   useServices,
   useUpdateService,
@@ -95,6 +97,9 @@ export const ServicesPage: React.FC = () => {
   const createCategory = useCreateServiceCategory();
   const updateCategory = useUpdateServiceCategory();
   const deleteCategory = useDeleteServiceCategory();
+  const archiveCategory = useArchiveServiceCategory();
+  const importServices = useImportServices();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const isLoading = servicesLoading || categoriesLoading;
   const isError = servicesError || categoriesError;
@@ -164,6 +169,20 @@ export const ServicesPage: React.FC = () => {
     }
   }, [categoryName, editingCategory, createCategory, updateCategory]);
 
+  const handleImportClick = React.useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImportFile = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      importServices.mutate(file);
+      event.target.value = '';
+    },
+    [importServices],
+  );
+
   if (isLoading) {
     return <div className={styles.page}><Skeleton height={48} mb="md" /><SimpleGrid cols={4} spacing="md">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} height={160} radius="lg" />)}</SimpleGrid></div>;
   }
@@ -181,9 +200,30 @@ export const ServicesPage: React.FC = () => {
           <Text size="xl" fw={700}>Услуги</Text>
           <Text size="sm" c="dimmed" mt={2}>{services?.length ?? 0} услуг · {categories?.length ?? 0} категорий</Text>
         </div>
-        <Button leftSection={<Plus size={16} />} onClick={mainTab === 'services' ? openServiceCreate : openCategoryCreate}>
-          {mainTab === 'services' ? 'Добавить услугу' : 'Добавить категорию'}
-        </Button>
+        <Group>
+          {mainTab === 'services' && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                hidden
+                onChange={handleImportFile}
+              />
+              <Button
+                variant="light"
+                leftSection={<UploadSimple size={16} />}
+                onClick={handleImportClick}
+                loading={importServices.isPending}
+              >
+                Импорт Excel
+              </Button>
+            </>
+          )}
+          <Button leftSection={<Plus size={16} />} onClick={mainTab === 'services' ? openServiceCreate : openCategoryCreate}>
+            {mainTab === 'services' ? 'Добавить услугу' : 'Добавить категорию'}
+          </Button>
+        </Group>
       </div>
 
       <Tabs value={mainTab} onChange={(v) => setMainTab(v ?? 'services')} variant="pills" radius="md" mb="md">
@@ -233,6 +273,12 @@ export const ServicesPage: React.FC = () => {
                     <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openCategoryEdit(category)}>Редактировать</Menu.Item>
+                      <Menu.Item
+                        leftSection={<Archive size={14} />}
+                        onClick={() => archiveCategory.mutate(category.id)}
+                      >
+                        Архивировать
+                      </Menu.Item>
                       <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteCategoryTarget(category)}>Удалить</Menu.Item>
                     </Menu.Dropdown>
                   </Menu>

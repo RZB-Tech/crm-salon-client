@@ -45,6 +45,25 @@
   flex-shrink: 0;
 }
 
+.notificationItem {
+  padding: 10px 16px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.notificationsLink {
+  display: block;
+  padding: 10px 16px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+  text-align: center;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-blue-6);
+  text-decoration: none;
+}
+
+.notificationsLink:hover {
+  background: var(--mantine-color-gray-0);
+}
+
 .branchButton {
   display: flex;
   align-items: center;

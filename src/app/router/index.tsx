@@ -7,6 +7,9 @@ import { ServicesPage } from '@/pages/services';
 import { EmployeesPage, EmployeeProfilePage } from '@/pages/employees';
 import { ClientsPage } from '@/pages/clients';
 import { LoginPage } from '@/pages/login';
+import { MaterialsPage } from '@/pages/materials';
+import { FinancePage } from '@/pages/finance';
+import { NotificationsPage } from '@/pages/notifications';
 
 export const AppRouter: React.FC = () => (
   <Routes>
@@ -19,6 +22,9 @@ export const AppRouter: React.FC = () => (
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/employees" element={<EmployeesPage />} />
         <Route path="/employees/:id" element={<EmployeeProfilePage />} />
+        <Route path="/materials" element={<MaterialsPage />} />
+        <Route path="/finance" element={<FinancePage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="*" element={<Navigate to="/board" replace />} />
       </Route>
     </Route>

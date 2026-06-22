@@ -4,6 +4,7 @@ import {
   apiFetchAllPost,
   apiPatch,
   apiPost,
+  apiPostFormData,
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -13,6 +14,7 @@ import type {
   ServiceCategoryCreatePayload,
   ServiceCategoryUpdatePayload,
   ServiceCreatePayload,
+  ServicesImportResult,
   ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
@@ -125,6 +127,42 @@ export const useDeleteServiceCategory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       addNotification.success({ message: 'Категория удалена' });
+    },
+  });
+};
+
+export const useArchiveServiceCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPost<ServiceCategory, Record<string, never>>(
+        `/api/v1/service-categories/${id}/archive`,
+        {},
+      ),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
+      addNotification.success({ message: 'Категория архивирована' });
+    },
+  });
+};
+
+export const useImportServices = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return apiPostFormData<ServicesImportResult>('/api/v1/services/import', formData);
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
+      addNotification.success({
+        message: `Импортировано: ${result.created_services} услуг, ${result.created_categories} категорий`,
+      });
     },
   });
 };

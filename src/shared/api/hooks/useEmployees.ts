@@ -5,6 +5,7 @@ import {
   apiGetPaginated,
   apiPatch,
   apiPost,
+  apiPostGetMany,
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -29,6 +30,13 @@ export const useEmployee = (id: number) =>
     queryKey: queryKeys.employees.detail(id),
     queryFn: () => apiRequest<Employee>(`/api/v1/employees/${id}`),
     enabled: id > 0,
+  });
+
+export const useEmployeesMany = (ids: number[]) =>
+  useQuery({
+    queryKey: queryKeys.employees.many(ids),
+    queryFn: () => apiPostGetMany<Employee>('/api/v1/employees', ids),
+    enabled: ids.length > 0,
   });
 
 export const useEmployeeWorkSchedules = (id: number) =>

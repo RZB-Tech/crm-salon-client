@@ -147,3 +147,28 @@ export async function apiPatch<T, B>(path: string, body: B): Promise<T> {
 export async function apiDelete(path: string): Promise<void> {
   return apiRequest<void>(path, { method: 'DELETE' });
 }
+
+export async function apiPostGetMany<T>(path: string, ids: number[]): Promise<T[]> {
+  return apiPost<T[], number[]>(`${path}/get-many`, ids);
+}
+
+export async function apiPostFormData<T>(path: string, formData: FormData): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+    method: 'POST',
+    body: formData,
+  });
+
+  if (response.status === 401 && !path.includes('/auth/')) {
+    authStorage.setAuthenticated(false);
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await parseErrorMessage(response));
+  }
+
+  return response.json() as Promise<T>;
+}

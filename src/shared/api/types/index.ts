@@ -252,3 +252,222 @@ export interface LoginPayload {
   login: string;
   password: string;
 }
+
+export type MeasurementUnit =
+  | 'piece'
+  | 'pack'
+  | 'box'
+  | 'bottle'
+  | 'milliliter'
+  | 'liter'
+  | 'gramm'
+  | 'kilogram';
+
+export interface Material extends BaseEntity {
+  article: string;
+  name: string;
+  description: string | null;
+  quantity: number;
+  measurement_unit: MeasurementUnit;
+  volume: number;
+  purchase_price: number;
+  retail_price: number;
+  wholesale_price: number;
+  sell_price: number;
+  can_be_product: boolean;
+}
+
+export interface MaterialCreatePayload {
+  article: string;
+  name: string;
+  description?: string | null;
+  quantity?: number;
+  measurement_unit?: MeasurementUnit;
+  volume?: number;
+  purchase_price?: number;
+  retail_price?: number;
+  wholesale_price?: number;
+  sell_price?: number;
+  can_be_product?: boolean;
+}
+
+export interface MaterialUpdatePayload {
+  id: number;
+  article?: string;
+  name?: string;
+  description?: string | null;
+  measurement_unit?: MeasurementUnit;
+  volume?: number;
+  purchase_price?: number;
+  retail_price?: number;
+  wholesale_price?: number;
+  sell_price?: number;
+  can_be_product?: boolean;
+}
+
+export interface MaterialQuantityPayload {
+  id: number;
+  operation: 1 | -1;
+  quantity: number;
+}
+
+export type ReceiptType = 'appointment' | 'direct sale';
+export type ReceiptStatus = 'pending' | 'paid' | 'cancelled';
+export type PaymentMethod = 'cash' | 'card' | 'deposit';
+
+export interface ReceiptItem extends BaseEntity {
+  material_id: number | null;
+  appointment_service_id: number | null;
+  price: number;
+  quantity: number;
+  notes: string | null;
+  subtotal: number;
+}
+
+export interface Receipt extends BaseEntity {
+  receipt_type: ReceiptType;
+  appointment_id: number | null;
+  client_id: number | null;
+  items: ReceiptItem[];
+  total_amount: number;
+  paid_amount: number;
+  remaining_amount: number;
+  status: ReceiptStatus;
+  change_amount: number;
+  change_to_deposit: boolean;
+}
+
+export interface ReceiptItemCreatePayload {
+  material_id: number;
+  quantity?: number;
+}
+
+export interface ReceiptCreatePayload {
+  receipt_type?: ReceiptType;
+  appointment_id?: number | null;
+  client_id?: number | null;
+  receipt_items?: ReceiptItemCreatePayload[] | null;
+}
+
+export interface Payment extends BaseEntity {
+  receipt_id: number;
+  amount: number;
+  method: PaymentMethod;
+}
+
+export interface PaymentCreatePayload {
+  receipt_id: number;
+  amount: number;
+  method: PaymentMethod;
+  add_change_to_deposit?: boolean;
+}
+
+export type SalonNotificationType = 'reminder' | 'other';
+
+export interface SalonNotificationWsPayload {
+  id: number;
+  client_id: number | null;
+  type: SalonNotificationType;
+  title: string | null;
+  body: string;
+  scheduled_at: string;
+  delivered_at: string | null;
+}
+
+export interface SalonNotification extends BaseEntity {
+  client_id: number | null;
+  title: string | null;
+  body: string;
+  type: SalonNotificationType;
+  scheduled_at: string;
+  delivered_at: string | null;
+}
+
+export interface SalonNotificationCreatePayload {
+  client_id?: number | null;
+  title?: string | null;
+  body: string;
+  type?: SalonNotificationType;
+  scheduled_at: string;
+}
+
+export type AuditLogTable =
+  | 'appointments'
+  | 'appointment_records'
+  | 'appointment_services'
+  | 'clients'
+  | 'employees'
+  | 'employee_absences'
+  | 'employee_work_schedules'
+  | 'materials'
+  | 'payments'
+  | 'payrolls'
+  | 'receipt_items'
+  | 'receipts'
+  | 'service_categories'
+  | 'services'
+  | 'specializations'
+  | 'staffs';
+
+export interface AuditLog {
+  id: number;
+  table_name: string;
+  record_id: number;
+  action: string;
+  field_name: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_by: number;
+  changed_at: string;
+}
+
+export interface AuditLogsParams {
+  table_name: AuditLogTable;
+  record_id: number;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface AppointmentRecord extends BaseEntity {
+  appointment_id: number;
+  employee_id: number;
+  employee: {
+    id: number;
+    firstname: string;
+    lastname: string | null;
+    specialization: string | null;
+  } | null;
+  services: AppointmentServiceRecord[];
+}
+
+export interface AppointmentServiceRecord extends BaseEntity {
+  appointment_record_id: number;
+  service_id: number;
+  service: { id: number; name: string } | null;
+  material_id: number | null;
+  quantity: number;
+  price: number;
+  price_changed_reason: string | null;
+  notes: string | null;
+}
+
+export interface AppointmentServiceCreatePayload {
+  appointment_record_id: number;
+  service_id?: number | null;
+  material_id?: number | null;
+  quantity?: number;
+  price: number;
+  price_changed_reason?: string | null;
+  notes?: string | null;
+}
+
+export interface AppointmentRecordCreatePayload {
+  appointment_id: number;
+  employee_id: number;
+  services: AppointmentServiceCreatePayload[];
+}
+
+export interface ServicesImportResult {
+  created_categories: number;
+  created_services: number;
+}

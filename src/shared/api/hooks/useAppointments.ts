@@ -3,6 +3,7 @@ import {
   apiDelete,
   apiFetchAllPost,
   apiPost,
+  apiPostGetMany,
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -20,6 +21,13 @@ export const useAppointment = (id: number) =>
     queryKey: queryKeys.appointments.detail(id),
     queryFn: () => apiRequest<Appointment>(`/api/v1/appointments/${id}`),
     enabled: id > 0,
+  });
+
+export const useAppointmentsMany = (ids: number[]) =>
+  useQuery({
+    queryKey: queryKeys.appointments.many(ids),
+    queryFn: () => apiPostGetMany<Appointment>('/api/v1/appointments', ids),
+    enabled: ids.length > 0,
   });
 
 export const useCreateAppointment = () => {

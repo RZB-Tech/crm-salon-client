@@ -15,19 +15,24 @@ import {
   Skeleton,
   Alert,
   NumberInput,
+  Tabs,
+  Badge,
 } from '@mantine/core';
-import { MagnifyingGlass, Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
+import { MagnifyingGlass, Plus, DotsThree, PencilSimple, Trash, CalendarBlank } from '@phosphor-icons/react';
 import {
   useClients,
   useCreateClient,
   useUpdateClient,
   useDeleteClient,
   useUpdateClientDeposit,
+  useClientAppointments,
 } from '@/shared/api/hooks/useClients';
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import {
   formatDate,
+  formatDateTime,
   formatPrice,
   getClientFullName,
   getClientInitials,
@@ -91,8 +96,13 @@ export const ClientsPage: React.FC = () => {
   const [depositAmount, setDepositAmount] = React.useState(0);
   const [depositOperation, setDepositOperation] = React.useState<'1' | '-1'>('1');
   const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
+  const [detailTarget, setDetailTarget] = React.useState<Client | null>(null);
+  const [detailTab, setDetailTab] = React.useState<string>('appointments');
 
   const { data: clients, isLoading, isError } = useClients();
+  const { data: clientAppointments, isLoading: appointmentsLoading } = useClientAppointments(
+    detailTarget?.id ?? 0,
+  );
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const updateDeposit = useUpdateClientDeposit();
@@ -245,6 +255,15 @@ export const ClientsPage: React.FC = () => {
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<CalendarBlank size={14} />}
+                            onClick={() => {
+                              setDetailTarget(client);
+                              setDetailTab('appointments');
+                            }}
+                          >
+                            Записи и история
+                          </Menu.Item>
                           <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(client)}>
                             Редактировать
                           </Menu.Item>
@@ -320,6 +339,60 @@ export const ClientsPage: React.FC = () => {
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}
       />
+
+      <Modal
+        opened={Boolean(detailTarget)}
+        onClose={() => setDetailTarget(null)}
+        title={detailTarget ? getClientFullName(detailTarget) : 'Клиент'}
+        radius="md"
+        size="lg"
+      >
+        <Tabs value={detailTab} onChange={(value) => setDetailTab(value ?? 'appointments')}>
+          <Tabs.List mb="md">
+            <Tabs.Tab value="appointments">Записи</Tabs.Tab>
+            <Tabs.Tab value="audit">История изменений</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="appointments">
+            {appointmentsLoading ? (
+              <Skeleton height={120} />
+            ) : (clientAppointments ?? []).length === 0 ? (
+              <Text size="sm" c="dimmed">
+                Записей нет
+              </Text>
+            ) : (
+              <Table verticalSpacing="xs" withTableBorder>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Дата</Table.Th>
+                    <Table.Th>Сумма</Table.Th>
+                    <Table.Th>Статус</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {(clientAppointments ?? []).map((appointment) => (
+                    <Table.Tr key={appointment.id}>
+                      <Table.Td>
+                        <Text size="xs">{formatDateTime(appointment.start_time_est)}</Text>
+                      </Table.Td>
+                      <Table.Td>{formatPrice(appointment.total_price)}</Table.Td>
+                      <Table.Td>
+                        <Badge size="xs" color={appointment.paid ? 'green' : 'orange'} variant="light">
+                          {appointment.paid ? 'Оплачено' : 'Не оплачено'}
+                        </Badge>
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            )}
+          </Tabs.Panel>
+          <Tabs.Panel value="audit">
+            {detailTarget && (
+              <AuditLogsPanel tableName="clients" recordId={detailTarget.id} />
+            )}
+          </Tabs.Panel>
+        </Tabs>
+      </Modal>
     </div>
   );
 };

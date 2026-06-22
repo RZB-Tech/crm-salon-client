@@ -610,6 +610,7 @@ export const BoardPage: React.FC = () => {
         mode={formMode}
         loading={formLoading}
         paid={editingAppointment?.paid}
+        appointment={editingAppointment ?? null}
         values={formValues}
         clientOptions={clientOptions}
         clients={clients ?? []}

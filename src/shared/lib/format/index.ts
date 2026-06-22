@@ -23,7 +23,7 @@ export const formatPrice = (value: string | number): string => {
 };
 
 export const getClientFullName = (
-  client: Pick<Client, 'firstname' | 'lastname' | 'middlename'>,
+  client: Pick<Client, 'firstname' | 'lastname'> & { middlename?: string | null },
 ): string => [client.firstname, client.middlename, client.lastname].filter(Boolean).join(' ');
 
 export const getClientInitials = (client: Pick<Client, 'firstname' | 'lastname'>): string =>
@@ -78,6 +78,43 @@ export const formatDateTime = (value: string): string =>
     hour: '2-digit',
     minute: '2-digit',
   });
+
+export const MEASUREMENT_UNIT_LABELS: Record<string, string> = {
+  piece: 'шт.',
+  pack: 'уп.',
+  box: 'кор.',
+  bottle: 'фл.',
+  milliliter: 'мл',
+  liter: 'л',
+  gramm: 'г',
+  kilogram: 'кг',
+};
+
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  cash: 'Наличные',
+  card: 'Карта',
+  deposit: 'Депозит',
+};
+
+export const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD_LABELS).map(
+  ([value, label]) => ({ value, label }),
+);
+
+export const RECEIPT_STATUS_LABELS: Record<string, string> = {
+  pending: 'Ожидает оплаты',
+  paid: 'Оплачен',
+  cancelled: 'Отменён',
+};
+
+export const RECEIPT_TYPE_LABELS: Record<string, string> = {
+  appointment: 'По записи',
+  'direct sale': 'Прямая продажа',
+};
+
+export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
+  reminder: 'Напоминание',
+  other: 'Другое',
+};
 
 export const isSameDay = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() &&

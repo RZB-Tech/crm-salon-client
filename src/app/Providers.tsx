@@ -4,6 +4,7 @@ import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { theme } from '@/shared/config';
+import { NotificationsWsProvider } from '@/shared/lib/notifications/NotificationsWsProvider';
 
 import '@mantine/notifications/styles.css';
 
@@ -24,7 +25,9 @@ export const Providers = ({ children }: ProvidersProps) => (
   <QueryClientProvider client={queryClient}>
     <MantineProvider theme={theme} defaultColorScheme="light">
       <Notifications position="top-right" zIndex={1000} />
-      <BrowserRouter>{children}</BrowserRouter>
+      <BrowserRouter>
+        <NotificationsWsProvider>{children}</NotificationsWsProvider>
+      </BrowserRouter>
     </MantineProvider>
   </QueryClientProvider>
 );

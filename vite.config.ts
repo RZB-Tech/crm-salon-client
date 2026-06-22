@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8000';
+  const proxyTarget = env.VITE_API_PROXY_TARGET || 'http://130.49.170.147:8000';
 
   return {
     plugins: [react()],
@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: proxyTarget,
           changeOrigin: true,
+          ws: true,
           configure: (proxy) => {
             proxy.on('proxyRes', (proxyRes) => {
               const setCookie = proxyRes.headers['set-cookie'];
