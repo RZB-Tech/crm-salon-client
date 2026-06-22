@@ -1,0 +1,49 @@
+.section {
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mantine-color-gray-6);
+}
+
+.clientPhone {
+  margin-top: 4px;
+}
+
+.servicesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.footerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.serviceRow {
+  vertical-align: middle;
+}

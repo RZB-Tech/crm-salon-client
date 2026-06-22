@@ -20,15 +20,13 @@ import {
   useDeleteEmployee,
   useEmployees,
 } from '@/shared/api/hooks/useEmployees';
-import type { CreateEmployeePayload, Employee, PatchedEmployee, SalaryPayment } from '@/shared/api/types';
+import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import {
-  ensureArray,
   formatPrice,
   getEmployeeColor,
   getEmployeeFullName,
   getEmployeeInitials,
-  PAYMENT_TYPE_LABELS,
 } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import styles from './employees-page.module.css';
@@ -41,10 +39,7 @@ interface EmployeeCardProps {
 
 const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete }) => {
   const color = getEmployeeColor(employee.id);
-  const salaryPayments = ensureArray<SalaryPayment>(employee.salaryPayments);
-  const services = ensureArray<number>(employee.services);
-  const schedules = ensureArray(employee.schedules);
-  const paymentsTotal = salaryPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const servicesCount = employee.services?.length ?? 0;
 
   return (
     <Card
@@ -63,7 +58,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete 
           </Avatar>
           <div>
             <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
-            <Text size="sm" c="dimmed">{employee.phone ?? employee.email ?? '—'}</Text>
+            <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
           </div>
         </Group>
         <Group gap={6}>
@@ -92,23 +87,13 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete 
       </Group>
 
       <Group gap={6} mb="md">
-        <Badge size="xs" variant="light" color="gray">Услуг: {services.length}</Badge>
-        <Badge size="xs" variant="light" color="gray">Смен: {schedules.length}</Badge>
-        {employee.salary_fixed && <Badge size="xs" variant="light" color="blue">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
+        <Badge size="xs" variant="light" color="gray">Услуг: {servicesCount}</Badge>
+        {employee.salary_fixed > 0 && <Badge size="xs" variant="light" color="blue">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
+        {employee.percent_from_services > 0 && <Badge size="xs" variant="light" color="teal">% услуг: {employee.percent_from_services}</Badge>}
       </Group>
 
       <Divider mb="md" />
-
-      <Text size="xs" c="dimmed" mb={4}>Выплат: {salaryPayments.length} · {formatPrice(paymentsTotal)}</Text>
-      {salaryPayments.length > 0 && (
-        <Group gap={6}>
-          {salaryPayments.slice(0, 3).map((payment) => (
-            <Badge key={payment.id} size="xs" variant="light" color="gray">
-              {PAYMENT_TYPE_LABELS[payment.paymentType] ?? payment.paymentType}: {formatPrice(payment.amount)}
-            </Badge>
-          ))}
-        </Group>
-      )}
+      <Text size="xs" c="dimmed">Дата рождения: {employee.birth_date}</Text>
     </Card>
   );
 };
@@ -128,8 +113,8 @@ export const EmployeesPage: React.FC = () => {
   );
 
   const handleCreate = React.useCallback(
-    (payload: CreateEmployeePayload | PatchedEmployee) => {
-      createEmployee.mutate(payload as CreateEmployeePayload, { onSuccess: () => setFormOpen(false) });
+    (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
+      createEmployee.mutate(payload as EmployeeCreatePayload, { onSuccess: () => setFormOpen(false) });
     },
     [createEmployee],
   );

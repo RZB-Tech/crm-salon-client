@@ -1,20 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiDelete, apiListRequestAll, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
+import {
+  apiDelete,
+  apiFetchAllPost,
+  apiPatch,
+  apiPost,
+  apiRequest,
+} from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
-  CreateServiceCategoryPayload,
-  CreateServicePayload,
-  PatchedService,
-  PatchedServiceCategory,
   Service,
   ServiceCategory,
+  ServiceCategoryCreatePayload,
+  ServiceCategoryUpdatePayload,
+  ServiceCreatePayload,
+  ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useServices = () =>
   useQuery({
     queryKey: queryKeys.services.all,
-    queryFn: () => apiListRequestAll<Service>('/api/v1/services'),
+    queryFn: () => apiFetchAllPost<Service>('/api/v1/services'),
   });
 
 export const useService = (id: number) =>
@@ -27,13 +33,13 @@ export const useService = (id: number) =>
 export const useServiceCategories = () =>
   useQuery({
     queryKey: queryKeys.serviceCategories.all,
-    queryFn: () => apiListRequestAll<ServiceCategory>('/api/v1/service-category'),
+    queryFn: () => apiFetchAllPost<ServiceCategory>('/api/v1/service-categories'),
   });
 
 export const useServiceCategory = (id: number) =>
   useQuery({
     queryKey: queryKeys.serviceCategories.detail(id),
-    queryFn: () => apiRequest<ServiceCategory>(`/api/v1/service-category/${id}`),
+    queryFn: () => apiRequest<ServiceCategory>(`/api/v1/service-categories/${id}`),
     enabled: id > 0,
   });
 
@@ -41,8 +47,8 @@ export const useCreateService = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateServicePayload) =>
-      apiPost<Service, CreateServicePayload>('/api/v1/services', payload),
+    mutationFn: (payload: ServiceCreatePayload) =>
+      apiPost<Service, ServiceCreatePayload>('/api/v1/services', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       addNotification.success({ message: 'Услуга создана' });
@@ -54,11 +60,11 @@ export const useUpdateService = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: PatchedService }) =>
-      apiPatch<Service, PatchedService>(`/api/v1/services/${id}`, payload),
-    onSuccess: (_, { id }) => {
+    mutationFn: (payload: ServiceUpdatePayload) =>
+      apiPatch<Service, ServiceUpdatePayload>('/api/v1/services', payload),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.services.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.detail(payload.id) });
       addNotification.success({ message: 'Услуга обновлена' });
     },
   });
@@ -80,8 +86,11 @@ export const useCreateServiceCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateServiceCategoryPayload) =>
-      apiPost<ServiceCategory, CreateServiceCategoryPayload>('/api/v1/service-category', payload),
+    mutationFn: (payload: ServiceCategoryCreatePayload) =>
+      apiPost<ServiceCategory, ServiceCategoryCreatePayload>(
+        '/api/v1/service-categories',
+        payload,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       addNotification.success({ message: 'Категория создана' });
@@ -93,11 +102,16 @@ export const useUpdateServiceCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: PatchedServiceCategory }) =>
-      apiPatch<ServiceCategory, PatchedServiceCategory>(`/api/v1/service-category/${id}`, payload),
-    onSuccess: (_, { id }) => {
+    mutationFn: (payload: ServiceCategoryUpdatePayload) =>
+      apiPatch<ServiceCategory, ServiceCategoryUpdatePayload>(
+        '/api/v1/service-categories',
+        payload,
+      ),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.serviceCategories.detail(payload.id),
+      });
       addNotification.success({ message: 'Категория обновлена' });
     },
   });
@@ -107,7 +121,7 @@ export const useDeleteServiceCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/service-category/${id}`),
+    mutationFn: (id: number) => apiDelete(`/api/v1/service-categories/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       addNotification.success({ message: 'Категория удалена' });

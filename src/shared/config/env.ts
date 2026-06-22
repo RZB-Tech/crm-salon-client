@@ -1,1 +1,2 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://192.168.0.130:8000';
+/** Пустая строка — запросы через Vite proxy (same-origin, cookies работают в dev). */
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';

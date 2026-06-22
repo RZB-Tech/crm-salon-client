@@ -11,17 +11,18 @@ import {
   Select,
   TextInput,
   Skeleton,
+  NumberInput,
 } from '@mantine/core';
 import { Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
-import { useEmployeePayments } from '@/shared/api/hooks/useEmployees';
+import { useEmployeePayrolls } from '@/shared/api/hooks/useEmployees';
 import {
-  useCreateSalary,
-  useDeleteSalary,
-  useUpdateSalary,
-} from '@/shared/api/hooks/useSalary';
-import type { CreateSalaryPayload, PatchedSalary, PaymentType, SalaryPayment } from '@/shared/api/types';
+  useCreatePayroll,
+  useDeletePayroll,
+  useUpdatePayroll,
+} from '@/shared/api/hooks/usePayrolls';
+import type { Payroll, PayrollCreatePayload, PayrollType, PayrollUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { formatPrice, PAYMENT_TYPE_LABELS, PAYMENT_TYPE_OPTIONS } from '@/shared/lib/format';
+import { formatDate, formatPrice, PAYROLL_TYPE_LABELS, PAYROLL_TYPE_OPTIONS } from '@/shared/lib/format';
 import styles from '../employee-profile.module.css';
 
 interface PaymentsTabProps {
@@ -30,55 +31,64 @@ interface PaymentsTabProps {
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<SalaryPayment | null>(null);
-  const [paymentType, setPaymentType] = React.useState<PaymentType>('salary');
-  const [amount, setAmount] = React.useState('');
-  const [note, setNote] = React.useState('');
-  const [deleteTarget, setDeleteTarget] = React.useState<SalaryPayment | null>(null);
+  const [editing, setEditing] = React.useState<Payroll | null>(null);
+  const [payrollType, setPayrollType] = React.useState<PayrollType>('salary');
+  const [amount, setAmount] = React.useState(0);
+  const [notes, setNotes] = React.useState('');
+  const [deleteTarget, setDeleteTarget] = React.useState<Payroll | null>(null);
 
-  const { data: payments, isLoading } = useEmployeePayments(employeeId);
-  const createSalary = useCreateSalary();
-  const updateSalary = useUpdateSalary();
-  const deleteSalary = useDeleteSalary();
+  const { data: payrolls, isLoading } = useEmployeePayrolls(employeeId);
+  const createPayroll = useCreatePayroll();
+  const updatePayroll = useUpdatePayroll();
+  const deletePayroll = useDeletePayroll();
 
   const total = React.useMemo(
-    () => (payments ?? []).reduce((sum, p) => sum + parseFloat(p.amount), 0),
-    [payments],
+    () => (payrolls ?? []).reduce((sum, p) => sum + p.amount, 0),
+    [payrolls],
   );
 
   const openCreate = React.useCallback(() => {
     setEditing(null);
-    setPaymentType('salary');
-    setAmount('');
-    setNote('');
+    setPayrollType('salary');
+    setAmount(0);
+    setNotes('');
     setFormOpen(true);
   }, []);
 
-  const openEdit = React.useCallback((payment: SalaryPayment) => {
-    setEditing(payment);
-    setPaymentType(payment.paymentType);
-    setAmount(payment.amount);
-    setNote(payment.note);
+  const openEdit = React.useCallback((payroll: Payroll) => {
+    setEditing(payroll);
+    setPayrollType(payroll.type);
+    setAmount(payroll.amount);
+    setNotes(payroll.notes ?? '');
     setFormOpen(true);
   }, []);
 
   const submit = React.useCallback(() => {
-    const payload: CreateSalaryPayload = { paymentType, amount, note, employee: employeeId };
     if (editing) {
-      updateSalary.mutate(
-        { id: editing.id, payload: payload as PatchedSalary },
-        { onSuccess: () => setFormOpen(false) },
-      );
+      const payload: PayrollUpdatePayload = {
+        id: editing.id,
+        employee_id: employeeId,
+        type: payrollType,
+        amount,
+        notes: notes || null,
+      };
+      updatePayroll.mutate(payload, { onSuccess: () => setFormOpen(false) });
     } else {
-      createSalary.mutate(payload, { onSuccess: () => setFormOpen(false) });
+      const payload: PayrollCreatePayload = {
+        employee_id: employeeId,
+        type: payrollType,
+        amount,
+        notes: notes || null,
+      };
+      createPayroll.mutate(payload, { onSuccess: () => setFormOpen(false) });
     }
-  }, [paymentType, amount, note, employeeId, editing, createSalary, updateSalary]);
+  }, [payrollType, amount, notes, employeeId, editing, createPayroll, updatePayroll]);
 
   return (
     <div>
       <div className={styles.toolbar}>
         <Text fw={600}>
-          Выплаты {payments && payments.length > 0 ? `· итого ${formatPrice(total)}` : ''}
+          Выплаты {payrolls && payrolls.length > 0 ? `· итого ${formatPrice(total)}` : ''}
         </Text>
         <Button size="sm" leftSection={<Plus size={15} />} onClick={openCreate}>
           Добавить выплату
@@ -99,25 +109,23 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {(payments ?? []).length === 0 ? (
+            {(payrolls ?? []).length === 0 ? (
               <Table.Tr>
                 <Table.Td colSpan={5}>
-                  <Text c="dimmed" ta="center" py="md">
-                    Выплат пока нет
-                  </Text>
+                  <Text c="dimmed" ta="center" py="md">Выплат пока нет</Text>
                 </Table.Td>
               </Table.Tr>
             ) : (
-              (payments ?? []).map((payment) => (
-                <Table.Tr key={payment.id}>
+              (payrolls ?? []).map((payroll) => (
+                <Table.Tr key={payroll.id}>
                   <Table.Td>
                     <Badge size="sm" variant="light">
-                      {PAYMENT_TYPE_LABELS[payment.paymentType] ?? payment.paymentType}
+                      {PAYROLL_TYPE_LABELS[payroll.type]}
                     </Badge>
                   </Table.Td>
-                  <Table.Td fw={600}>{formatPrice(payment.amount)}</Table.Td>
-                  <Table.Td>{payment.note || '—'}</Table.Td>
-                  <Table.Td>{new Date(payment.createdAt).toLocaleDateString('ru-RU')}</Table.Td>
+                  <Table.Td fw={600}>{formatPrice(payroll.amount)}</Table.Td>
+                  <Table.Td>{payroll.notes || '—'}</Table.Td>
+                  <Table.Td>{formatDate(payroll.created_at)}</Table.Td>
                   <Table.Td>
                     <Menu shadow="sm" width={160} radius="md">
                       <Menu.Target>
@@ -126,10 +134,10 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
                         </ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(payment)}>
+                        <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(payroll)}>
                           Редактировать
                         </Menu.Item>
-                        <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(payment)}>
+                        <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(payroll)}>
                           Удалить
                         </Menu.Item>
                       </Menu.Dropdown>
@@ -148,14 +156,12 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
         title={editing ? 'Редактировать выплату' : 'Новая выплата'}
         radius="md"
       >
-        <Select label="Тип выплаты" required data={PAYMENT_TYPE_OPTIONS} mb="md" value={paymentType} onChange={(v) => setPaymentType((v as PaymentType) ?? 'salary')} />
-        <TextInput label="Сумма" required mb="md" value={amount} onChange={(e) => setAmount(e.currentTarget.value)} />
-        <TextInput label="Заметка" mb="lg" value={note} onChange={(e) => setNote(e.currentTarget.value)} />
+        <Select label="Тип выплаты" required data={PAYROLL_TYPE_OPTIONS} mb="md" value={payrollType} onChange={(v) => setPayrollType((v as PayrollType) ?? 'salary')} />
+        <NumberInput label="Сумма" required min={1} mb="md" value={amount} onChange={(v) => setAmount(Number(v) || 0)} />
+        <TextInput label="Заметка" mb="lg" value={notes} onChange={(e) => setNotes(e.currentTarget.value)} />
         <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setFormOpen(false)}>
-            Отмена
-          </Button>
-          <Button onClick={submit} loading={createSalary.isPending || updateSalary.isPending} disabled={!amount}>
+          <Button variant="subtle" color="gray" onClick={() => setFormOpen(false)}>Отмена</Button>
+          <Button onClick={submit} loading={createPayroll.isPending || updatePayroll.isPending} disabled={amount <= 0}>
             Сохранить
           </Button>
         </Group>
@@ -165,8 +171,8 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
         opened={Boolean(deleteTarget)}
         title="Удалить выплату"
         message="Удалить эту выплату?"
-        loading={deleteSalary.isPending}
-        onConfirm={() => deleteTarget && deleteSalary.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
+        loading={deletePayroll.isPending}
+        onConfirm={() => deleteTarget && deletePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
         onClose={() => setDeleteTarget(null)}
       />
     </div>

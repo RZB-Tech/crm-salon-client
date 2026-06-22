@@ -1,20 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiDelete, apiListRequestAll, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
+import {
+  apiDelete,
+  apiFetchAllPost,
+  apiGetPaginated,
+  apiPatch,
+  apiPost,
+  apiRequest,
+} from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
-  CreateEmployeePayload,
+  Appointment,
   Employee,
-  FinanceReport,
-  PatchedEmployee,
-  SalaryPayment,
-  WorkSchedule,
+  EmployeeCreatePayload,
+  EmployeeUpdatePayload,
+  EmployeeWorkScheduleResponse,
+  Payroll,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useEmployees = () =>
   useQuery({
     queryKey: queryKeys.employees.all,
-    queryFn: () => apiListRequestAll<Employee>('/api/v1/employees'),
+    queryFn: () => apiFetchAllPost<Employee>('/api/v1/employees'),
   });
 
 export const useEmployee = (id: number) =>
@@ -24,31 +31,36 @@ export const useEmployee = (id: number) =>
     enabled: id > 0,
   });
 
-export const useEmployeePayments = (id: number) =>
+export const useEmployeeWorkSchedules = (id: number) =>
   useQuery({
-    queryKey: queryKeys.employees.payments(id),
-    queryFn: () => apiListRequestAll<SalaryPayment>(`/api/v1/employees/${id}/payments`),
+    queryKey: queryKeys.employees.workSchedules(id),
+    queryFn: () =>
+      apiRequest<EmployeeWorkScheduleResponse>(`/api/v1/employees/${id}/work-schedules`),
     enabled: id > 0,
   });
 
-export const useEmployeeSchedules = (id: number) =>
+export const useEmployeePayrolls = (id: number) =>
   useQuery({
-    queryKey: queryKeys.employees.schedules(id),
-    queryFn: () => apiListRequestAll<WorkSchedule>(`/api/v1/employees/${id}/schedules`),
+    queryKey: queryKeys.employees.payrolls(id),
+    queryFn: async () => {
+      const data = await apiGetPaginated<Payroll>(`/api/v1/employees/${id}/payrolls`, {
+        page: 1,
+        pageSize: 100,
+      });
+      return data.items;
+    },
     enabled: id > 0,
   });
 
-export const useEmployeeFinanceReport = (id: number, dateFrom?: string, dateTo?: string) =>
+export const useEmployeeAppointments = (id: number) =>
   useQuery({
-    queryKey: queryKeys.employees.financeReport(id, dateFrom, dateTo),
-    queryFn: () => {
-      const params = new URLSearchParams();
-      if (dateFrom) params.set('dateFrom', dateFrom);
-      if (dateTo) params.set('dateTo', dateTo);
-      const query = params.toString();
-      return apiRequest<FinanceReport>(
-        `/api/v1/employees/${id}/finance-report${query ? `?${query}` : ''}`,
-      );
+    queryKey: queryKeys.employees.appointments(id),
+    queryFn: async () => {
+      const data = await apiGetPaginated<Appointment>(`/api/v1/employees/${id}/appointments`, {
+        page: 1,
+        pageSize: 100,
+      });
+      return data.items;
     },
     enabled: id > 0,
   });
@@ -57,8 +69,8 @@ export const useCreateEmployee = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateEmployeePayload) =>
-      apiPost<Employee, CreateEmployeePayload>('/api/v1/employees', payload),
+    mutationFn: (payload: EmployeeCreatePayload) =>
+      apiPost<Employee, EmployeeCreatePayload>('/api/v1/employees', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({ message: 'Сотрудник создан' });
@@ -70,11 +82,11 @@ export const useUpdateEmployee = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: PatchedEmployee }) =>
-      apiPatch<Employee, PatchedEmployee>(`/api/v1/employees/${id}`, payload),
-    onSuccess: (_, { id }) => {
+    mutationFn: (payload: EmployeeUpdatePayload) =>
+      apiPatch<Employee, EmployeeUpdatePayload>('/api/v1/employees', payload),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(payload.id) });
       addNotification.success({ message: 'Сотрудник обновлён' });
     },
   });

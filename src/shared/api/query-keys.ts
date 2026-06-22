@@ -6,10 +6,9 @@ export const queryKeys = {
   employees: {
     all: ['employees'] as const,
     detail: (id: number) => ['employees', id] as const,
-    payments: (id: number) => ['employees', id, 'payments'] as const,
-    schedules: (id: number) => ['employees', id, 'schedules'] as const,
-    financeReport: (id: number, dateFrom?: string, dateTo?: string) =>
-      ['employees', id, 'finance-report', dateFrom ?? '', dateTo ?? ''] as const,
+    workSchedules: (id: number) => ['employees', id, 'work-schedules'] as const,
+    payrolls: (id: number) => ['employees', id, 'payrolls'] as const,
+    appointments: (id: number) => ['employees', id, 'appointments'] as const,
   },
   services: {
     all: ['services'] as const,
@@ -19,12 +18,20 @@ export const queryKeys = {
     all: ['service-categories'] as const,
     detail: (id: number) => ['service-categories', id] as const,
   },
-  schedules: {
-    all: ['schedules'] as const,
-    detail: (id: number) => ['schedules', id] as const,
+  workSchedules: {
+    all: ['work-schedules'] as const,
+    detail: (id: number) => ['work-schedules', id] as const,
   },
-  salary: {
-    all: ['salary'] as const,
-    detail: (id: number) => ['salary', id] as const,
+  absences: {
+    all: ['absences'] as const,
+    detail: (id: number) => ['absences', id] as const,
+  },
+  payrolls: {
+    all: ['payrolls'] as const,
+    detail: (id: number) => ['payrolls', id] as const,
+  },
+  appointments: {
+    all: ['appointments'] as const,
+    detail: (id: number) => ['appointments', id] as const,
   },
 };

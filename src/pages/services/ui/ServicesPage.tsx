@@ -27,15 +27,15 @@ import {
   useUpdateServiceCategory,
 } from '@/shared/api/hooks/useServices';
 import type {
-  CreateServiceCategoryPayload,
-  CreateServicePayload,
-  PatchedService,
-  PatchedServiceCategory,
   Service,
   ServiceCategory,
+  ServiceCategoryCreatePayload,
+  ServiceCategoryUpdatePayload,
+  ServiceCreatePayload,
+  ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { formatPrice, getEmployeeColor } from '@/shared/lib/format';
+import { getEmployeeColor } from '@/shared/lib/format';
 import styles from './services-page.module.css';
 
 interface ServiceCardProps {
@@ -46,7 +46,7 @@ interface ServiceCardProps {
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, categoryName, onEdit, onDelete }) => {
-  const color = getEmployeeColor(service.category ?? service.id);
+  const color = getEmployeeColor(service.category_id ?? service.id);
   return (
     <Card padding="lg" radius="lg" shadow="xs" className={styles.serviceCard}>
       <Group justify="space-between" align="flex-start" mb="md">
@@ -65,7 +65,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, categoryName, onEdit
       {categoryName && <Badge size="xs" variant="light" color="gray" radius="sm" mb="md" style={{ color }}>{categoryName}</Badge>}
       <Group justify="space-between" mt="auto">
         <Group gap={5}><Clock size={13} color="var(--mantine-color-gray-5)" /><Text size="xs" c="dimmed">ID {service.id}</Text></Group>
-        <Text size="sm" fw={700} style={{ color }}>{formatPrice(service.price)}</Text>
       </Group>
     </Card>
   );
@@ -79,7 +78,6 @@ export const ServicesPage: React.FC = () => {
   const [serviceFormOpen, setServiceFormOpen] = React.useState(false);
   const [editingService, setEditingService] = React.useState<Service | null>(null);
   const [serviceName, setServiceName] = React.useState('');
-  const [servicePrice, setServicePrice] = React.useState('');
   const [serviceCategory, setServiceCategory] = React.useState<string | null>(null);
   const [deleteServiceTarget, setDeleteServiceTarget] = React.useState<Service | null>(null);
 
@@ -108,7 +106,7 @@ export const ServicesPage: React.FC = () => {
   }, [categories]);
 
   const filtered = React.useMemo(() => (services ?? []).filter((s) => {
-    const matchCategory = activeCategory === 'all' || String(s.category) === activeCategory;
+    const matchCategory = activeCategory === 'all' || String(s.category_id) === activeCategory;
     const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
     return matchCategory && matchSearch;
   }), [services, activeCategory, search]);
@@ -116,7 +114,6 @@ export const ServicesPage: React.FC = () => {
   const openServiceCreate = React.useCallback(() => {
     setEditingService(null);
     setServiceName('');
-    setServicePrice('');
     setServiceCategory(null);
     setServiceFormOpen(true);
   }, []);
@@ -124,23 +121,26 @@ export const ServicesPage: React.FC = () => {
   const openServiceEdit = React.useCallback((service: Service) => {
     setEditingService(service);
     setServiceName(service.name);
-    setServicePrice(service.price);
-    setServiceCategory(service.category != null ? String(service.category) : null);
+    setServiceCategory(service.category_id != null ? String(service.category_id) : null);
     setServiceFormOpen(true);
   }, []);
 
   const submitService = React.useCallback(() => {
-    const payload: CreateServicePayload = {
-      name: serviceName,
-      price: servicePrice,
-      category: serviceCategory ? Number(serviceCategory) : null,
-    };
     if (editingService) {
-      updateService.mutate({ id: editingService.id, payload: payload as PatchedService }, { onSuccess: () => setServiceFormOpen(false) });
+      const payload: ServiceUpdatePayload = {
+        id: editingService.id,
+        name: serviceName,
+        category_id: serviceCategory ? Number(serviceCategory) : null,
+      };
+      updateService.mutate(payload, { onSuccess: () => setServiceFormOpen(false) });
     } else {
+      const payload: ServiceCreatePayload = {
+        name: serviceName,
+        category_id: serviceCategory ? Number(serviceCategory) : null,
+      };
       createService.mutate(payload, { onSuccess: () => setServiceFormOpen(false) });
     }
-  }, [serviceName, servicePrice, serviceCategory, editingService, createService, updateService]);
+  }, [serviceName, serviceCategory, editingService, createService, updateService]);
 
   const openCategoryCreate = React.useCallback(() => {
     setEditingCategory(null);
@@ -155,10 +155,11 @@ export const ServicesPage: React.FC = () => {
   }, []);
 
   const submitCategory = React.useCallback(() => {
-    const payload: CreateServiceCategoryPayload = { name: categoryName };
     if (editingCategory) {
-      updateCategory.mutate({ id: editingCategory.id, payload: payload as PatchedServiceCategory }, { onSuccess: () => setCategoryFormOpen(false) });
+      const payload: ServiceCategoryUpdatePayload = { id: editingCategory.id, name: categoryName };
+      updateCategory.mutate(payload, { onSuccess: () => setCategoryFormOpen(false) });
     } else {
+      const payload: ServiceCategoryCreatePayload = { name: categoryName };
       createCategory.mutate(payload, { onSuccess: () => setCategoryFormOpen(false) });
     }
   }, [categoryName, editingCategory, createCategory, updateCategory]);
@@ -211,7 +212,7 @@ export const ServicesPage: React.FC = () => {
                 <ServiceCard
                   key={service.id}
                   service={service}
-                  categoryName={service.category != null ? (categoryMap.get(service.category)?.name ?? null) : null}
+                  categoryName={service.category_id != null ? (categoryMap.get(service.category_id)?.name ?? null) : null}
                   onEdit={openServiceEdit}
                   onDelete={setDeleteServiceTarget}
                 />
@@ -245,11 +246,10 @@ export const ServicesPage: React.FC = () => {
 
       <Modal opened={serviceFormOpen} onClose={() => setServiceFormOpen(false)} title={editingService ? 'Редактировать услугу' : 'Новая услуга'} radius="md">
         <TextInput label="Название" required mb="md" value={serviceName} onChange={(e) => setServiceName(e.currentTarget.value)} />
-        <TextInput label="Цена" required mb="md" value={servicePrice} onChange={(e) => setServicePrice(e.currentTarget.value)} />
         <Select label="Категория" data={categoryOptions} clearable mb="lg" value={serviceCategory} onChange={setServiceCategory} />
         <Group justify="flex-end">
           <Button variant="subtle" color="gray" onClick={() => setServiceFormOpen(false)}>Отмена</Button>
-          <Button onClick={submitService} loading={createService.isPending || updateService.isPending} disabled={!serviceName || !servicePrice}>
+          <Button onClick={submitService} loading={createService.isPending || updateService.isPending} disabled={!serviceName}>
             {editingService ? 'Сохранить' : 'Создать'}
           </Button>
         </Group>

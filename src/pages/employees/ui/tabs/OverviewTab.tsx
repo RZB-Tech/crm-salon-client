@@ -15,27 +15,17 @@ interface InfoItemProps {
 
 const InfoItem: React.FC<InfoItemProps> = ({ label, value }) => (
   <div className={styles.salaryItem}>
-    <Text size="xs" c="dimmed">
-      {label}
-    </Text>
-    <Text size="sm" fw={600}>
-      {value || '—'}
-    </Text>
+    <Text size="xs" c="dimmed">{label}</Text>
+    <Text size="sm" fw={600}>{value || '—'}</Text>
   </div>
 );
-
-const formatPercent = (value: string | null): string => (value ? `${value} %` : '—');
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
   const salaryItems = React.useMemo(
     () => [
       { label: 'Фиксированная', value: employee.salary_fixed ? formatPrice(employee.salary_fixed) : '—' },
-      { label: '% от услуг', value: formatPercent(employee.precent_from_services) },
-      { label: '% от продаж', value: formatPercent(employee.precent_from_sales) },
-      { label: '% от своих услуг', value: formatPercent(employee.precent_from_self_services) },
-      { label: '% от своих продаж', value: formatPercent(employee.precent_from_self_sales) },
-      { label: '% за привлечение клиента', value: formatPercent(employee.precent_from_attract_client) },
-      { label: '% за развитие клиента', value: formatPercent(employee.precent_from_develop_client) },
+      { label: '% от услуг', value: employee.percent_from_services ? `${employee.percent_from_services} %` : '—' },
+      { label: '% от продаж', value: employee.percent_from_sales ? `${employee.percent_from_sales} %` : '—' },
     ],
     [employee],
   );
@@ -54,15 +44,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
           <InfoItem label="Фамилия" value={employee.lastname} />
           <InfoItem label="Отчество" value={employee.middlename} />
           <InfoItem label="Телефон" value={employee.phone} />
-          <InfoItem label="Email" value={employee.email} />
-          <InfoItem label="Дата рождения" value={employee.birthDate} />
+          <InfoItem label="Дата рождения" value={employee.birth_date} />
         </SimpleGrid>
       </Card>
 
       <Card padding="lg" radius="lg" shadow="xs">
-        <Text fw={600} mb="md">
-          Условия оплаты
-        </Text>
+        <Text fw={600} mb="md">Условия оплаты</Text>
         <div className={styles.salaryGrid}>
           {salaryItems.map((item) => (
             <InfoItem key={item.label} label={item.label} value={item.value} />

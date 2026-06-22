@@ -11,14 +11,46 @@ export class ApiError extends Error {
 }
 
 export interface PaginatedResponse<T> {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
 }
+
+export interface RequestAllParams {
+  page?: number;
+  pageSize?: number;
+  filters?: Record<string, unknown> | null;
+}
+
+const AUTH_KEY = 'salon_auth';
+
+export const authStorage = {
+  isAuthenticated: (): boolean => localStorage.getItem(AUTH_KEY) === '1',
+  setAuthenticated: (value: boolean): void => {
+    if (value) {
+      localStorage.setItem(AUTH_KEY, '1');
+    } else {
+      localStorage.removeItem(AUTH_KEY);
+    }
+  },
+};
+
+const parseErrorMessage = async (response: Response): Promise<string> => {
+  try {
+    const data = (await response.json()) as { detail?: string | { msg: string }[] };
+    if (typeof data.detail === 'string') return data.detail;
+    if (Array.isArray(data.detail) && data.detail[0]?.msg) return data.detail[0].msg;
+  } catch {
+    // ignore
+  }
+  return `Ошибка API: ${response.status}`;
+};
 
 export async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -26,8 +58,15 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
     },
   });
 
+  if (response.status === 401 && !path.includes('/auth/')) {
+    authStorage.setAuthenticated(false);
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+  }
+
   if (!response.ok) {
-    throw new ApiError(response.status, `Ошибка API: ${response.status}`);
+    throw new ApiError(response.status, await parseErrorMessage(response));
   }
 
   if (response.status === 204) {
@@ -37,35 +76,54 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
   return response.json() as Promise<T>;
 }
 
-const buildPagePath = (path: string, page: number): string => {
-  const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}page=${page}`;
-};
-
-export async function apiListRequest<T>(path: string, options?: RequestInit): Promise<T[]> {
-  const data = await apiRequest<PaginatedResponse<T> | T[]>(path, options);
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  return data.results ?? [];
+export async function apiPostGetAll<T>(
+  path: string,
+  params: RequestAllParams = {},
+): Promise<PaginatedResponse<T>> {
+  return apiPost<PaginatedResponse<T>, RequestAllParams>(`${path}/get-all`, {
+    page: params.page ?? 1,
+    pageSize: params.pageSize ?? 100,
+    filters: params.filters ?? null,
+  });
 }
 
-export async function apiListRequestAll<T>(path: string): Promise<T[]> {
+export async function apiFetchAllPost<T>(
+  path: string,
+  filters?: Record<string, unknown>,
+): Promise<T[]> {
   const all: T[] = [];
   let page = 1;
-  let hasNext = true;
+  let totalPages = 1;
 
-  while (hasNext) {
-    const data = await apiRequest<PaginatedResponse<T> | T[]>(buildPagePath(path, page));
+  while (page <= totalPages) {
+    const data = await apiPostGetAll<T>(path, { page, pageSize: 100, filters });
+    all.push(...data.items);
+    totalPages = data.totalPages;
+    page += 1;
+  }
 
-    if (Array.isArray(data)) {
-      return data;
-    }
+  return all;
+}
 
-    all.push(...(data.results ?? []));
-    hasNext = Boolean(data.next);
+export async function apiGetPaginated<T>(
+  path: string,
+  params: RequestAllParams = {},
+): Promise<PaginatedResponse<T>> {
+  const qs = new URLSearchParams();
+  qs.set('page', String(params.page ?? 1));
+  qs.set('pageSize', String(params.pageSize ?? 100));
+  return apiRequest<PaginatedResponse<T>>(`${path}?${qs}`);
+}
+
+export async function apiFetchAllGet<T>(path: string): Promise<T[]> {
+  const all: T[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  while (page <= totalPages) {
+    const data = await apiGetPaginated<T>(path, { page, pageSize: 100 });
+    all.push(...data.items);
+    totalPages = data.totalPages;
     page += 1;
   }
 

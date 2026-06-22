@@ -1,17 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiDelete, apiListRequestAll, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
+import {
+  apiDelete,
+  apiFetchAllPost,
+  apiPatch,
+  apiPost,
+  apiRequest,
+} from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Client,
-  CreateClientPayload,
-  PatchedClient,
+  ClientCreatePayload,
+  ClientDepositPayload,
+  ClientUpdatePayload,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useClients = () =>
   useQuery({
     queryKey: queryKeys.clients.all,
-    queryFn: () => apiListRequestAll<Client>('/api/v1/clients'),
+    queryFn: () => apiFetchAllPost<Client>('/api/v1/clients'),
   });
 
 export const useClient = (id: number) =>
@@ -25,8 +32,8 @@ export const useCreateClient = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateClientPayload) =>
-      apiPost<Client, CreateClientPayload>('/api/v1/clients', payload),
+    mutationFn: (payload: ClientCreatePayload) =>
+      apiPost<Client, ClientCreatePayload>('/api/v1/clients', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент создан' });
@@ -38,12 +45,26 @@ export const useUpdateClient = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: PatchedClient }) =>
-      apiPatch<Client, PatchedClient>(`/api/v1/clients/${id}`, payload),
-    onSuccess: (_, { id }) => {
+    mutationFn: (payload: ClientUpdatePayload) =>
+      apiPatch<Client, ClientUpdatePayload>('/api/v1/clients', payload),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
       addNotification.success({ message: 'Клиент обновлён' });
+    },
+  });
+};
+
+export const useUpdateClientDeposit = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ClientDepositPayload) =>
+      apiPost<Client, ClientDepositPayload>('/api/v1/clients/update-deposit', payload),
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
+      addNotification.success({ message: 'Депозит обновлён' });
     },
   });
 };

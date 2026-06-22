@@ -12,13 +12,13 @@ import {
   Skeleton,
   Alert,
 } from '@mantine/core';
-import { ArrowLeft, PencilSimple, Trash, Phone, Envelope, Cake } from '@phosphor-icons/react';
+import { ArrowLeft, PencilSimple, Trash, Phone, Cake } from '@phosphor-icons/react';
 import {
   useEmployee,
   useUpdateEmployee,
   useDeleteEmployee,
 } from '@/shared/api/hooks/useEmployees';
-import type { CreateEmployeePayload, PatchedEmployee } from '@/shared/api/types';
+import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { getEmployeeColor, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
@@ -58,13 +58,10 @@ export const EmployeeProfilePage: React.FC = () => {
   );
 
   const handleSubmit = React.useCallback(
-    (payload: CreateEmployeePayload | PatchedEmployee) => {
-      updateEmployee.mutate(
-        { id: employeeId, payload: payload as PatchedEmployee },
-        { onSuccess: () => setEditOpen(false) },
-      );
+    (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
+      updateEmployee.mutate(payload as EmployeeUpdatePayload, { onSuccess: () => setEditOpen(false) });
     },
-    [updateEmployee, employeeId],
+    [updateEmployee],
   );
 
   const handleDelete = React.useCallback(() => {
@@ -123,12 +120,8 @@ export const EmployeeProfilePage: React.FC = () => {
                 <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
               </Group>
               <Group gap={5}>
-                <Envelope size={14} color="var(--mantine-color-gray-5)" />
-                <Text size="sm" c="dimmed">{employee.email ?? '—'}</Text>
-              </Group>
-              <Group gap={5}>
                 <Cake size={14} color="var(--mantine-color-gray-5)" />
-                <Text size="sm" c="dimmed">{employee.birthDate}</Text>
+                <Text size="sm" c="dimmed">{employee.birth_date}</Text>
               </Group>
             </div>
           </div>

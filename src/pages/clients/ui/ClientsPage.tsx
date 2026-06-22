@@ -14,6 +14,7 @@ import {
   Textarea,
   Skeleton,
   Alert,
+  NumberInput,
 } from '@mantine/core';
 import { MagnifyingGlass, Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
 import {
@@ -21,10 +22,13 @@ import {
   useCreateClient,
   useUpdateClient,
   useDeleteClient,
+  useUpdateClientDeposit,
 } from '@/shared/api/hooks/useClients';
-import type { Client, CreateClientPayload, PatchedClient, Sex } from '@/shared/api/types';
+import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import {
+  formatDate,
+  formatPrice,
   getClientFullName,
   getClientInitials,
   getEmployeeColor,
@@ -39,9 +43,8 @@ interface ClientFormState {
   middlename: string;
   sex: Sex;
   phone: string;
-  email: string;
-  birthDate: string;
-  city: string;
+  birth_date: string;
+  deposit: number;
   notes: string;
 }
 
@@ -51,9 +54,8 @@ const emptyForm = (): ClientFormState => ({
   middlename: '',
   sex: 'female',
   phone: '',
-  email: '',
-  birthDate: new Date().toISOString().slice(0, 10),
-  city: '',
+  birth_date: '',
+  deposit: 0,
   notes: '',
 });
 
@@ -63,34 +65,37 @@ const clientToForm = (client: Client): ClientFormState => ({
   middlename: client.middlename ?? '',
   sex: client.sex,
   phone: client.phone ?? '',
-  email: client.email ?? '',
-  birthDate: client.birthDate,
-  city: client.city ?? '',
+  birth_date: client.birth_date ?? '',
+  deposit: client.deposit,
   notes: client.notes ?? '',
 });
 
-const formToPayload = (form: ClientFormState): CreateClientPayload => ({
+const formToCreatePayload = (form: ClientFormState): ClientCreatePayload => ({
   firstname: form.firstname,
   lastname: form.lastname || null,
   middlename: form.middlename || null,
   sex: form.sex,
   phone: form.phone || null,
-  email: form.email || null,
-  birthDate: form.birthDate,
-  city: form.city || null,
-  notes: form.notes,
+  birth_date: form.birth_date || null,
+  deposit: form.deposit,
+  notes: form.notes || null,
 });
 
 export const ClientsPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
   const [formOpen, setFormOpen] = React.useState(false);
+  const [depositOpen, setDepositOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Client | null>(null);
+  const [depositTarget, setDepositTarget] = React.useState<Client | null>(null);
   const [form, setForm] = React.useState<ClientFormState>(emptyForm);
+  const [depositAmount, setDepositAmount] = React.useState(0);
+  const [depositOperation, setDepositOperation] = React.useState<'1' | '-1'>('1');
   const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
 
   const { data: clients, isLoading, isError } = useClients();
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
+  const updateDeposit = useUpdateClientDeposit();
   const deleteClient = useDeleteClient();
 
   const openCreate = React.useCallback(() => {
@@ -105,19 +110,41 @@ export const ClientsPage: React.FC = () => {
     setFormOpen(true);
   }, []);
 
+  const openDeposit = React.useCallback((client: Client) => {
+    setDepositTarget(client);
+    setDepositAmount(0);
+    setDepositOperation('1');
+    setDepositOpen(true);
+  }, []);
+
   const closeForm = React.useCallback(() => {
     setFormOpen(false);
     setEditing(null);
   }, []);
 
   const handleSubmit = React.useCallback(() => {
-    const payload = formToPayload(form);
     if (editing) {
-      updateClient.mutate({ id: editing.id, payload: payload as PatchedClient }, { onSuccess: closeForm });
+      const payload: ClientUpdatePayload = {
+        id: editing.id,
+        ...formToCreatePayload(form),
+      };
+      updateClient.mutate(payload, { onSuccess: closeForm });
     } else {
-      createClient.mutate(payload, { onSuccess: closeForm });
+      createClient.mutate(formToCreatePayload(form), { onSuccess: closeForm });
     }
   }, [form, editing, createClient, updateClient, closeForm]);
+
+  const handleDeposit = React.useCallback(() => {
+    if (!depositTarget || depositAmount <= 0) return;
+    updateDeposit.mutate(
+      {
+        id: depositTarget.id,
+        operation: Number(depositOperation) as 1 | -1,
+        amount: depositAmount,
+      },
+      { onSuccess: () => setDepositOpen(false) },
+    );
+  }, [depositTarget, depositAmount, depositOperation, updateDeposit]);
 
   const handleDelete = React.useCallback(() => {
     if (!deleteTarget) return;
@@ -128,7 +155,7 @@ export const ClientsPage: React.FC = () => {
     return (clients ?? []).filter((client) => {
       const name = getClientFullName(client).toLowerCase();
       const q = search.toLowerCase();
-      return !q || name.includes(q) || (client.phone ?? '').includes(q) || (client.email ?? '').includes(q);
+      return !q || name.includes(q) || (client.phone ?? '').includes(q);
     });
   }, [clients, search]);
 
@@ -147,7 +174,7 @@ export const ClientsPage: React.FC = () => {
     return (
       <div className={styles.page}>
         <Alert color="red" title="Не удалось загрузить клиентов">
-          Проверьте доступность API
+          Проверьте доступность API и авторизацию
         </Alert>
       </div>
     );
@@ -165,7 +192,7 @@ export const ClientsPage: React.FC = () => {
 
       <Group gap="sm" className={styles.filters}>
         <TextInput
-          placeholder="Поиск по имени, телефону, email..."
+          placeholder="Поиск по имени, телефону..."
           leftSection={<MagnifyingGlass size={15} />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
@@ -180,9 +207,8 @@ export const ClientsPage: React.FC = () => {
             <Table.Tr>
               <Table.Th>Клиент</Table.Th>
               <Table.Th>Телефон</Table.Th>
-              <Table.Th>Email</Table.Th>
               <Table.Th>Пол</Table.Th>
-              <Table.Th>Город</Table.Th>
+              <Table.Th>Депозит</Table.Th>
               <Table.Th>Дата рождения</Table.Th>
               <Table.Th />
             </Table.Tr>
@@ -190,7 +216,7 @@ export const ClientsPage: React.FC = () => {
           <Table.Tbody>
             {filtered.length === 0 ? (
               <Table.Tr>
-                <Table.Td colSpan={7}>
+                <Table.Td colSpan={6}>
                   <Text c="dimmed" ta="center" py="md">Клиенты не найдены</Text>
                 </Table.Td>
               </Table.Tr>
@@ -208,12 +234,11 @@ export const ClientsPage: React.FC = () => {
                       </Group>
                     </Table.Td>
                     <Table.Td><Text size="sm" c="dimmed">{client.phone ?? '—'}</Text></Table.Td>
-                    <Table.Td><Text size="sm" c="dimmed">{client.email ?? '—'}</Text></Table.Td>
                     <Table.Td><Text size="sm">{SEX_LABELS[client.sex]}</Text></Table.Td>
-                    <Table.Td><Text size="sm" c="dimmed">{client.city ?? '—'}</Text></Table.Td>
-                    <Table.Td><Text size="sm" c="dimmed">{client.birthDate}</Text></Table.Td>
+                    <Table.Td><Text size="sm" fw={600}>{formatPrice(client.deposit)}</Text></Table.Td>
+                    <Table.Td><Text size="sm" c="dimmed">{formatDate(client.birth_date)}</Text></Table.Td>
                     <Table.Td>
-                      <Menu shadow="sm" width={160} radius="md">
+                      <Menu shadow="sm" width={180} radius="md">
                         <Menu.Target>
                           <ActionIcon variant="subtle" color="gray" size="sm">
                             <DotsThree size={16} weight="bold" />
@@ -223,6 +248,7 @@ export const ClientsPage: React.FC = () => {
                           <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(client)}>
                             Редактировать
                           </Menu.Item>
+                          <Menu.Item onClick={() => openDeposit(client)}>Депозит</Menu.Item>
                           <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(client)}>
                             Удалить
                           </Menu.Item>
@@ -254,18 +280,35 @@ export const ClientsPage: React.FC = () => {
         </Group>
         <Group grow mb="md">
           <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
-          <TextInput label="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.currentTarget.value })} />
+          <TextInput label="Дата рождения" type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
         </Group>
-        <Group grow mb="md">
-          <TextInput label="Дата рождения" type="date" required value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.currentTarget.value })} />
-          <TextInput label="Город" value={form.city} onChange={(e) => setForm({ ...form, city: e.currentTarget.value })} />
-        </Group>
+        {!editing && (
+          <NumberInput label="Начальный депозит" mb="md" min={0} value={form.deposit} onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })} />
+        )}
         <Textarea label="Заметки" mb="lg" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
         <Group justify="flex-end">
           <Button variant="subtle" color="gray" onClick={closeForm}>Отмена</Button>
-          <Button onClick={handleSubmit} loading={isSaving} disabled={!form.firstname || !form.birthDate}>
+          <Button onClick={handleSubmit} loading={isSaving} disabled={!form.firstname}>
             {editing ? 'Сохранить' : 'Создать'}
           </Button>
+        </Group>
+      </Modal>
+
+      <Modal opened={depositOpen} onClose={() => setDepositOpen(false)} title="Изменить депозит" radius="md">
+        <Select
+          label="Операция"
+          mb="md"
+          data={[
+            { value: '1', label: 'Пополнить' },
+            { value: '-1', label: 'Списать' },
+          ]}
+          value={depositOperation}
+          onChange={(v) => setDepositOperation((v as '1' | '-1') ?? '1')}
+        />
+        <NumberInput label="Сумма" required min={1} mb="lg" value={depositAmount} onChange={(v) => setDepositAmount(Number(v) || 0)} />
+        <Group justify="flex-end">
+          <Button variant="subtle" color="gray" onClick={() => setDepositOpen(false)}>Отмена</Button>
+          <Button onClick={handleDeposit} loading={updateDeposit.isPending} disabled={depositAmount <= 0}>Применить</Button>
         </Group>
       </Modal>
 

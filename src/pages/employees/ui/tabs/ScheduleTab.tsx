@@ -7,168 +7,237 @@ import {
   ActionIcon,
   Menu,
   Modal,
-  Select,
   TextInput,
   Skeleton,
+  Tabs,
+  Select,
+  Badge,
 } from '@mantine/core';
 import { Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
-import { useEmployeeSchedules } from '@/shared/api/hooks/useEmployees';
+import { useEmployeeWorkSchedules } from '@/shared/api/hooks/useEmployees';
 import {
-  useCreateSchedule,
-  useDeleteSchedule,
-  useUpdateSchedule,
-} from '@/shared/api/hooks/useSchedules';
-import type { CreateSchedulePayload, DayOfWeek, PatchedSchedule, Schedule } from '@/shared/api/types';
+  useCreateWorkSchedule,
+  useDeleteWorkSchedule,
+  useUpdateWorkSchedule,
+} from '@/shared/api/hooks/useWorkSchedules';
+import {
+  useCreateAbsence,
+  useDeleteAbsence,
+  useUpdateAbsence,
+} from '@/shared/api/hooks/useAbsences';
+import type {
+  Absence,
+  AbsenceType,
+  WorkSchedule,
+  WorkScheduleCreatePayload,
+  WorkScheduleUpdatePayload,
+} from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { DAY_OF_WEEK_LABELS, DAY_OF_WEEK_OPTIONS, formatTime } from '@/shared/lib/format';
+import {
+  ABSENCE_TYPE_LABELS,
+  ABSENCE_TYPE_OPTIONS,
+  formatDate,
+  formatTime,
+  toApiTime,
+} from '@/shared/lib/format';
 import styles from '../employee-profile.module.css';
 
 interface ScheduleTabProps {
   employeeId: number;
 }
 
-const toApiTime = (time: string): string => (time.length === 5 ? `${time}:00` : time);
-
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<Schedule | null>(null);
-  const [dayOfWeek, setDayOfWeek] = React.useState('0');
+  const [scheduleFormOpen, setScheduleFormOpen] = React.useState(false);
+  const [absenceFormOpen, setAbsenceFormOpen] = React.useState(false);
+  const [editingSchedule, setEditingSchedule] = React.useState<WorkSchedule | null>(null);
+  const [editingAbsence, setEditingAbsence] = React.useState<Absence | null>(null);
+  const [day, setDay] = React.useState(new Date().toISOString().slice(0, 10));
   const [startTime, setStartTime] = React.useState('09:00');
   const [endTime, setEndTime] = React.useState('18:00');
-  const [deleteTarget, setDeleteTarget] = React.useState<Schedule | null>(null);
+  const [startDate, setStartDate] = React.useState(new Date().toISOString().slice(0, 10));
+  const [endDate, setEndDate] = React.useState(new Date().toISOString().slice(0, 10));
+  const [absenceType, setAbsenceType] = React.useState<AbsenceType>('vacation');
+  const [reason, setReason] = React.useState('');
+  const [deleteScheduleTarget, setDeleteScheduleTarget] = React.useState<WorkSchedule | null>(null);
+  const [deleteAbsenceTarget, setDeleteAbsenceTarget] = React.useState<Absence | null>(null);
 
-  const { data: schedules, isLoading } = useEmployeeSchedules(employeeId);
-  const createSchedule = useCreateSchedule();
-  const updateSchedule = useUpdateSchedule();
-  const deleteSchedule = useDeleteSchedule();
+  const { data, isLoading } = useEmployeeWorkSchedules(employeeId);
+  const createSchedule = useCreateWorkSchedule();
+  const updateSchedule = useUpdateWorkSchedule();
+  const deleteSchedule = useDeleteWorkSchedule();
+  const createAbsence = useCreateAbsence();
+  const updateAbsence = useUpdateAbsence();
+  const deleteAbsence = useDeleteAbsence();
 
-  const openCreate = React.useCallback(() => {
-    setEditing(null);
-    setDayOfWeek('0');
-    setStartTime('09:00');
-    setEndTime('18:00');
-    setFormOpen(true);
-  }, []);
+  const schedules = data?.work_schedules ?? [];
+  const absences = data?.absences ?? [];
 
-  const openEdit = React.useCallback((schedule: Schedule) => {
-    setEditing(schedule);
-    setDayOfWeek(String(schedule.dayOfWeek));
-    setStartTime(formatTime(schedule.startTime));
-    setEndTime(formatTime(schedule.endTime));
-    setFormOpen(true);
-  }, []);
+  const submitSchedule = React.useCallback(() => {
+    if (editingSchedule) {
+      const payload: WorkScheduleUpdatePayload = {
+        id: editingSchedule.id,
+        day,
+        start_time: toApiTime(startTime),
+        end_time: toApiTime(endTime),
+      };
+      updateSchedule.mutate(payload, { onSuccess: () => setScheduleFormOpen(false) });
+    } else {
+      const payload: WorkScheduleCreatePayload = {
+        employee_id: employeeId,
+        day,
+        start_time: toApiTime(startTime),
+        end_time: toApiTime(endTime),
+      };
+      createSchedule.mutate(payload, { onSuccess: () => setScheduleFormOpen(false) });
+    }
+  }, [day, startTime, endTime, employeeId, editingSchedule, createSchedule, updateSchedule]);
 
-  const submit = React.useCallback(() => {
-    const payload: CreateSchedulePayload = {
-      dayOfWeek: Number(dayOfWeek) as DayOfWeek,
-      startTime: toApiTime(startTime),
-      endTime: toApiTime(endTime),
-      employee: employeeId,
-    };
-    if (editing) {
-      updateSchedule.mutate(
-        { id: editing.id, payload: payload as PatchedSchedule },
-        { onSuccess: () => setFormOpen(false) },
+  const submitAbsence = React.useCallback(() => {
+    if (editingAbsence) {
+      updateAbsence.mutate(
+        {
+          id: editingAbsence.id,
+          start_date: startDate,
+          end_date: endDate,
+          absence_type: absenceType,
+          reason: reason || null,
+        },
+        { onSuccess: () => setAbsenceFormOpen(false) },
       );
     } else {
-      createSchedule.mutate(payload, { onSuccess: () => setFormOpen(false) });
+      createAbsence.mutate(
+        {
+          employee_id: employeeId,
+          start_date: startDate,
+          end_date: endDate,
+          absence_type: absenceType,
+          reason: reason || null,
+        },
+        { onSuccess: () => setAbsenceFormOpen(false) },
+      );
     }
-  }, [dayOfWeek, startTime, endTime, employeeId, editing, createSchedule, updateSchedule]);
-
-  const sorted = React.useMemo(
-    () => [...(schedules ?? [])].sort((a, b) => a.dayOfWeek - b.dayOfWeek),
-    [schedules],
-  );
+  }, [startDate, endDate, absenceType, reason, employeeId, editingAbsence, createAbsence, updateAbsence]);
 
   return (
     <div>
-      <div className={styles.toolbar}>
-        <Text fw={600}>Рабочие смены</Text>
-        <Button size="sm" leftSection={<Plus size={15} />} onClick={openCreate}>
-          Добавить смену
-        </Button>
-      </div>
+      <Tabs defaultValue="shifts" radius="md">
+        <Tabs.List mb="md">
+          <Tabs.Tab value="shifts">Смены</Tabs.Tab>
+          <Tabs.Tab value="absences">Отсутствия</Tabs.Tab>
+        </Tabs.List>
 
-      {isLoading ? (
-        <Skeleton height={160} radius="md" />
-      ) : (
-        <Table highlightOnHover verticalSpacing="sm">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>День</Table.Th>
-              <Table.Th>Начало</Table.Th>
-              <Table.Th>Конец</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {sorted.length === 0 ? (
-              <Table.Tr>
-                <Table.Td colSpan={4}>
-                  <Text c="dimmed" ta="center" py="md">
-                    Смены не заданы
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              sorted.map((schedule) => (
-                <Table.Tr key={schedule.id}>
-                  <Table.Td>{DAY_OF_WEEK_LABELS[schedule.dayOfWeek]}</Table.Td>
-                  <Table.Td>{formatTime(schedule.startTime)}</Table.Td>
-                  <Table.Td>{formatTime(schedule.endTime)}</Table.Td>
-                  <Table.Td>
-                    <Menu shadow="sm" width={160} radius="md">
-                      <Menu.Target>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <DotsThree size={16} weight="bold" />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(schedule)}>
-                          Редактировать
-                        </Menu.Item>
-                        <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(schedule)}>
-                          Удалить
-                        </Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Table.Td>
+        <Tabs.Panel value="shifts">
+          <div className={styles.toolbar}>
+            <Text fw={600}>Рабочие смены</Text>
+            <Button size="sm" leftSection={<Plus size={15} />} onClick={() => { setEditingSchedule(null); setScheduleFormOpen(true); }}>
+              Добавить смену
+            </Button>
+          </div>
+          {isLoading ? <Skeleton height={160} radius="md" /> : (
+            <Table highlightOnHover verticalSpacing="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>День</Table.Th>
+                  <Table.Th>Начало</Table.Th>
+                  <Table.Th>Конец</Table.Th>
+                  <Table.Th />
                 </Table.Tr>
-              ))
-            )}
-          </Table.Tbody>
-        </Table>
-      )}
+              </Table.Thead>
+              <Table.Tbody>
+                {schedules.length === 0 ? (
+                  <Table.Tr><Table.Td colSpan={4}><Text c="dimmed" ta="center" py="md">Смены не заданы</Text></Table.Td></Table.Tr>
+                ) : schedules.map((schedule) => (
+                  <Table.Tr key={schedule.id}>
+                    <Table.Td>{formatDate(schedule.day)}</Table.Td>
+                    <Table.Td>{formatTime(schedule.start_time)}</Table.Td>
+                    <Table.Td>{formatTime(schedule.end_time)}</Table.Td>
+                    <Table.Td>
+                      <Menu shadow="sm" width={160} radius="md">
+                        <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => { setEditingSchedule(schedule); setDay(schedule.day); setStartTime(formatTime(schedule.start_time)); setEndTime(formatTime(schedule.end_time)); setScheduleFormOpen(true); }}>Редактировать</Menu.Item>
+                          <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteScheduleTarget(schedule)}>Удалить</Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          )}
+        </Tabs.Panel>
 
-      <Modal
-        opened={formOpen}
-        onClose={() => setFormOpen(false)}
-        title={editing ? 'Редактировать смену' : 'Новая смена'}
-        radius="md"
-      >
-        <Select label="День недели" required data={DAY_OF_WEEK_OPTIONS} mb="md" value={dayOfWeek} onChange={(v) => setDayOfWeek(v ?? '0')} />
+        <Tabs.Panel value="absences">
+          <div className={styles.toolbar}>
+            <Text fw={600}>Отсутствия</Text>
+            <Button size="sm" leftSection={<Plus size={15} />} onClick={() => { setEditingAbsence(null); setAbsenceFormOpen(true); }}>
+              Добавить
+            </Button>
+          </div>
+          {isLoading ? <Skeleton height={160} radius="md" /> : (
+            <Table highlightOnHover verticalSpacing="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Тип</Table.Th>
+                  <Table.Th>С</Table.Th>
+                  <Table.Th>По</Table.Th>
+                  <Table.Th>Причина</Table.Th>
+                  <Table.Th />
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {absences.length === 0 ? (
+                  <Table.Tr><Table.Td colSpan={5}><Text c="dimmed" ta="center" py="md">Отсутствий нет</Text></Table.Td></Table.Tr>
+                ) : absences.map((absence) => (
+                  <Table.Tr key={absence.id}>
+                    <Table.Td><Badge variant="light">{ABSENCE_TYPE_LABELS[absence.absence_type]}</Badge></Table.Td>
+                    <Table.Td>{formatDate(absence.start_date)}</Table.Td>
+                    <Table.Td>{formatDate(absence.end_date)}</Table.Td>
+                    <Table.Td>{absence.reason ?? '—'}</Table.Td>
+                    <Table.Td>
+                      <Menu shadow="sm" width={160} radius="md">
+                        <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => { setEditingAbsence(absence); setStartDate(absence.start_date); setEndDate(absence.end_date); setAbsenceType(absence.absence_type); setReason(absence.reason ?? ''); setAbsenceFormOpen(true); }}>Редактировать</Menu.Item>
+                          <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteAbsenceTarget(absence)}>Удалить</Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          )}
+        </Tabs.Panel>
+      </Tabs>
+
+      <Modal opened={scheduleFormOpen} onClose={() => setScheduleFormOpen(false)} title={editingSchedule ? 'Редактировать смену' : 'Новая смена'} radius="md">
+        <TextInput label="День" type="date" required mb="md" value={day} onChange={(e) => setDay(e.currentTarget.value)} />
         <Group grow mb="lg">
           <TextInput label="Начало" type="time" value={startTime} onChange={(e) => setStartTime(e.currentTarget.value)} />
           <TextInput label="Конец" type="time" value={endTime} onChange={(e) => setEndTime(e.currentTarget.value)} />
         </Group>
         <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setFormOpen(false)}>
-            Отмена
-          </Button>
-          <Button onClick={submit} loading={createSchedule.isPending || updateSchedule.isPending}>
-            Сохранить
-          </Button>
+          <Button variant="subtle" color="gray" onClick={() => setScheduleFormOpen(false)}>Отмена</Button>
+          <Button onClick={submitSchedule} loading={createSchedule.isPending || updateSchedule.isPending}>Сохранить</Button>
         </Group>
       </Modal>
 
-      <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title="Удалить смену"
-        message="Удалить эту смену из графика?"
-        loading={deleteSchedule.isPending}
-        onConfirm={() => deleteTarget && deleteSchedule.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
-        onClose={() => setDeleteTarget(null)}
-      />
+      <Modal opened={absenceFormOpen} onClose={() => setAbsenceFormOpen(false)} title={editingAbsence ? 'Редактировать отсутствие' : 'Новое отсутствие'} radius="md">
+        <Select label="Тип" data={ABSENCE_TYPE_OPTIONS} mb="md" value={absenceType} onChange={(v) => setAbsenceType((v as AbsenceType) ?? 'vacation')} />
+        <Group grow mb="md">
+          <TextInput label="С" type="date" value={startDate} onChange={(e) => setStartDate(e.currentTarget.value)} />
+          <TextInput label="По" type="date" value={endDate} onChange={(e) => setEndDate(e.currentTarget.value)} />
+        </Group>
+        <TextInput label="Причина" mb="lg" value={reason} onChange={(e) => setReason(e.currentTarget.value)} />
+        <Group justify="flex-end">
+          <Button variant="subtle" color="gray" onClick={() => setAbsenceFormOpen(false)}>Отмена</Button>
+          <Button onClick={submitAbsence} loading={createAbsence.isPending || updateAbsence.isPending}>Сохранить</Button>
+        </Group>
+      </Modal>
+
+      <ConfirmModal opened={Boolean(deleteScheduleTarget)} title="Удалить смену" message="Удалить эту смену?" loading={deleteSchedule.isPending} onConfirm={() => deleteScheduleTarget && deleteSchedule.mutate(deleteScheduleTarget.id, { onSuccess: () => setDeleteScheduleTarget(null) })} onClose={() => setDeleteScheduleTarget(null)} />
+      <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Удалить отсутствие" message="Удалить это отсутствие?" loading={deleteAbsence.isPending} onConfirm={() => deleteAbsenceTarget && deleteAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTarget(null) })} onClose={() => setDeleteAbsenceTarget(null)} />
     </div>
   );
 };

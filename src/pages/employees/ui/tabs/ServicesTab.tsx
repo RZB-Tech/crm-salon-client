@@ -3,7 +3,6 @@ import { Group, Button, MultiSelect, Text, Badge, Skeleton } from '@mantine/core
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useUpdateEmployee } from '@/shared/api/hooks/useEmployees';
 import type { Employee } from '@/shared/api/types';
-import { ensureArray } from '@/shared/lib/format';
 import styles from '../employee-profile.module.css';
 
 interface ServicesTabProps {
@@ -15,11 +14,11 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
   const updateEmployee = useUpdateEmployee();
 
   const [selected, setSelected] = React.useState<string[]>(() =>
-    ensureArray<number>(employee.services).map(String),
+    (employee.services ?? []).map((s) => String(s.id)),
   );
 
   React.useEffect(() => {
-    setSelected(ensureArray<number>(employee.services).map(String));
+    setSelected((employee.services ?? []).map((s) => String(s.id)));
   }, [employee.services]);
 
   const serviceOptions = React.useMemo(
@@ -30,16 +29,20 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
   const serviceNameById = React.useMemo(() => {
     const map = new Map<string, string>();
     for (const s of services ?? []) map.set(String(s.id), s.name);
+    for (const s of employee.services ?? []) map.set(String(s.id), s.name);
     return map;
-  }, [services]);
+  }, [services, employee.services]);
 
   const isDirty = React.useMemo(() => {
-    const current = ensureArray<number>(employee.services).map(String).sort().join(',');
+    const current = (employee.services ?? []).map((s) => String(s.id)).sort().join(',');
     return selected.slice().sort().join(',') !== current;
   }, [selected, employee.services]);
 
   const handleSave = React.useCallback(() => {
-    updateEmployee.mutate({ id: employee.id, payload: { services: selected.map(Number) } });
+    updateEmployee.mutate({
+      id: employee.id,
+      services: selected.map(Number),
+    });
   }, [updateEmployee, employee.id, selected]);
 
   if (isLoading) {

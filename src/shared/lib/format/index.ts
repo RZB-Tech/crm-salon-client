@@ -1,9 +1,10 @@
-import type { Client, Employee, PaymentType, Sex } from '@/shared/api/types';
+import type { AbsenceType, Client, Employee, PayrollType, Sex } from '@/shared/api/types';
 
 const AVATAR_COLORS = ['#6366f1', '#8b5cf6', '#0ea5e9', '#10b981', '#ec4899', '#f59e0b'];
 
-export const getEmployeeFullName = (employee: Pick<Employee, 'firstname' | 'lastname' | 'middlename'>): string =>
-  [employee.firstname, employee.middlename, employee.lastname].filter(Boolean).join(' ');
+export const getEmployeeFullName = (
+  employee: Pick<Employee, 'firstname' | 'lastname' | 'middlename'>,
+): string => [employee.firstname, employee.middlename, employee.lastname].filter(Boolean).join(' ');
 
 export const getEmployeeInitials = (employee: Pick<Employee, 'firstname' | 'lastname'>): string => {
   const first = employee.firstname.charAt(0).toUpperCase();
@@ -21,21 +22,9 @@ export const formatPrice = (value: string | number): string => {
   return new Intl.NumberFormat('ru-RU').format(num) + ' сум';
 };
 
-export const ensureArray = <T>(value: unknown): T[] =>
-  Array.isArray(value) ? (value as T[]) : [];
-
-export const DAY_OF_WEEK_LABELS: Record<number, string> = {
-  0: 'Понедельник',
-  1: 'Вторник',
-  2: 'Среда',
-  3: 'Четверг',
-  4: 'Пятница',
-  5: 'Суббота',
-  6: 'Воскресенье',
-};
-
-export const getClientFullName = (client: Pick<Client, 'firstname' | 'lastname' | 'middlename'>): string =>
-  [client.firstname, client.middlename, client.lastname].filter(Boolean).join(' ');
+export const getClientFullName = (
+  client: Pick<Client, 'firstname' | 'lastname' | 'middlename'>,
+): string => [client.firstname, client.middlename, client.lastname].filter(Boolean).join(' ');
 
 export const getClientInitials = (client: Pick<Client, 'firstname' | 'lastname'>): string =>
   getEmployeeInitials(client);
@@ -50,30 +39,56 @@ export const SEX_OPTIONS = [
   { value: 'female', label: 'Женский' },
 ] as const;
 
-export const PAYMENT_TYPE_LABELS: Record<string, string> = {
+export const PAYROLL_TYPE_LABELS: Record<PayrollType, string> = {
   salary: 'Зарплата',
   bonus: 'Бонус',
   penalty: 'Штраф',
-  'percent from services': 'Процент от услуг',
-  'percent from sefl services': 'Процент от своих услуг',
-  'percent from sales': 'Процент от продаж',
-  'percent from self sales': 'Процент от своих продаж',
-  'precent from attracting client': 'Процент за привлечение клиента',
-  'precent from developing client': 'Процент за развитие клиента',
+  commission: 'Комиссия',
 };
 
-export const PAYMENT_TYPE_OPTIONS: { value: PaymentType; label: string }[] = Object.entries(
-  PAYMENT_TYPE_LABELS,
-).map(([value, label]) => ({ value: value as PaymentType, label }));
-
-export const DAY_OF_WEEK_OPTIONS = Object.entries(DAY_OF_WEEK_LABELS).map(([value, label]) => ({
-  value: String(value),
+export const PAYROLL_TYPE_OPTIONS = Object.entries(PAYROLL_TYPE_LABELS).map(([value, label]) => ({
+  value: value as PayrollType,
   label,
 }));
 
-export const parseTimeToMinutes = (time: string): number => {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
+export const ABSENCE_TYPE_LABELS: Record<AbsenceType, string> = {
+  sick: 'Больничный',
+  vacation: 'Отпуск',
+  'day off': 'Выходной',
+  weekend: 'Выходные',
+  other: 'Другое',
 };
 
+export const ABSENCE_TYPE_OPTIONS = Object.entries(ABSENCE_TYPE_LABELS).map(([value, label]) => ({
+  value: value as AbsenceType,
+  label,
+}));
+
 export const formatTime = (time: string): string => time.slice(0, 5);
+
+export const formatDate = (value: string | null): string => {
+  if (!value) return '—';
+  return new Date(value).toLocaleDateString('ru-RU');
+};
+
+export const formatDateTime = (value: string): string =>
+  new Date(value).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+export const isSameDay = (a: Date, b: Date): boolean =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+export const toDateInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const toApiTime = (time: string): string => (time.length === 5 ? `${time}:00` : time);
