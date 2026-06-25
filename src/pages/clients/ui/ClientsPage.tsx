@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   Button,
-  Avatar,
   Card,
   Table,
   ActionIcon,
@@ -16,29 +15,36 @@ import {
   Alert,
   NumberInput,
   Tabs,
-  Badge,
+  Badge
 } from '@mantine/core';
-import { MagnifyingGlass, Plus, DotsThree, PencilSimple, Trash, CalendarBlank } from '@phosphor-icons/react';
+import {
+  MagnifyingGlass,
+  Plus,
+  DotsThree,
+  PencilSimple,
+  Trash,
+  CalendarBlank
+} from '@phosphor-icons/react';
 import {
   useClients,
   useCreateClient,
   useUpdateClient,
   useDeleteClient,
   useUpdateClientDeposit,
-  useClientAppointments,
+  useClientAppointments
 } from '@/shared/api/hooks/useClients';
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { PersonAvatar } from '@/shared/ui/PersonAvatar';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import {
   formatDate,
-  formatDateTime,
+  formatAppointmentDateTime,
   formatPrice,
   getClientFullName,
   getClientInitials,
-  getEmployeeColor,
   SEX_LABELS,
-  SEX_OPTIONS,
+  SEX_OPTIONS
 } from '@/shared/lib/format';
 import styles from './clients-page.module.css';
 
@@ -61,7 +67,7 @@ const emptyForm = (): ClientFormState => ({
   phone: '',
   birth_date: '',
   deposit: 0,
-  notes: '',
+  notes: ''
 });
 
 const clientToForm = (client: Client): ClientFormState => ({
@@ -72,7 +78,7 @@ const clientToForm = (client: Client): ClientFormState => ({
   phone: client.phone ?? '',
   birth_date: client.birth_date ?? '',
   deposit: client.deposit,
-  notes: client.notes ?? '',
+  notes: client.notes ?? ''
 });
 
 const formToCreatePayload = (form: ClientFormState): ClientCreatePayload => ({
@@ -83,7 +89,7 @@ const formToCreatePayload = (form: ClientFormState): ClientCreatePayload => ({
   phone: form.phone || null,
   birth_date: form.birth_date || null,
   deposit: form.deposit,
-  notes: form.notes || null,
+  notes: form.notes || null
 });
 
 export const ClientsPage: React.FC = () => {
@@ -101,7 +107,7 @@ export const ClientsPage: React.FC = () => {
 
   const { data: clients, isLoading, isError } = useClients();
   const { data: clientAppointments, isLoading: appointmentsLoading } = useClientAppointments(
-    detailTarget?.id ?? 0,
+    detailTarget?.id ?? 0
   );
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -136,7 +142,7 @@ export const ClientsPage: React.FC = () => {
     if (editing) {
       const payload: ClientUpdatePayload = {
         id: editing.id,
-        ...formToCreatePayload(form),
+        ...formToCreatePayload(form)
       };
       updateClient.mutate(payload, { onSuccess: closeForm });
     } else {
@@ -150,9 +156,9 @@ export const ClientsPage: React.FC = () => {
       {
         id: depositTarget.id,
         operation: Number(depositOperation) as 1 | -1,
-        amount: depositAmount,
+        amount: depositAmount
       },
-      { onSuccess: () => setDepositOpen(false) },
+      { onSuccess: () => setDepositOpen(false) }
     );
   }, [depositTarget, depositAmount, depositOperation, updateDeposit]);
 
@@ -175,7 +181,7 @@ export const ClientsPage: React.FC = () => {
     return (
       <div className={styles.page}>
         <Skeleton height={48} />
-        <Skeleton height={400} radius="lg" />
+        <Skeleton height={400} radius='lg' />
       </div>
     );
   }
@@ -183,7 +189,7 @@ export const ClientsPage: React.FC = () => {
   if (isError) {
     return (
       <div className={styles.page}>
-        <Alert color="red" title="Не удалось загрузить клиентов">
+        <Alert color='red' title='Не удалось загрузить клиентов'>
           Проверьте доступность API и авторизацию
         </Alert>
       </div>
@@ -194,25 +200,31 @@ export const ClientsPage: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <Text size="xl" fw={700}>Клиенты</Text>
-          <Text size="sm" c="dimmed" mt={2}>{filtered.length} клиентов</Text>
+          <Text size='xl' fw={700}>
+            Клиенты
+          </Text>
+          <Text size='sm' c='dimmed' mt={2}>
+            {filtered.length} клиентов
+          </Text>
         </div>
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить клиента</Button>
+        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+          Добавить клиента
+        </Button>
       </div>
 
-      <Group gap="sm" className={styles.filters}>
+      <Group gap='sm' className={styles.filters}>
         <TextInput
-          placeholder="Поиск по имени, телефону..."
+          placeholder='Поиск по имени, телефону...'
           leftSection={<MagnifyingGlass size={15} />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
           className={styles.searchInput}
-          size="sm"
+          size='sm'
         />
       </Group>
 
-      <Card padding={0} radius="lg" shadow="xs" className={styles.tableCard}>
-        <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
+      <Card padding={0} radius='lg' shadow='xs' className={styles.tableCard}>
+        <Table highlightOnHover verticalSpacing='sm' horizontalSpacing='lg'>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Клиент</Table.Th>
@@ -227,56 +239,80 @@ export const ClientsPage: React.FC = () => {
             {filtered.length === 0 ? (
               <Table.Tr>
                 <Table.Td colSpan={6}>
-                  <Text c="dimmed" ta="center" py="md">Клиенты не найдены</Text>
+                  <Text c='dimmed' ta='center' py='md'>
+                    Клиенты не найдены
+                  </Text>
                 </Table.Td>
               </Table.Tr>
             ) : (
-              filtered.map((client) => {
-                const color = getEmployeeColor(client.id);
-                return (
-                  <Table.Tr key={client.id} className={styles.tableRow}>
-                    <Table.Td>
-                      <Group gap={10}>
-                        <Avatar size="sm" radius="md" style={{ backgroundColor: color }}>
-                          <Text size="xs" fw={700} c="white">{getClientInitials(client)}</Text>
-                        </Avatar>
-                        <Text size="sm" fw={600}>{getClientFullName(client)}</Text>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td><Text size="sm" c="dimmed">{client.phone ?? '—'}</Text></Table.Td>
-                    <Table.Td><Text size="sm">{SEX_LABELS[client.sex]}</Text></Table.Td>
-                    <Table.Td><Text size="sm" fw={600}>{formatPrice(client.deposit)}</Text></Table.Td>
-                    <Table.Td><Text size="sm" c="dimmed">{formatDate(client.birth_date)}</Text></Table.Td>
-                    <Table.Td>
-                      <Menu shadow="sm" width={180} radius="md">
-                        <Menu.Target>
-                          <ActionIcon variant="subtle" color="gray" size="sm">
-                            <DotsThree size={16} weight="bold" />
-                          </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item
-                            leftSection={<CalendarBlank size={14} />}
-                            onClick={() => {
-                              setDetailTarget(client);
-                              setDetailTab('appointments');
-                            }}
-                          >
-                            Записи и история
-                          </Menu.Item>
-                          <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(client)}>
-                            Редактировать
-                          </Menu.Item>
-                          <Menu.Item onClick={() => openDeposit(client)}>Депозит</Menu.Item>
-                          <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(client)}>
-                            Удалить
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })
+              filtered.map((client) => (
+                <Table.Tr key={client.id} className={styles.tableRow}>
+                  <Table.Td>
+                    <Group gap={10}>
+                      <PersonAvatar
+                        seed={client.id}
+                        initials={getClientInitials(client)}
+                        size='xs'
+                      />
+                      <Text size='sm' fw={600}>
+                        {getClientFullName(client)}
+                      </Text>
+                    </Group>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size='sm' c='dimmed'>
+                      {client.phone ?? '—'}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size='sm'>{SEX_LABELS[client.sex]}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size='sm' fw={600}>
+                      {formatPrice(client.deposit)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size='sm' c='dimmed'>
+                      {formatDate(client.birth_date)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Menu shadow='sm' width={180} radius='md'>
+                      <Menu.Target>
+                        <ActionIcon variant='subtle' color='gray' size='sm'>
+                          <DotsThree size={16} weight='bold' />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<CalendarBlank size={14} />}
+                          onClick={() => {
+                            setDetailTarget(client);
+                            setDetailTab('appointments');
+                          }}
+                        >
+                          Записи и история
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<PencilSimple size={14} />}
+                          onClick={() => openEdit(client)}
+                        >
+                          Редактировать
+                        </Menu.Item>
+                        <Menu.Item onClick={() => openDeposit(client)}>Депозит</Menu.Item>
+                        <Menu.Item
+                          leftSection={<Trash size={14} />}
+                          color='red'
+                          onClick={() => setDeleteTarget(client)}
+                        >
+                          Удалить
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  </Table.Td>
+                </Table.Tr>
+              ))
             )}
           </Table.Tbody>
         </Table>
@@ -286,54 +322,115 @@ export const ClientsPage: React.FC = () => {
         opened={formOpen}
         onClose={closeForm}
         title={editing ? 'Редактировать клиента' : 'Новый клиент'}
-        radius="md"
-        size="lg"
+        radius='md'
+        size='lg'
       >
-        <Group grow mb="md">
-          <TextInput label="Имя" required value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })} />
-          <TextInput label="Фамилия" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })} />
+        <Group grow mb='md'>
+          <TextInput
+            label='Имя'
+            required
+            value={form.firstname}
+            onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })}
+          />
+          <TextInput
+            label='Фамилия'
+            value={form.lastname}
+            onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })}
+          />
         </Group>
-        <Group grow mb="md">
-          <TextInput label="Отчество" value={form.middlename} onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })} />
-          <Select label="Пол" required data={[...SEX_OPTIONS]} value={form.sex} onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })} />
+        <Group grow mb='md'>
+          <TextInput
+            label='Отчество'
+            value={form.middlename}
+            onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })}
+          />
+          <Select
+            label='Пол'
+            required
+            data={[...SEX_OPTIONS]}
+            value={form.sex}
+            onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })}
+          />
         </Group>
-        <Group grow mb="md">
-          <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
-          <TextInput label="Дата рождения" type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
+        <Group grow mb='md'>
+          <TextInput
+            label='Телефон'
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })}
+          />
+          <TextInput
+            label='Дата рождения'
+            type='date'
+            value={form.birth_date}
+            onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })}
+          />
         </Group>
         {!editing && (
-          <NumberInput label="Начальный депозит" mb="md" min={0} value={form.deposit} onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })} />
+          <NumberInput
+            label='Начальный депозит'
+            mb='md'
+            min={0}
+            value={form.deposit}
+            onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })}
+          />
         )}
-        <Textarea label="Заметки" mb="lg" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={closeForm}>Отмена</Button>
+        <Textarea
+          label='Заметки'
+          mb='lg'
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
+        />
+        <Group justify='flex-end'>
+          <Button variant='subtle' color='gray' onClick={closeForm}>
+            Отмена
+          </Button>
           <Button onClick={handleSubmit} loading={isSaving} disabled={!form.firstname}>
             {editing ? 'Сохранить' : 'Создать'}
           </Button>
         </Group>
       </Modal>
 
-      <Modal opened={depositOpen} onClose={() => setDepositOpen(false)} title="Изменить депозит" radius="md">
+      <Modal
+        opened={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        title='Изменить депозит'
+        radius='md'
+      >
         <Select
-          label="Операция"
-          mb="md"
+          label='Операция'
+          mb='md'
           data={[
             { value: '1', label: 'Пополнить' },
-            { value: '-1', label: 'Списать' },
+            { value: '-1', label: 'Списать' }
           ]}
           value={depositOperation}
           onChange={(v) => setDepositOperation((v as '1' | '-1') ?? '1')}
         />
-        <NumberInput label="Сумма" required min={1} mb="lg" value={depositAmount} onChange={(v) => setDepositAmount(Number(v) || 0)} />
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setDepositOpen(false)}>Отмена</Button>
-          <Button onClick={handleDeposit} loading={updateDeposit.isPending} disabled={depositAmount <= 0}>Применить</Button>
+        <NumberInput
+          label='Сумма'
+          required
+          min={1}
+          mb='lg'
+          value={depositAmount}
+          onChange={(v) => setDepositAmount(Number(v) || 0)}
+        />
+        <Group justify='flex-end'>
+          <Button variant='subtle' color='gray' onClick={() => setDepositOpen(false)}>
+            Отмена
+          </Button>
+          <Button
+            onClick={handleDeposit}
+            loading={updateDeposit.isPending}
+            disabled={depositAmount <= 0}
+          >
+            Применить
+          </Button>
         </Group>
       </Modal>
 
       <ConfirmModal
         opened={Boolean(deleteTarget)}
-        title="Удалить клиента"
+        title='Удалить клиента'
         message={`Удалить ${deleteTarget ? getClientFullName(deleteTarget) : ''}?`}
         loading={deleteClient.isPending}
         onConfirm={handleDelete}
@@ -344,23 +441,23 @@ export const ClientsPage: React.FC = () => {
         opened={Boolean(detailTarget)}
         onClose={() => setDetailTarget(null)}
         title={detailTarget ? getClientFullName(detailTarget) : 'Клиент'}
-        radius="md"
-        size="lg"
+        radius='md'
+        size='lg'
       >
         <Tabs value={detailTab} onChange={(value) => setDetailTab(value ?? 'appointments')}>
-          <Tabs.List mb="md">
-            <Tabs.Tab value="appointments">Записи</Tabs.Tab>
-            <Tabs.Tab value="audit">История изменений</Tabs.Tab>
+          <Tabs.List mb='md'>
+            <Tabs.Tab value='appointments'>Записи</Tabs.Tab>
+            <Tabs.Tab value='audit'>История изменений</Tabs.Tab>
           </Tabs.List>
-          <Tabs.Panel value="appointments">
+          <Tabs.Panel value='appointments'>
             {appointmentsLoading ? (
               <Skeleton height={120} />
             ) : (clientAppointments ?? []).length === 0 ? (
-              <Text size="sm" c="dimmed">
+              <Text size='sm' c='dimmed'>
                 Записей нет
               </Text>
             ) : (
-              <Table verticalSpacing="xs" withTableBorder>
+              <Table verticalSpacing='xs' withTableBorder>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Дата</Table.Th>
@@ -372,11 +469,15 @@ export const ClientsPage: React.FC = () => {
                   {(clientAppointments ?? []).map((appointment) => (
                     <Table.Tr key={appointment.id}>
                       <Table.Td>
-                        <Text size="xs">{formatDateTime(appointment.start_time_est)}</Text>
+                        <Text size='xs'>{formatAppointmentDateTime(appointment.start_time_est)}</Text>
                       </Table.Td>
                       <Table.Td>{formatPrice(appointment.total_price)}</Table.Td>
                       <Table.Td>
-                        <Badge size="xs" color={appointment.paid ? 'green' : 'orange'} variant="light">
+                        <Badge
+                          size='xs'
+                          color={appointment.paid ? 'green' : 'orange'}
+                          variant='light'
+                        >
                           {appointment.paid ? 'Оплачено' : 'Не оплачено'}
                         </Badge>
                       </Table.Td>
@@ -386,10 +487,8 @@ export const ClientsPage: React.FC = () => {
               </Table>
             )}
           </Tabs.Panel>
-          <Tabs.Panel value="audit">
-            {detailTarget && (
-              <AuditLogsPanel tableName="clients" recordId={detailTarget.id} />
-            )}
+          <Tabs.Panel value='audit'>
+            {detailTarget && <AuditLogsPanel tableName='clients' recordId={detailTarget.id} />}
           </Tabs.Panel>
         </Tabs>
       </Modal>

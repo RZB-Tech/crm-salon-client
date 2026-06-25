@@ -2,17 +2,18 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { authStorage } from '@/shared/api/client';
 import { useRefreshToken } from '@/shared/api/hooks/useAuth';
+import { AUTH_ENABLED } from '@/shared/config/env';
 
 export const ProtectedRoute: React.FC = () => {
   const refreshToken = useRefreshToken();
 
   React.useEffect(() => {
-    if (authStorage.isAuthenticated()) {
+    if (AUTH_ENABLED && authStorage.isAuthenticated()) {
       refreshToken.mutate();
     }
   }, []);
 
-  if (!authStorage.isAuthenticated()) {
+  if (AUTH_ENABLED && !authStorage.isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 

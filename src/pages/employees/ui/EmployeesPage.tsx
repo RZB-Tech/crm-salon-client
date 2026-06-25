@@ -4,7 +4,6 @@ import {
   Group,
   Text,
   Badge,
-  Avatar,
   Card,
   SimpleGrid,
   Skeleton,
@@ -22,9 +21,9 @@ import {
 } from '@/shared/api/hooks/useEmployees';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { PersonAvatar } from '@/shared/ui/PersonAvatar';
 import {
   formatPrice,
-  getEmployeeColor,
   getEmployeeFullName,
   getEmployeeInitials,
 } from '@/shared/lib/format';
@@ -38,7 +37,6 @@ interface EmployeeCardProps {
 }
 
 const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete }) => {
-  const color = getEmployeeColor(employee.id);
   const servicesCount = employee.services?.length ?? 0;
 
   return (
@@ -53,9 +51,11 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete 
     >
       <Group justify="space-between" align="flex-start" mb="md">
         <Group gap={12}>
-          <Avatar size={52} radius="md" style={{ backgroundColor: color }}>
-            <Text fw={700} c="white">{getEmployeeInitials(employee)}</Text>
-          </Avatar>
+          <PersonAvatar
+            seed={employee.id}
+            initials={getEmployeeInitials(employee)}
+            size="lg"
+          />
           <div>
             <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
             <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>

@@ -1,0 +1,68 @@
+.personAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 18%);
+  letter-spacing: 0.03em;
+  line-height: 1;
+  user-select: none;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.personAvatar_clickable {
+  cursor: pointer;
+}
+
+.personAvatar_clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 16%);
+}
+
+.personAvatar_selected {
+  border-color: var(--mantine-color-blue-5);
+  box-shadow: 0 0 0 2px var(--mantine-color-blue-2);
+}
+
+.personAvatar_muted {
+  opacity: 0.5;
+}
+
+.personAvatar_xs {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+  border-radius: 8px;
+}
+
+.personAvatar_xl {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+  border-radius: 999px;
+}
+
+.personAvatar_md {
+  width: 36px;
+  height: 36px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.personAvatar_lg {
+  width: 52px;
+  height: 52px;
+  font-size: 16px;
+  border-radius: 12px;
+}
+
+.personAvatar_profile {
+  width: 64px;
+  height: 64px;
+  font-size: 20px;
+  border-radius: 14px;
+}

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/shared/config/env';
+import { API_BASE_URL, AUTH_ENABLED } from '@/shared/config/env';
 
 export class ApiError extends Error {
   status: number;
@@ -27,7 +27,8 @@ export interface RequestAllParams {
 const AUTH_KEY = 'salon_auth';
 
 export const authStorage = {
-  isAuthenticated: (): boolean => localStorage.getItem(AUTH_KEY) === '1',
+  isAuthenticated: (): boolean =>
+    !AUTH_ENABLED || localStorage.getItem(AUTH_KEY) === '1',
   setAuthenticated: (value: boolean): void => {
     if (value) {
       localStorage.setItem(AUTH_KEY, '1');
@@ -58,7 +59,7 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
     },
   });
 
-  if (response.status === 401 && !path.includes('/auth/')) {
+  if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
     authStorage.setAuthenticated(false);
     if (window.location.pathname !== '/login') {
       window.location.href = '/login';
@@ -159,7 +160,7 @@ export async function apiPostFormData<T>(path: string, formData: FormData): Prom
     body: formData,
   });
 
-  if (response.status === 401 && !path.includes('/auth/')) {
+  if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
     authStorage.setAuthenticated(false);
     if (window.location.pathname !== '/login') {
       window.location.href = '/login';

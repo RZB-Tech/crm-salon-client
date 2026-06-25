@@ -1,5 +1,5 @@
 import type { Appointment } from '@/shared/api/types';
-import { isSameDay } from '@/shared/lib/format';
+import { parseApiDateTimeParts, toDateInput } from '@/shared/lib/format';
 
 export const SLOT_HEIGHT = 96;
 export const TIME_START = 8;
@@ -13,10 +13,10 @@ export interface BoardAppointment {
   employeeId: number;
   clientId: number;
   serviceId: number | null;
-  start: Date;
-  end: Date;
   startHour: number;
   startMinute: number;
+  endHour: number;
+  endMinute: number;
   duration: number;
   client: string;
   service: string;
@@ -57,23 +57,27 @@ export const getWeekStart = (date: Date): Date => {
 };
 
 export const getWeekDays = (weekStart: Date): Date[] =>
-  Array.from({ length: 7 }, (_, i) =>
-    new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i),
+  Array.from(
+    { length: 7 },
+    (_, i) => new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i)
   );
 
 export const mapAppointmentsToBoard = (
   appointments: Appointment[],
   date: Date,
-  employeeFilter?: Set<number>,
+  employeeFilter?: Set<number>
 ): BoardAppointment[] => {
   const result: BoardAppointment[] = [];
 
   for (const appt of appointments) {
-    const start = new Date(appt.start_time_est);
-    if (!isSameDay(start, date)) continue;
+    const startParts = parseApiDateTimeParts(appt.start_time_est);
+    if (startParts.date !== toDateInput(date)) continue;
 
-    const end = new Date(appt.end_time_est);
-    const duration = Math.max((end.getTime() - start.getTime()) / 60000, 15);
+    const endParts = parseApiDateTimeParts(appt.end_time_est);
+    const duration = Math.max(
+      endParts.hours * 60 + endParts.minutes - (startParts.hours * 60 + startParts.minutes),
+      15
+    );
     const clientName = appt.client
       ? [appt.client.firstname, appt.client.lastname].filter(Boolean).join(' ')
       : `Клиент #${appt.client_id}`;
@@ -96,34 +100,36 @@ export const mapAppointmentsToBoard = (
         employeeId: record.employee_id,
         clientId: appt.client_id,
         serviceId,
-        start,
-        end,
-        startHour: start.getHours(),
-        startMinute: start.getMinutes(),
+        startHour: startParts.hours,
+        startMinute: startParts.minutes,
+        endHour: endParts.hours,
+        endMinute: endParts.minutes,
         duration,
         client: clientName,
         service: serviceName,
         employeeName,
         paid: appt.paid,
         totalPrice: appt.total_price,
-        notes: appt.notes,
+        notes: appt.notes
       });
     }
   }
 
-  return result.sort((a, b) => a.start.getTime() - b.start.getTime());
+  return result.sort(
+    (a, b) => a.startHour * 60 + a.startMinute - (b.startHour * 60 + b.startMinute)
+  );
 };
 
 export const getApptStyle = (appt: BoardAppointment): { top: number; height: number } => {
   const startMinutes = appt.startHour * 60 + appt.startMinute - TIME_START * 60;
   return {
     top: startMinutes * MINUTE_HEIGHT,
-    height: Math.max(appt.duration * MINUTE_HEIGHT - 4, 32),
+    height: Math.max(appt.duration * MINUTE_HEIGHT - 4, 32)
   };
 };
 
 export const HOUR_LABELS = Array.from({ length: TIME_END - TIME_START + 1 }, (_, i) => ({
   hour: TIME_START + i,
   top: i * SLOT_HEIGHT,
-  label: `${padTime(TIME_START + i)}:00`,
+  label: `${padTime(TIME_START + i)}:00`
 }));

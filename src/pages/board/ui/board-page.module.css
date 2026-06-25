@@ -17,13 +17,26 @@
   gap: 16px;
 }
 
-.dateBlock {
+.toolbarMain {
   display: flex;
   align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
-.employeeChips {
+.toolbarGroup {
+  display: inline-flex;
   align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--mantine-color-gray-3);
+  border-radius: 10px;
+  background: var(--mantine-color-gray-0);
+}
+
+.viewSwitch {
+  background: transparent;
 }
 
 .gridScroll {
@@ -57,6 +70,22 @@
   top: 0;
   z-index: 20;
   background: var(--mantine-color-white);
+}
+
+.employeeHeader_link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.employeeHeader_link:hover {
+  background: var(--mantine-color-gray-0);
+}
+
+.employeeHeader_link:focus-visible {
+  outline: 2px solid var(--mantine-color-blue-5);
+  outline-offset: -2px;
 }
 
 .employeeInfo {
@@ -131,7 +160,9 @@
   gap: 2px;
   overflow: hidden;
   border-left: 3px solid;
-  transition: filter 0.12s, transform 0.12s;
+  transition:
+    filter 0.12s,
+    transform 0.12s;
   z-index: 3;
 }
 

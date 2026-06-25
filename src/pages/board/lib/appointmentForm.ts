@@ -2,10 +2,14 @@ import type {
   Appointment,
   AppointmentCreatePayload,
   Employee,
-  Service,
+  Service
 } from '@/shared/api/types';
-import { toDateInput } from '@/shared/lib/format';
-import { addMinutesToTime, padTime } from './appointmentBoard';
+import {
+  parseApiDateFromDateTime,
+  parseApiTimeFromDateTime,
+  toDateInput
+} from '@/shared/lib/format';
+import { addMinutesToTime } from './appointmentBoard';
 
 export interface AppointmentServiceLine {
   key: string;
@@ -34,7 +38,7 @@ export const createEmptyServiceLine = (): AppointmentServiceLine => ({
   key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
   serviceId: null,
   quantity: 1,
-  price: 0,
+  price: 0
 });
 
 export const emptyAppointmentForm = (date: Date = new Date()): AppointmentFormValues => ({
@@ -44,19 +48,19 @@ export const emptyAppointmentForm = (date: Date = new Date()): AppointmentFormVa
   startTime: '10:00',
   endTime: '11:00',
   services: [createEmptyServiceLine()],
-  notes: '',
+  notes: ''
 });
 
 export const buildServiceOptions = (
   catalog: Service[],
-  employee: Employee | undefined,
+  employee: Employee | undefined
 ): ServiceOption[] => {
   if (!employee) return [];
   const priceMap = new Map(catalog.map((service) => [service.id, service.price]));
   return (employee.services ?? []).map((service) => ({
     value: String(service.id),
     label: service.name,
-    price: priceMap.get(service.id) ?? 0,
+    price: priceMap.get(service.id) ?? 0
   }));
 };
 
@@ -65,10 +69,8 @@ export const calcServicesTotal = (lines: AppointmentServiceLine[]): number =>
 
 export const appointmentToFormValues = (
   appointment: Appointment,
-  recordEmployeeId: number,
+  recordEmployeeId: number
 ): AppointmentFormValues => {
-  const start = new Date(appointment.start_time_est);
-  const end = new Date(appointment.end_time_est);
   const record =
     appointment.records?.find((item) => item.employee_id === recordEmployeeId) ??
     appointment.records?.[0];
@@ -78,17 +80,17 @@ export const appointmentToFormValues = (
       key: String(item.id ?? index),
       serviceId: item.service_id != null ? String(item.service_id) : null,
       quantity: item.quantity,
-      price: item.price,
+      price: item.price
     })) ?? [];
 
   return {
     clientId: String(appointment.client_id),
     employeeId: record ? String(record.employee_id) : null,
-    date: toDateInput(start),
-    startTime: `${padTime(start.getHours())}:${padTime(start.getMinutes())}`,
-    endTime: `${padTime(end.getHours())}:${padTime(end.getMinutes())}`,
+    date: parseApiDateFromDateTime(appointment.start_time_est),
+    startTime: parseApiTimeFromDateTime(appointment.start_time_est),
+    endTime: parseApiTimeFromDateTime(appointment.end_time_est),
     services: services.length > 0 ? services : [createEmptyServiceLine()],
-    notes: appointment.notes ?? '',
+    notes: appointment.notes ?? ''
   };
 };
 
@@ -106,20 +108,20 @@ export const formValuesToPayload = (values: AppointmentFormValues): AppointmentC
         services: serviceLines.map((line) => ({
           service_id: Number(line.serviceId),
           quantity: line.quantity,
-          price: line.price,
-        })),
-      },
-    ],
+          price: line.price
+        }))
+      }
+    ]
   };
 };
 
 export const applyStartTimeChange = (
   values: AppointmentFormValues,
-  startTime: string,
+  startTime: string
 ): AppointmentFormValues => ({
   ...values,
   startTime,
-  endTime: addMinutesToTime(startTime, 60),
+  endTime: addMinutesToTime(startTime, 60)
 });
 
 export const isAppointmentFormValid = (values: AppointmentFormValues): boolean =>

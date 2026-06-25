@@ -1,29 +1,26 @@
 import React from 'react';
 import {
-  Group,
   Button,
   Text,
   Badge,
-  ActionIcon,
   SegmentedControl,
-  Avatar,
-  Tooltip,
   Skeleton,
-  Alert,
+  Alert
 } from '@mantine/core';
-import { CaretLeft, CaretRight, Plus, Users, SignOut } from '@phosphor-icons/react';
+import { Plus } from '@phosphor-icons/react';
+import { Link } from 'react-router-dom';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import {
   useAppointments,
   useAppointment,
   useCreateAppointment,
-  useDeleteAppointment,
+  useDeleteAppointment
 } from '@/shared/api/hooks/useAppointments';
 import { useClients } from '@/shared/api/hooks/useClients';
 import { useServices } from '@/shared/api/hooks/useServices';
-import { useLogout } from '@/shared/api/hooks/useAuth';
 import type { Employee } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { PersonAvatar } from '@/shared/ui/PersonAvatar';
 import {
   getClientFullName,
   getEmployeeColor,
@@ -31,7 +28,7 @@ import {
   getEmployeeInitials,
   getEmployeeLightColor,
   isSameDay,
-  toDateInput,
+  toDateInput
 } from '@/shared/lib/format';
 import type { BoardAppointment } from '../lib/appointmentBoard';
 import {
@@ -43,7 +40,7 @@ import {
   getApptStyle,
   getWeekDays,
   getWeekStart,
-  mapAppointmentsToBoard,
+  mapAppointmentsToBoard
 } from '../lib/appointmentBoard';
 import { hasBoardTimeConflict } from '../lib/hasBoardTimeConflict';
 import {
@@ -51,10 +48,12 @@ import {
   buildServiceOptions,
   emptyAppointmentForm,
   formValuesToPayload,
-  type AppointmentFormValues,
+  type AppointmentFormValues
 } from '../lib/appointmentForm';
 import { useCreateAppointmentDrag } from '../hooks/useCreateAppointmentDrag';
 import { AppointmentFormModal } from './AppointmentFormModal';
+import { BoardToolbarAside } from './BoardToolbarAside';
+import { EmployeeFilterPopover } from './EmployeeFilterPopover';
 import { CreatePreview } from './CreatePreview';
 import styles from './board-page.module.css';
 
@@ -86,7 +85,7 @@ const mapEmployee = (employee: Employee): BoardEmployee => {
     role: employee.active ? 'Сотрудник' : 'Неактивен',
     color,
     lightColor: getEmployeeLightColor(color),
-    initials: getEmployeeInitials(employee),
+    initials: getEmployeeInitials(employee)
   };
 };
 
@@ -103,20 +102,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   color,
   lightColor,
   showEmployee = false,
-  onClick,
+  onClick
 }) => {
   const apptStyle = getApptStyle(appt);
   const status = appt.paid ? 'confirmed' : 'pending';
 
   return (
     <div
-      role="button"
+      role='button'
       tabIndex={0}
       className={`${styles.appt} ${styles[`appt_${status}`]}`}
       style={{
         ...apptStyle,
         borderLeftColor: color,
-        backgroundColor: lightColor,
+        backgroundColor: lightColor
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -124,21 +123,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       }}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <Text size="xs" fw={700} lineClamp={1} style={{ color }}>
+      <Text size='xs' fw={700} lineClamp={1} style={{ color }}>
         {appt.client}
       </Text>
       {showEmployee && apptStyle.height > 40 && (
-        <Text size="xs" c="dimmed" lineClamp={1}>
+        <Text size='xs' c='dimmed' lineClamp={1}>
           {appt.employeeName}
         </Text>
       )}
       {apptStyle.height > 48 && (
-        <Text size="xs" c="dimmed" lineClamp={1}>
+        <Text size='xs' c='dimmed' lineClamp={1}>
           {appt.service}
         </Text>
       )}
       {apptStyle.height > 72 && (
-        <Text size="xs" c="dimmed" mt="auto">
+        <Text size='xs' c='dimmed' mt='auto'>
           {`${appt.startHour.toString().padStart(2, '0')}:${appt.startMinute.toString().padStart(2, '0')} · ${appt.duration} мин`}
         </Text>
       )}
@@ -147,13 +146,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 };
 
 export const BoardPage: React.FC = () => {
-  const { data: apiEmployees, isLoading: employeesLoading, isError: employeesError } = useEmployees();
+  const {
+    data: apiEmployees,
+    isLoading: employeesLoading,
+    isError: employeesError
+  } = useEmployees();
   const { data: appointments, isLoading: appointmentsLoading } = useAppointments();
   const { data: clients } = useClients();
   const { data: services } = useServices();
   const createAppointment = useCreateAppointment();
   const deleteAppointment = useDeleteAppointment();
-  const logout = useLogout();
 
   const [date, setDate] = React.useState(() => new Date());
   const [view, setView] = React.useState<'day' | 'week'>('day');
@@ -161,7 +163,7 @@ export const BoardPage: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [formMode, setFormMode] = React.useState<'create' | 'edit'>('create');
   const [formValues, setFormValues] = React.useState<AppointmentFormValues>(() =>
-    emptyAppointmentForm(),
+    emptyAppointmentForm()
   );
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [editingEmployeeId, setEditingEmployeeId] = React.useState<number | null>(null);
@@ -175,7 +177,7 @@ export const BoardPage: React.FC = () => {
 
   const activeEmployees = React.useMemo(
     () => (apiEmployees ?? []).filter((e) => e.active),
-    [apiEmployees],
+    [apiEmployees]
   );
 
   const employees = React.useMemo(() => {
@@ -186,12 +188,12 @@ export const BoardPage: React.FC = () => {
 
   const filterSet = React.useMemo(
     () => (employeeFilter.size > 0 ? employeeFilter : undefined),
-    [employeeFilter],
+    [employeeFilter]
   );
 
   const boardAppointments = React.useMemo(
     () => mapAppointmentsToBoard(appointments ?? [], date, filterSet),
-    [appointments, date, filterSet],
+    [appointments, date, filterSet]
   );
 
   const navigate = React.useCallback(
@@ -201,13 +203,24 @@ export const BoardPage: React.FC = () => {
         return new Date(d.getFullYear(), d.getMonth(), d.getDate() + step);
       });
     },
-    [view],
+    [view]
   );
 
   const goToday = React.useCallback(() => setDate(new Date()), []);
 
+  const handleDatePick = React.useCallback((picked: Date) => {
+    setDate(picked);
+  }, []);
+
   const isToday = isSameDay(date, today);
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, today));
+
+  const dateNavLabel = React.useMemo(
+    () => (view === 'day' ? formatHeaderDate(date) : formatWeekRange(weekStart)),
+    [view, date, weekStart]
+  );
+
+  const isAtToday = view === 'day' ? isToday : isCurrentWeek;
 
   const currentTimeMinutes = isToday ? today.getHours() * 60 + today.getMinutes() : -1;
   const currentTimeTop =
@@ -236,7 +249,7 @@ export const BoardPage: React.FC = () => {
       setFormValues({ ...emptyAppointmentForm(targetDate ?? date), ...prefill });
       setFormOpen(true);
     },
-    [date],
+    [date]
   );
 
   const handleApptClick = React.useCallback((appt: BoardAppointment) => {
@@ -250,12 +263,12 @@ export const BoardPage: React.FC = () => {
     (
       ctx: { employeeId?: number; targetDate: Date },
       startTotalMins: number,
-      endTotalMins: number,
+      endTotalMins: number
     ) => {
       const dayAppts = mapAppointmentsToBoard(appointments ?? [], ctx.targetDate, filterSet);
       return hasBoardTimeConflict(dayAppts, startTotalMins, endTotalMins, ctx.employeeId);
     },
-    [appointments, filterSet],
+    [appointments, filterSet]
   );
 
   const handleDragCreated = React.useCallback(
@@ -265,27 +278,18 @@ export const BoardPage: React.FC = () => {
           employeeId: params.employeeId != null ? String(params.employeeId) : null,
           date: toDateInput(params.targetDate),
           startTime: params.startTime,
-          endTime: params.endTime,
+          endTime: params.endTime
         },
-        params.targetDate,
+        params.targetDate
       );
     },
-    [openCreateForm],
+    [openCreateForm]
   );
 
   const { preview, handleColumnMouseDown } = useCreateAppointmentDrag({
     onCreated: handleDragCreated,
-    checkConflict: checkCreateConflict,
+    checkConflict: checkCreateConflict
   });
-
-  const toggleEmployeeFilter = React.useCallback((id: number) => {
-    setEmployeeFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
 
   const handleFormSubmit = React.useCallback(() => {
     const payload = formValuesToPayload(formValues);
@@ -293,7 +297,7 @@ export const BoardPage: React.FC = () => {
 
     if (editingId) {
       deleteAppointment.mutate(editingId, {
-        onSuccess: () => createAppointment.mutate(payload, { onSuccess: afterSave }),
+        onSuccess: () => createAppointment.mutate(payload, { onSuccess: afterSave })
       });
       return;
     }
@@ -304,28 +308,28 @@ export const BoardPage: React.FC = () => {
   const handleDelete = React.useCallback(() => {
     if (!editingId) return;
     deleteAppointment.mutate(editingId, {
-      onSuccess: () => closeForm(),
+      onSuccess: () => closeForm()
     });
   }, [editingId, deleteAppointment, closeForm]);
 
   const selectedEmployee = React.useMemo(
     () => activeEmployees.find((e) => String(e.id) === formValues.employeeId),
-    [activeEmployees, formValues.employeeId],
+    [activeEmployees, formValues.employeeId]
   );
 
   const clientOptions = React.useMemo(
     () => (clients ?? []).map((c) => ({ value: String(c.id), label: getClientFullName(c) })),
-    [clients],
+    [clients]
   );
 
   const employeeOptions = React.useMemo(
     () => activeEmployees.map((e) => ({ value: String(e.id), label: getEmployeeFullName(e) })),
-    [activeEmployees],
+    [activeEmployees]
   );
 
   const serviceOptions = React.useMemo(
     () => buildServiceOptions(services ?? [], selectedEmployee),
-    [services, selectedEmployee],
+    [services, selectedEmployee]
   );
 
   const isSaving = createAppointment.isPending || deleteAppointment.isPending;
@@ -336,7 +340,7 @@ export const BoardPage: React.FC = () => {
     return (
       <div className={styles.page}>
         <Skeleton height={56} radius={0} />
-        <Skeleton height="100%" radius={0} />
+        <Skeleton height='100%' radius={0} />
       </div>
     );
   }
@@ -344,7 +348,7 @@ export const BoardPage: React.FC = () => {
   if (employeesError) {
     return (
       <div className={styles.page}>
-        <Alert color="red" title="Не удалось загрузить данные" m="md">
+        <Alert color='red' title='Не удалось загрузить данные' m='md'>
           Проверьте доступность API и авторизацию
         </Alert>
       </div>
@@ -355,7 +359,7 @@ export const BoardPage: React.FC = () => {
     <div className={styles.timeColumn} style={{ height: TOTAL_HEIGHT }}>
       {HOUR_LABELS.map(({ label, top }) => (
         <div key={label} className={styles.timeLabel} style={{ top }}>
-          <Text size="xs" c="dimmed" fw={500}>
+          <Text size='xs' c='dimmed' fw={500}>
             {label}
           </Text>
         </div>
@@ -380,104 +384,56 @@ export const BoardPage: React.FC = () => {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Group gap="xs">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(-1)}>
-            <CaretLeft size={18} />
-          </ActionIcon>
-
-          <div className={styles.dateBlock}>
-            <Text fw={600} size="sm" tt="capitalize">
-              {view === 'day' ? formatHeaderDate(date) : formatWeekRange(weekStart)}
-            </Text>
-            {(view === 'day' ? isToday : isCurrentWeek) && (
-              <Badge size="xs" variant="light" color="blue" ml={8}>
-                {view === 'day' ? 'Сегодня' : 'Текущая неделя'}
-              </Badge>
+        <div className={styles.toolbarMain}>
+          <div className={styles.toolbarGroup}>
+            {activeEmployees.length > 0 && (
+              <EmployeeFilterPopover
+                employees={activeEmployees}
+                selectedIds={employeeFilter}
+                onChange={setEmployeeFilter}
+                embedded
+              />
             )}
+
+            <SegmentedControl
+              classNames={{ root: styles.viewSwitch }}
+              size='sm'
+              value={view}
+              onChange={(v) => setView((v as 'day' | 'week') ?? 'day')}
+              data={[
+                { value: 'day', label: 'День' },
+                { value: 'week', label: 'Неделя' }
+              ]}
+            />
           </div>
 
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(1)}>
-            <CaretRight size={18} />
-          </ActionIcon>
-
-          {!(view === 'day' ? isToday : isCurrentWeek) && (
-            <Button variant="subtle" size="xs" color="gray" onClick={goToday}>
-              Сегодня
-            </Button>
-          )}
-        </Group>
-
-        <Group gap="sm">
-          {activeEmployees.length > 0 && (
-            <Group gap={6} className={styles.employeeChips}>
-              <Tooltip label="Показать всех" withArrow>
-                <ActionIcon
-                  variant={employeeFilter.size === 0 ? 'filled' : 'light'}
-                  color="gray"
-                  size="sm"
-                  radius="xl"
-                  onClick={() => setEmployeeFilter(new Set())}
-                >
-                  <Users size={14} />
-                </ActionIcon>
-              </Tooltip>
-              {activeEmployees.map((emp) => {
-                const boardEmp = mapEmployee(emp);
-                const selected = employeeFilter.has(emp.id);
-                return (
-                  <Tooltip key={emp.id} label={boardEmp.name} withArrow>
-                    <Avatar
-                      size={28}
-                      radius="xl"
-                      style={{
-                        backgroundColor: boardEmp.color,
-                        cursor: 'pointer',
-                        border: selected ? '2px solid var(--mantine-color-blue-5)' : '2px solid white',
-                        opacity: employeeFilter.size > 0 && !selected ? 0.45 : 1,
-                      }}
-                      onClick={() => toggleEmployeeFilter(emp.id)}
-                    >
-                      <Text size="xs" fw={700} c="white">
-                        {boardEmp.initials}
-                      </Text>
-                    </Avatar>
-                  </Tooltip>
-                );
-              })}
-            </Group>
-          )}
-
-          <SegmentedControl
-            size="xs"
-            value={view}
-            onChange={(v) => setView((v as 'day' | 'week') ?? 'day')}
-            data={[
-              { value: 'day', label: 'День' },
-              { value: 'week', label: 'Неделя' },
-            ]}
-          />
-
           <Button
-            leftSection={<Plus size={15} />}
-            size="sm"
+            leftSection={<Plus size={16} />}
+            size='sm'
             onClick={() => openCreateForm()}
             disabled={clientOptions.length === 0 || employeeOptions.length === 0}
           >
             Новая запись
           </Button>
+        </div>
 
-          <ActionIcon variant="subtle" color="gray" onClick={() => logout.mutate()} aria-label="Выйти">
-            <SignOut size={18} />
-          </ActionIcon>
-        </Group>
+        <BoardToolbarAside
+          view={view}
+          date={date}
+          label={dateNavLabel}
+          isAtToday={isAtToday}
+          onNavigate={navigate}
+          onGoToday={goToday}
+          onDateChange={handleDatePick}
+        />
       </div>
 
       {employees.length === 0 && employeeFilter.size > 0 ? (
-        <Alert color="gray" title="Фильтр сотрудников" m="md">
+        <Alert color='gray' title='Фильтр сотрудников' m='md'>
           Выберите сотрудников в панели выше или сбросьте фильтр
         </Alert>
       ) : activeEmployees.length === 0 ? (
-        <Alert color="gray" title="Нет активных сотрудников" m="md">
+        <Alert color='gray' title='Нет активных сотрудников' m='md'>
           Добавьте сотрудников, чтобы отобразить рабочий стол
         </Alert>
       ) : (
@@ -489,21 +445,22 @@ export const BoardPage: React.FC = () => {
             >
               <div className={styles.cornerCell} />
               {employees.map((emp) => (
-                <div key={emp.id} className={styles.employeeHeader}>
-                  <Avatar size={36} radius="md" style={{ backgroundColor: emp.color }}>
-                    <Text size="xs" fw={700} c="white">
-                      {emp.initials}
-                    </Text>
-                  </Avatar>
+                <Link
+                  key={emp.id}
+                  to={`/employees/${emp.id}`}
+                  className={`${styles.employeeHeader} ${styles.employeeHeader_link}`}
+                  title={`Открыть профиль: ${emp.name}`}
+                >
+                  <PersonAvatar seed={emp.id} initials={emp.initials} size='md' />
                   <div className={styles.employeeInfo}>
-                    <Text size="sm" fw={600} lineClamp={1}>
+                    <Text size='sm' fw={600} lineClamp={1}>
                       {emp.name}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text size='xs' c='dimmed'>
                       {emp.role}
                     </Text>
                   </div>
-                </div>
+                </Link>
               ))}
 
               {renderTimeGrid()}
@@ -519,7 +476,7 @@ export const BoardPage: React.FC = () => {
                       handleColumnMouseDown(event, {
                         columnKey: `emp-${emp.id}`,
                         employeeId: emp.id,
-                        targetDate: date,
+                        targetDate: date
                       })
                     }
                   >
@@ -546,11 +503,11 @@ export const BoardPage: React.FC = () => {
               <div className={styles.cornerCell} />
               {weekDays.map((day) => (
                 <div key={day.toISOString()} className={styles.employeeHeader}>
-                  <Text size="sm" fw={600} tt="capitalize">
+                  <Text size='sm' fw={600} tt='capitalize'>
                     {day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' })}
                   </Text>
                   {isSameDay(day, today) && (
-                    <Badge size="xs" variant="light" color="blue" mt={4}>
+                    <Badge size='xs' variant='light' color='blue' mt={4}>
                       Сегодня
                     </Badge>
                   )}
@@ -569,7 +526,7 @@ export const BoardPage: React.FC = () => {
                     onMouseDown={(event) =>
                       handleColumnMouseDown(event, {
                         columnKey: `day-${day.toISOString()}`,
-                        targetDate: day,
+                        targetDate: day
                       })
                     }
                   >
@@ -580,7 +537,7 @@ export const BoardPage: React.FC = () => {
                     {dayAppts.map((appt) => {
                       const emp = employees.find((e) => e.id === appt.employeeId) ?? {
                         color: getEmployeeColor(appt.employeeId),
-                        lightColor: getEmployeeLightColor(getEmployeeColor(appt.employeeId)),
+                        lightColor: getEmployeeLightColor(getEmployeeColor(appt.employeeId))
                       };
                       return (
                         <AppointmentCard
@@ -601,7 +558,7 @@ export const BoardPage: React.FC = () => {
         </div>
       )}
 
-      <Text size="xs" c="dimmed" px="md" py={6} className={styles.hint}>
+      <Text size='xs' c='dimmed' px='md' py={6} className={styles.hint}>
         Потяните по слоту — новая запись · Клик по записи — редактирование
       </Text>
 
@@ -624,8 +581,8 @@ export const BoardPage: React.FC = () => {
 
       <ConfirmModal
         opened={deleteConfirmOpen}
-        title="Удалить запись"
-        message="Удалить эту запись?"
+        title='Удалить запись'
+        message='Удалить эту запись?'
         loading={deleteAppointment.isPending}
         onConfirm={handleDelete}
         onClose={() => setDeleteConfirmOpen(false)}

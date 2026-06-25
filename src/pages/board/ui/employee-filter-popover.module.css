@@ -1,0 +1,41 @@
+.employeeFilterPopover {
+  width: 300px;
+}
+
+.employeeFilterSearch {
+  margin-bottom: 8px;
+}
+
+.employeeFilterActions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.employeeFilterList {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.employeeFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.employeeFilterRow:hover {
+  background: var(--mantine-color-gray-0);
+}
+
+.employeeFilterName {
+  flex: 1;
+  min-width: 0;
+}
+
+.employeeFilterEmpty {
+  padding: 16px 4px;
+  text-align: center;
+}

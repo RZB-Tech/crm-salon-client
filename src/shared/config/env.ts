@@ -1,20 +1,20 @@
 /**
- * Базовый URL API.
- * - Если задан VITE_API_URL — запросы идут напрямую на бэкенд.
- * - Если пустой — относительные пути (/api/...) идут на Vite dev server (5173),
- *   который проксирует на VITE_API_PROXY_TARGET.
+ * URL бэкенда из `.env` (`VITE_API`).
+ * Все запросы: `${API_BASE_URL}/api/v1/...`
  */
-export const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
+export const API_URL = import.meta.env.VITE_API ?? 'http://localhost:8000';
+
+export const API_BASE_URL = API_URL.replace(/\/$/, '');
+
+/**
+ * Авторизация на фронте — один рычаг `VITE_AUTH=true|false` в `.env`.
+ */
+export const AUTH_ENABLED = import.meta.env.VITE_AUTH === 'true';
 
 export const getWebSocketUrl = (path: string): string => {
-  if (API_BASE_URL) {
-    const url = new URL(API_BASE_URL);
-    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${url.origin}${path}`;
-  }
-
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${window.location.host}${path}`;
+  const url = new URL(API_BASE_URL);
+  url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${url.origin}${path}`;
 };
 
 export const NOTIFICATIONS_WS_URL = '/api/v1/notifications/ws';

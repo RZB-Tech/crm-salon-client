@@ -3,7 +3,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Card,
   Group,
-  Avatar,
   Text,
   Badge,
   Button,
@@ -21,7 +20,8 @@ import {
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { getEmployeeColor, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
@@ -91,8 +91,6 @@ export const EmployeeProfilePage: React.FC = () => {
     );
   }
 
-  const color = getEmployeeColor(employee.id);
-
   return (
     <div className={styles.page}>
       <Button variant="subtle" color="gray" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
@@ -101,11 +99,11 @@ export const EmployeeProfilePage: React.FC = () => {
 
       <Card padding="lg" radius="lg" shadow="xs" className={styles.headerCard}>
         <div className={styles.headerLeft}>
-          <Avatar size={64} radius="md" style={{ backgroundColor: color }}>
-            <Text fw={700} size="lg" c="white">
-              {getEmployeeInitials(employee)}
-            </Text>
-          </Avatar>
+          <PersonAvatar
+            seed={employee.id}
+            initials={getEmployeeInitials(employee)}
+            size="profile"
+          />
           <div>
             <Group gap={10}>
               <Text fw={700} size="xl">

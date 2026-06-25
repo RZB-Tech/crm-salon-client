@@ -7,13 +7,17 @@ import { ServicesPage } from '@/pages/services';
 import { EmployeesPage, EmployeeProfilePage } from '@/pages/employees';
 import { ClientsPage } from '@/pages/clients';
 import { LoginPage } from '@/pages/login';
+import { AUTH_ENABLED } from '@/shared/config/env';
 import { MaterialsPage } from '@/pages/materials';
 import { FinancePage } from '@/pages/finance';
 import { NotificationsPage } from '@/pages/notifications';
 
 export const AppRouter: React.FC = () => (
   <Routes>
-    <Route path="/login" element={<LoginPage />} />
+    <Route
+      path="/login"
+      element={AUTH_ENABLED ? <LoginPage /> : <Navigate to="/board" replace />}
+    />
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
         <Route index element={<Navigate to="/board" replace />} />
