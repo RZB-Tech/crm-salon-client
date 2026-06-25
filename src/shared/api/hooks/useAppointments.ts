@@ -14,6 +14,7 @@ export const useAppointments = () =>
   useQuery({
     queryKey: queryKeys.appointments.all,
     queryFn: () => apiFetchAllPost<Appointment>('/api/v1/appointments'),
+    staleTime: 1 * 60 * 1000, // 1 минута - часто обновляется
   });
 
 export const useAppointment = (id: number) =>

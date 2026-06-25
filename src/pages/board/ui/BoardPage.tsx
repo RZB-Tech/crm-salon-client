@@ -5,7 +5,8 @@ import {
   Badge,
   SegmentedControl,
   Skeleton,
-  Alert
+  Alert,
+  Stack,
 } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -14,13 +15,14 @@ import {
   useAppointments,
   useAppointment,
   useCreateAppointment,
-  useDeleteAppointment
+  useDeleteAppointment,
 } from '@/shared/api/hooks/useAppointments';
 import { useClients } from '@/shared/api/hooks/useClients';
 import { useServices } from '@/shared/api/hooks/useServices';
 import type { Employee } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+import { BackgroundRefreshIndicator } from '@/shared/ui/BackgroundRefreshIndicator';
 import {
   getClientFullName,
   getEmployeeColor,
@@ -29,7 +31,7 @@ import {
   getEmployeeLightColor,
   isSameDay,
   parseApiDateFromDateTime,
-  toDateInput
+  toDateInput,
 } from '@/shared/lib/format';
 import type { BoardAppointment } from '../lib/appointmentBoard';
 import {
@@ -41,7 +43,7 @@ import {
   getApptStyle,
   getWeekDays,
   getWeekStart,
-  mapAppointmentsToBoard
+  mapAppointmentsToBoard,
 } from '../lib/appointmentBoard';
 import { hasBoardTimeConflict } from '../lib/hasBoardTimeConflict';
 import {
@@ -49,7 +51,7 @@ import {
   buildServiceOptions,
   emptyAppointmentForm,
   formValuesToPayload,
-  type AppointmentFormValues
+  type AppointmentFormValues,
 } from '../lib/appointmentForm';
 import { useCreateAppointmentDrag } from '../hooks/useCreateAppointmentDrag';
 import { AppointmentFormModal } from './AppointmentFormModal';
@@ -87,7 +89,7 @@ const mapEmployee = (employee: Employee): BoardEmployee => {
     role: employee.active ? 'Сотрудник' : 'Неактивен',
     color,
     lightColor: getEmployeeLightColor(color),
-    initials: getEmployeeInitials(employee)
+    initials: getEmployeeInitials(employee),
   };
 };
 
@@ -104,20 +106,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   color,
   lightColor,
   showEmployee = false,
-  onClick
+  onClick,
 }) => {
   const apptStyle = getApptStyle(appt);
   const status = appt.paid ? 'confirmed' : 'pending';
 
   return (
     <div
-      role='button'
+      role="button"
       tabIndex={0}
       className={`${styles.appt} ${styles[`appt_${status}`]}`}
       style={{
         ...apptStyle,
         borderLeftColor: color,
-        backgroundColor: lightColor
+        backgroundColor: lightColor,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -125,21 +127,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       }}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <Text size='xs' fw={700} lineClamp={1} style={{ color }}>
+      <Text size="xs" fw={700} lineClamp={1} style={{ color }}>
         {appt.client}
       </Text>
       {showEmployee && apptStyle.height > 40 && (
-        <Text size='xs' c='dimmed' lineClamp={1}>
+        <Text size="xs" c="dimmed" lineClamp={1}>
           {appt.employeeName}
         </Text>
       )}
       {apptStyle.height > 48 && (
-        <Text size='xs' c='dimmed' lineClamp={1}>
+        <Text size="xs" c="dimmed" lineClamp={1}>
           {appt.service}
         </Text>
       )}
       {apptStyle.height > 72 && (
-        <Text size='xs' c='dimmed' mt='auto'>
+        <Text size="xs" c="dimmed" mt="auto">
           {`${appt.startHour.toString().padStart(2, '0')}:${appt.startMinute.toString().padStart(2, '0')} · ${appt.duration} мин`}
         </Text>
       )}
@@ -147,13 +149,31 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   );
 };
 
+// Минимальный скелетон для BoardPage
+const BoardSkeleton = () => (
+  <Stack gap={0} h="100%" style={{ background: 'var(--mantine-color-gray-0)' }}>
+    <Skeleton height={56} radius={0} mb={0} />
+    <div style={{ flex: 1, display: 'flex', gap: 0, overflow: 'hidden' }}>
+      <Skeleton height="100%" width="100%" radius={0} />
+      <Skeleton height="100%" width={320} radius={0} />
+    </div>
+  </Stack>
+);
+
 export const BoardPage: React.FC = () => {
   const {
     data: apiEmployees,
     isLoading: employeesLoading,
-    isError: employeesError
+    isError: employeesError,
+    isFetching: employeesFetching,
   } = useEmployees();
-  const { data: appointments, isLoading: appointmentsLoading } = useAppointments();
+  const {
+    data: appointments,
+    isLoading: appointmentsLoading,
+    isFetching: appointmentsFetching,
+  } = useAppointments();
+  
+  // Остальные данные загружаем лениво - только когда реально нужны
   const { data: clients } = useClients();
   const { data: services } = useServices();
   const createAppointment = useCreateAppointment();
@@ -349,15 +369,15 @@ export const BoardPage: React.FC = () => {
 
   const isSaving = createAppointment.isPending || deleteAppointment.isPending;
   const formLoading = isSaving || (formMode === 'edit' && editingLoading && !editingAppointment);
-  const isLoading = employeesLoading || appointmentsLoading;
+  
+  // Показываем минимальный скелетон только при первой загрузке КРИТИЧНЫХ данных
+  const isInitialLoading = employeesLoading || appointmentsLoading;
+  
+  // Индикатор фоновой загрузки только для критичных данных
+  const isBackgroundFetching = employeesFetching || appointmentsFetching;
 
-  if (isLoading) {
-    return (
-      <div className={styles.page}>
-        <Skeleton height={56} radius={0} />
-        <Skeleton height='100%' radius={0} />
-      </div>
-    );
+  if (isInitialLoading) {
+    return <BoardSkeleton />;
   }
 
   if (employeesError) {
@@ -398,6 +418,8 @@ export const BoardPage: React.FC = () => {
 
   return (
     <div className={styles.page}>
+      <BackgroundRefreshIndicator isRefreshing={isBackgroundFetching} />
+      
       <div className={styles.toolbar}>
         <div className={styles.toolbarMain}>
           <div className={styles.toolbarGroup}>

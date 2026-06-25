@@ -1,10 +1,23 @@
 import React from 'react';
-import { ActionIcon, Avatar, Badge, Group, Indicator, Popover, ScrollArea, Stack, Text } from '@mantine/core';
-import { Bell, List, Scissors } from '@phosphor-icons/react';
+import {
+  ActionIcon,
+  Avatar,
+  Badge,
+  Group,
+  Indicator,
+  Menu,
+  Popover,
+  ScrollArea,
+  Stack,
+  Text,
+} from '@mantine/core';
+import { Bell, List, Scissors, SignOut, User } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
+import { useLogout } from '@/shared/api/hooks/useAuth';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
 import { formatDateTime } from '@/shared/lib/format';
+import { AUTH_ENABLED } from '@/shared/config/env';
 import styles from './header.module.css';
 
 interface HeaderProps {
@@ -15,12 +28,23 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
   const { connected } = useNotificationsWs();
   const { data: notifications } = useNotifications();
+  const logout = useLogout();
   const recent = (notifications ?? []).slice(0, 5);
+
+  const handleLogout = () => {
+    logout.mutate();
+  };
 
   return (
     <header className={styles.header}>
       <Group gap="md" className={styles.left}>
-        <ActionIcon variant="subtle" color="gray" size="lg" onClick={onToggle} aria-label="Toggle sidebar">
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="lg"
+          onClick={onToggle}
+          aria-label="Toggle sidebar"
+        >
           <List size={20} />
         </ActionIcon>
 
@@ -37,7 +61,12 @@ export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
       <Group gap="sm" className={styles.right}>
         <Popover width={320} position="bottom-end" shadow="md" radius="md">
           <Popover.Target>
-            <Indicator color={connected ? 'green' : 'gray'} size={8} offset={4} disabled={!connected}>
+            <Indicator
+              color={connected ? 'green' : 'gray'}
+              size={8}
+              offset={4}
+              disabled={!connected}
+            >
               <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
                 <Bell size={20} />
               </ActionIcon>
@@ -81,9 +110,36 @@ export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
           </Popover.Dropdown>
         </Popover>
 
-        <Avatar size="sm" radius="md" color="blue">
-          CRM
-        </Avatar>
+        {AUTH_ENABLED ? (
+          <Menu shadow="md" width={200} position="bottom-end" radius="md">
+            <Menu.Target>
+              <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Профиль">
+                <Avatar size="sm" radius="md" color="blue">
+                  CRM
+                </Avatar>
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Label>Аккаунт</Menu.Label>
+              <Menu.Item leftSection={<User size={14} />} disabled>
+                Профиль
+              </Menu.Item>
+              <Menu.Divider />
+              <Menu.Item
+                leftSection={<SignOut size={14} />}
+                color="red"
+                onClick={handleLogout}
+                disabled={logout.isPending}
+              >
+                {logout.isPending ? 'Выход...' : 'Выйти'}
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        ) : (
+          <Avatar size="sm" radius="md" color="blue">
+            CRM
+          </Avatar>
+        )}
       </Group>
     </header>
   );

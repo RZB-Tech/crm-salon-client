@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiPost, authStorage } from '@/shared/api/client';
 import type { LoginPayload } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
@@ -13,14 +13,31 @@ export const useLogin = () =>
     },
   });
 
-export const useLogout = () =>
-  useMutation({
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: () => apiPost<void, Record<string, never>>('/api/v1/auth/logout', {}),
     onSuccess: () => {
+      // Очищаем авторизацию
       authStorage.setAuthenticated(false);
+      
+      // Очищаем весь кэш React Query
+      queryClient.clear();
+      
+      // Редирект на login
+      window.location.href = '/login';
+      
+      addNotification.success({ message: 'Выход выполнен' });
+    },
+    onError: () => {
+      // Даже если запрос упал, выполняем logout локально
+      authStorage.setAuthenticated(false);
+      queryClient.clear();
       window.location.href = '/login';
     },
   });
+};
 
 export const useRefreshToken = () =>
   useMutation({

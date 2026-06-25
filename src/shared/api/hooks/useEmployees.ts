@@ -23,6 +23,7 @@ export const useEmployees = () =>
   useQuery({
     queryKey: queryKeys.employees.all,
     queryFn: () => apiFetchAllPost<Employee>('/api/v1/employees'),
+    staleTime: 3 * 60 * 1000, // 3 минуты - редко меняются
   });
 
 export const useEmployee = (id: number) =>

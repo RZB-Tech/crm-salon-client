@@ -23,6 +23,7 @@ export const useServices = () =>
   useQuery({
     queryKey: queryKeys.services.all,
     queryFn: () => apiFetchAllPost<Service>('/api/v1/services'),
+    staleTime: 5 * 60 * 1000, // 5 минут - меняются редко
   });
 
 export const useService = (id: number) =>
@@ -36,6 +37,7 @@ export const useServiceCategories = () =>
   useQuery({
     queryKey: queryKeys.serviceCategories.all,
     queryFn: () => apiFetchAllPost<ServiceCategory>('/api/v1/service-categories'),
+    staleTime: 5 * 60 * 1000, // 5 минут - меняются редко
   });
 
 export const useServiceCategory = (id: number) =>

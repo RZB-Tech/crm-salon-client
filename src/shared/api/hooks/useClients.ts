@@ -21,6 +21,7 @@ export const useClients = () =>
   useQuery({
     queryKey: queryKeys.clients.all,
     queryFn: () => apiFetchAllPost<Client>('/api/v1/clients'),
+    staleTime: 2 * 60 * 1000, // 2 минуты
   });
 
 export const useClient = (id: number) =>
