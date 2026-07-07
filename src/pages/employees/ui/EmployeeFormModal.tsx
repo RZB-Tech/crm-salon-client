@@ -6,11 +6,13 @@ import {
   Button,
   Switch,
   MultiSelect,
+  Select,
   Text,
   Stack,
   NumberInput,
 } from '@mantine/core';
 import { useServices } from '@/shared/api/hooks/useServices';
+import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type {
   EmployeeCreatePayload,
   Employee,
@@ -24,6 +26,7 @@ interface EmployeeFormState {
   phone: string;
   birth_date: string;
   active: boolean;
+  specialization_id: string | null;
   salary_fixed: number;
   percent_from_services: number;
   percent_from_sales: number;
@@ -45,6 +48,7 @@ const emptyForm = (): EmployeeFormState => ({
   phone: '',
   birth_date: new Date().toISOString().slice(0, 10),
   active: true,
+  specialization_id: null,
   salary_fixed: 0,
   percent_from_services: 0,
   percent_from_sales: 0,
@@ -58,6 +62,7 @@ const employeeToForm = (employee: Employee): EmployeeFormState => ({
   phone: employee.phone ?? '',
   birth_date: employee.birth_date,
   active: employee.active,
+  specialization_id: employee.specialization_id != null ? String(employee.specialization_id) : null,
   salary_fixed: employee.salary_fixed,
   percent_from_services: employee.percent_from_services,
   percent_from_sales: employee.percent_from_sales,
@@ -71,6 +76,7 @@ const toCreatePayload = (form: EmployeeFormState): EmployeeCreatePayload => ({
   phone: form.phone || null,
   birth_date: form.birth_date,
   active: form.active,
+  specialization_id: form.specialization_id ? Number(form.specialization_id) : null,
   salary_fixed: form.salary_fixed,
   percent_from_services: form.percent_from_services,
   percent_from_sales: form.percent_from_sales,
@@ -85,6 +91,7 @@ const toUpdatePayload = (id: number, form: EmployeeFormState): EmployeeUpdatePay
   phone: form.phone || null,
   birth_date: form.birth_date,
   active: form.active,
+  specialization_id: form.specialization_id ? Number(form.specialization_id) : null,
   salary_fixed: form.salary_fixed,
   percent_from_services: form.percent_from_services,
   percent_from_sales: form.percent_from_sales,
@@ -100,6 +107,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
 }) => {
   const [form, setForm] = React.useState<EmployeeFormState>(emptyForm);
   const { data: services, isLoading: servicesLoading } = useServices();
+  const { data: specializations, isLoading: specializationsLoading } = useSpecializations();
 
   React.useEffect(() => {
     if (opened) {
@@ -110,6 +118,11 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const serviceOptions = React.useMemo(
     () => (services ?? []).map((s) => ({ value: String(s.id), label: s.name })),
     [services],
+  );
+
+  const specializationOptions = React.useMemo(
+    () => (specializations ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+    [specializations],
   );
 
   const handleSubmit = React.useCallback(() => {
@@ -138,6 +151,16 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
           <TextInput label="Дата рождения" type="date" required value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
         </Group>
         <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
+        <Select
+          label="Специализация"
+          data={specializationOptions}
+          value={form.specialization_id}
+          onChange={(v) => setForm({ ...form, specialization_id: v })}
+          clearable
+          searchable
+          loading={specializationsLoading}
+          placeholder="Выберите специализацию"
+        />
         <Switch label="Активен" checked={form.active} onChange={(e) => setForm({ ...form, active: e.currentTarget.checked })} />
         <MultiSelect
           label="Услуги"

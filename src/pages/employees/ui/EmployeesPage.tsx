@@ -19,6 +19,7 @@ import {
   useDeleteEmployee,
   useEmployees,
 } from '@/shared/api/hooks/useEmployees';
+import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PersonAvatar } from '@/shared/ui/PersonAvatar';
@@ -32,11 +33,12 @@ import styles from './employees-page.module.css';
 
 interface EmployeeCardProps {
   employee: Employee;
+  specializationName: string | null;
   onOpen: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationName, onOpen, onDelete }) => {
   const servicesCount = employee.services?.length ?? 0;
 
   return (
@@ -58,7 +60,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, onOpen, onDelete 
           />
           <div>
             <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
-            <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
+            <Text size="sm" c="dimmed">{specializationName ?? employee.phone ?? '—'}</Text>
           </div>
         </Group>
         <Group gap={6}>
@@ -104,8 +106,15 @@ export const EmployeesPage: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = React.useState<Employee | null>(null);
 
   const { data: employees, isLoading, isError } = useEmployees();
+  const { data: specializations } = useSpecializations();
   const createEmployee = useCreateEmployee();
   const deleteEmployee = useDeleteEmployee();
+
+  const specializationMap = React.useMemo(() => {
+    const map = new Map<number, string>();
+    for (const s of specializations ?? []) map.set(s.id, s.name);
+    return map;
+  }, [specializations]);
 
   const openProfile = React.useCallback(
     (employee: Employee) => navigate(`/employees/${employee.id}`),
@@ -157,6 +166,7 @@ export const EmployeesPage: React.FC = () => {
             <EmployeeCard
               key={employee.id}
               employee={employee}
+              specializationName={employee.specialization_id != null ? specializationMap.get(employee.specialization_id) ?? null : null}
               onOpen={openProfile}
               onDelete={setDeleteTarget}
             />

@@ -32,6 +32,7 @@ import {
   RECEIPT_TYPE_LABELS,
 } from '@/shared/lib/format';
 import { TransactionsTab } from './TransactionsTab';
+import { PayoutsTab } from './PayoutsTab';
 
 export const FinancePage: React.FC = () => {
   const [tab, setTab] = React.useState<string>('receipts');
@@ -187,7 +188,7 @@ export const FinancePage: React.FC = () => {
       title="Финансы"
       subtitle={`${receipts?.length ?? 0} чеков · ${payments?.length ?? 0} оплат`}
       actions={
-        tab !== 'transactions' ? (
+        tab !== 'transactions' && tab !== 'payouts' ? (
           <Group>
             <Button variant="light" onClick={() => openPaymentForm()}>
               Провести оплату
@@ -204,6 +205,7 @@ export const FinancePage: React.FC = () => {
           <Tabs.Tab value="receipts">Чеки</Tabs.Tab>
           <Tabs.Tab value="payments">Оплаты</Tabs.Tab>
           <Tabs.Tab value="transactions">Транзакции</Tabs.Tab>
+          <Tabs.Tab value="payouts">Выплаты</Tabs.Tab>
         </Tabs.List>
       </Tabs>
 
@@ -333,6 +335,8 @@ export const FinancePage: React.FC = () => {
       )}
 
       {tab === 'transactions' && <TransactionsTab enabled />}
+
+      {tab === 'payouts' && <PayoutsTab enabled />}
 
       <Modal
         opened={receiptFormOpen}

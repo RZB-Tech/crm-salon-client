@@ -7,6 +7,20 @@
   max-height: calc(100vh - 220px);
 }
 
+.scroll :global([data-scrollbar]) {
+  width: 6px;
+  background: transparent;
+}
+
+.scroll :global([data-scrollbar] [data-thumb]) {
+  background: var(--mantine-color-gray-3);
+  border-radius: 3px;
+}
+
+.scroll :global([data-scrollbar] [data-thumb]:hover) {
+  background: var(--mantine-color-gray-4);
+}
+
 .table {
   --table-border-color: var(--mantine-color-gray-2);
 }

@@ -142,9 +142,6 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       size="lg"
     >
       <Group justify="space-between" mb="md">
-        <Text size="sm" c="dimmed">
-          {mode === 'edit' ? 'Редактирование записи' : 'Создание новой записи'}
-        </Text>
         {mode === 'edit' && (
           <Group gap="xs">
             {cancelled && (
@@ -160,7 +157,6 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       </Group>
 
       <div className={styles.section}>
-        <Text className={styles.sectionTitle}>Основные параметры</Text>
         <Stack gap="sm">
           <div>
             <Select

@@ -31,6 +31,9 @@ const FinancePage = lazy(() =>
 const NotificationsPage = lazy(() =>
   import('@/pages/notifications').then((m) => ({ default: m.NotificationsPage }))
 );
+const SettingsPage = lazy(() =>
+  import('@/pages/settings').then((m) => ({ default: m.SettingsPage }))
+);
 
 // Компонент загрузки для Suspense
 const PageLoader = () => (
@@ -102,6 +105,14 @@ export const AppRouter: React.FC = () => (
           element={
             <Suspense fallback={<PageLoader />}>
               <NotificationsPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <SettingsPage />
             </Suspense>
           }
         />

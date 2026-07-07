@@ -37,8 +37,9 @@ import type {
   ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { ConfirmModal, DataTable, DataTableRow, ListPage, listPageStyles } from '@/shared/ui';
+import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination, listPageStyles } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import styles from './services-page.module.css';
 
 export const ServicesPage: React.FC = () => {
@@ -90,6 +91,20 @@ export const ServicesPage: React.FC = () => {
       }),
     [services, activeCategory, search],
   );
+
+  const {
+    page,
+    pageSize,
+    paginatedItems,
+    total,
+    setPage,
+    setPageSize,
+    resetPage,
+  } = usePagination(filtered);
+
+  React.useEffect(() => {
+    resetPage();
+  }, [search, activeCategory, resetPage]);
 
   const categoryServiceCount = React.useMemo(() => {
     const map = new Map<number, number>();
@@ -263,8 +278,8 @@ export const ServicesPage: React.FC = () => {
         mb="md"
       >
         <Tabs.List>
-          <Tabs.Tab value="services">Услуги</Tabs.Tab>
-          <Tabs.Tab value="categories">Категории</Tabs.Tab>
+          <Tabs.Tab value="services">Услуги ({services?.length ?? 0})</Tabs.Tab>
+          <Tabs.Tab value="categories">Категории ({categories?.length ?? 0})</Tabs.Tab>
         </Tabs.List>
       </Tabs>
 
@@ -308,7 +323,7 @@ export const ServicesPage: React.FC = () => {
             isEmpty={filtered.length === 0}
             emptyMessage="Услуги не найдены"
           >
-            {filtered.map((service) => {
+            {paginatedItems.map((service) => {
               const categoryLabel =
                 service.category_id != null
                   ? (categoryMap.get(service.category_id)?.name ?? '—')
@@ -365,6 +380,14 @@ export const ServicesPage: React.FC = () => {
               );
             })}
           </DataTable>
+
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+          />
         </>
       ) : (
         <DataTable

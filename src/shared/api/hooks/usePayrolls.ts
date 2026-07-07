@@ -74,3 +74,17 @@ export const useDeletePayroll = () => {
     },
   });
 };
+
+export const useCancelPayroll = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPost<Payroll, Record<string, never>>(`/api/v1/payrolls/cancel?id=${id}`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      addNotification.success({ message: 'Начисление отменено' });
+    },
+  });
+};

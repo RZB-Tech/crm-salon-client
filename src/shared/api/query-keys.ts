@@ -20,6 +20,10 @@ export const queryKeys = {
     all: ['service-categories'] as const,
     detail: (id: number) => ['service-categories', id] as const,
   },
+  specializations: {
+    all: ['specializations'] as const,
+    detail: (id: number) => ['specializations', id] as const,
+  },
   workSchedules: {
     all: ['work-schedules'] as const,
     detail: (id: number) => ['work-schedules', id] as const,
@@ -31,6 +35,10 @@ export const queryKeys = {
   payrolls: {
     all: ['payrolls'] as const,
     detail: (id: number) => ['payrolls', id] as const,
+  },
+  payouts: {
+    all: ['payouts'] as const,
+    detail: (id: number) => ['payouts', id] as const,
   },
   appointments: {
     all: ['appointments'] as const,

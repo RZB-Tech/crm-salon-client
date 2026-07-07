@@ -34,9 +34,10 @@ import {
 } from '@/shared/api/hooks/useClients';
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { DataTable, DataTableRow, ListPage, listPageStyles } from '@/shared/ui';
+import { DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { PersonAvatar } from '@/shared/ui/PersonAvatar';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatDate,
   formatAppointmentDateTime,
@@ -174,6 +175,20 @@ export const ClientsPage: React.FC = () => {
     });
   }, [clients, search]);
 
+  const {
+    page,
+    pageSize,
+    paginatedItems,
+    total,
+    setPage,
+    setPageSize,
+    resetPage,
+  } = usePagination(filtered);
+
+  React.useEffect(() => {
+    resetPage();
+  }, [search, resetPage]);
+
   const isSaving = createClient.isPending || updateClient.isPending;
 
   if (isLoading) {
@@ -200,19 +215,19 @@ export const ClientsPage: React.FC = () => {
       title="Клиенты"
       subtitle={`${filtered.length} клиентов`}
       actions={
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          Добавить клиента
-        </Button>
-      }
-      filters={
-        <TextInput
-          placeholder="Поиск по имени, телефону..."
-          leftSection={<MagnifyingGlass size={15} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          className={listPageStyles.searchInput}
-          size="sm"
-        />
+        <Group gap="sm">
+          <TextInput
+            placeholder="Поиск по имени, телефону..."
+            leftSection={<MagnifyingGlass size={15} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            size="sm"
+            style={{ width: 260 }}
+          />
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            Добавить клиента
+          </Button>
+        </Group>
       }
     >
       <DataTable
@@ -227,7 +242,7 @@ export const ClientsPage: React.FC = () => {
         isEmpty={filtered.length === 0}
         emptyMessage="Клиенты не найдены"
       >
-        {filtered.map((client) => (
+        {paginatedItems.map((client) => (
           <DataTableRow key={client.id}>
             <Table.Td>
               <Group gap={10}>
@@ -289,6 +304,14 @@ export const ClientsPage: React.FC = () => {
           </DataTableRow>
         ))}
       </DataTable>
+
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       <Modal
         opened={formOpen}

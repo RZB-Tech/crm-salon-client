@@ -31,8 +31,9 @@ import type {
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { DataTable, DataTableRow, ListPage, listPageStyles } from '@/shared/ui';
+import { DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 
 const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({
   value,
@@ -100,16 +101,33 @@ export const MaterialsPage: React.FC = () => {
 
   const filtered = React.useMemo(
     () =>
-      (materials ?? []).filter((item) => {
-        const q = search.toLowerCase();
-        return (
-          !q ||
-          item.name.toLowerCase().includes(q) ||
-          item.article.toLowerCase().includes(q)
-        );
-      }),
+      (materials ?? [])
+        .filter((item) => {
+          const q = search.toLowerCase();
+          return (
+            !q ||
+            item.name.toLowerCase().includes(q) ||
+            item.article.toLowerCase().includes(q)
+          );
+        })
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [materials, search],
   );
+
+  const {
+    page,
+    pageSize,
+    paginatedItems,
+    total,
+    setPage,
+    setPageSize,
+    resetPage,
+  } = usePagination(filtered);
+
+  // Сбрасываем страницу при изменении поиска
+  React.useEffect(() => {
+    resetPage();
+  }, [search, resetPage]);
 
   const openCreate = React.useCallback(() => {
     setEditing(null);
@@ -201,18 +219,19 @@ export const MaterialsPage: React.FC = () => {
       title="Склад"
       subtitle={`${materials?.length ?? 0} материалов`}
       actions={
-        <Button leftSection={<Plus size={16} />} onClick={openCreate}>
-          Добавить материал
-        </Button>
-      }
-      filters={
-        <TextInput
-          className={listPageStyles.searchInput}
-          placeholder="Поиск по названию или артикулу..."
-          leftSection={<MagnifyingGlass size={15} />}
-          value={search}
-          onChange={(event) => setSearch(event.currentTarget.value)}
-        />
+        <Group gap="sm">
+          <TextInput
+            placeholder="Поиск по названию или артикулу..."
+            leftSection={<MagnifyingGlass size={15} />}
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+            size="sm"
+            style={{ width: 280 }}
+          />
+          <Button leftSection={<Plus size={16} />} onClick={openCreate}>
+            Добавить материал
+          </Button>
+        </Group>
       }
     >
       <DataTable
@@ -226,7 +245,7 @@ export const MaterialsPage: React.FC = () => {
         isEmpty={filtered.length === 0}
         emptyMessage="Материалы не найдены"
       >
-        {filtered.map((material) => (
+        {paginatedItems.map((material) => (
           <DataTableRow key={material.id}>
             <Table.Td>
               <Text size="sm" ff="monospace" c="dimmed">
@@ -276,6 +295,14 @@ export const MaterialsPage: React.FC = () => {
           </DataTableRow>
         ))}
       </DataTable>
+
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       <Modal
         opened={formOpen}

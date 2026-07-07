@@ -37,7 +37,7 @@ export const useCreateAppointment = () => {
 
   return useMutation({
     mutationFn: (payload: AppointmentCreatePayload) =>
-      apiPost<Appointment, AppointmentCreatePayload>('/api/v1/appointments/', payload),
+      apiPost<Appointment, AppointmentCreatePayload>('/api/v1/appointments', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
@@ -46,6 +46,30 @@ export const useCreateAppointment = () => {
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось создать запись' });
+    },
+  });
+};
+
+export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
+export type AppointmentCancelledReason =
+  | 'client changed his mind'
+  | 'mistaken input'
+  | 'incorrect client'
+  | 'incorrect date';
+
+export const useUpdateAppointment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { id: number; status?: AppointmentStatus; notes?: string | null }) =>
+      apiPatch<Appointment, typeof payload>('/api/v1/appointments', payload),
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
+      addNotification.success({ message: 'Запись обновлена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось обновить запись' });
     },
   });
 };

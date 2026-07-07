@@ -7,3 +7,4 @@ export { PayAppointmentPanel } from './PayAppointmentPanel';
 export { ListPage, listPageStyles } from './ListPage';
 export { DataTable, DataTableRow, dataTableStyles } from './DataTable';
 export type { DataTableColumn } from './DataTable';
+export { Pagination } from './Pagination';

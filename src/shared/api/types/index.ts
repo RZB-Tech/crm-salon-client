@@ -1,3 +1,17 @@
+export interface Specialization {
+  id: number;
+  name: string;
+}
+
+export interface SpecializationCreatePayload {
+  name: string;
+}
+
+export interface SpecializationUpdatePayload {
+  id: number;
+  name: string;
+}
+
 export type Sex = 'male' | 'female';
 
 export type PayrollType = 'salary' | 'bonus' | 'penalty' | 'commission';
@@ -175,10 +189,13 @@ export interface EmployeeWorkScheduleResponse {
 
 export interface Payroll extends BaseEntity {
   employee_id: number;
+  payout_id: number | null;
   amount: number;
   type: PayrollType;
+  status: 'pending' | 'paid' | 'cancelled';
   notes: string | null;
   appointment_id: number | null;
+  auto_genereted: boolean;
 }
 
 export interface PayrollCreatePayload {
@@ -498,6 +515,34 @@ export type TransactionCategory =
 export type ManualTransactionCategory = 'utility' | 'internet' | 'telephone' | 'other';
 
 export type TransactionMethod = 'card' | 'cash' | 'bank transfer' | 'deposit';
+
+export type PayoutType = 'salary' | 'advance salary' | 'other';
+export type PayoutMethod = 'cash' | 'card';
+
+export interface Payout {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  employee_id: number;
+  type: PayoutType;
+  method: PayoutMethod;
+  amount: number | null;
+  notes: string | null;
+  cancelled: boolean;
+  total_amount: number;
+  payrolls: Payroll[];
+}
+
+export interface PayoutCreatePayload {
+  employee_id: number;
+  type?: PayoutType;
+  amount?: number | null;
+  method?: PayoutMethod;
+  notes?: string | null;
+  payrolls?: number[] | null;
+  start_date?: string | null;
+  end_date?: string | null;
+}
 
 export interface Transaction extends BaseEntity {
   amount: number;
