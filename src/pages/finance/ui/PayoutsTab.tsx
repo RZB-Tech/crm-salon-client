@@ -49,7 +49,7 @@ export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
   const [startDate, setStartDate] = React.useState('');
   const [endDate, setEndDate] = React.useState('');
 
-  const { data: payouts, isLoading } = usePayouts();
+  const { data: payouts } = usePayouts();
   const { data: employees } = useEmployees();
   const createPayout = useCreatePayout();
 
