@@ -5,7 +5,7 @@ import {
   apiGetPaginated,
   apiPatch,
   apiPost,
-  apiRequest,
+  apiRequest
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
@@ -13,7 +13,7 @@ import type {
   Client,
   ClientCreatePayload,
   ClientDepositPayload,
-  ClientUpdatePayload,
+  ClientUpdatePayload
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
@@ -21,14 +21,14 @@ export const useClients = () =>
   useQuery({
     queryKey: queryKeys.clients.all,
     queryFn: () => apiFetchAllPost<Client>('/api/v1/clients'),
-    staleTime: 2 * 60 * 1000, // 2 минуты
+    staleTime: 2 * 60 * 1000 // 2 минуты
   });
 
 export const useClient = (id: number) =>
   useQuery({
     queryKey: queryKeys.clients.detail(id),
     queryFn: () => apiRequest<Client>(`/api/v1/clients/${id}`),
-    enabled: id > 0,
+    enabled: id > 0
   });
 
 export const useClientAppointments = (id: number) =>
@@ -37,11 +37,11 @@ export const useClientAppointments = (id: number) =>
     queryFn: async () => {
       const data = await apiGetPaginated<Appointment>(`/api/v1/clients/${id}/appointments`, {
         page: 1,
-        pageSize: 100,
+        pageSize: 100
       });
       return data.items;
     },
-    enabled: id > 0,
+    enabled: id > 0
   });
 
 export const useCreateClient = () => {
@@ -53,7 +53,7 @@ export const useCreateClient = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент создан' });
-    },
+    }
   });
 };
 
@@ -67,7 +67,7 @@ export const useUpdateClient = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
       addNotification.success({ message: 'Клиент обновлён' });
-    },
+    }
   });
 };
 
@@ -81,7 +81,7 @@ export const useUpdateClientDeposit = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
       addNotification.success({ message: 'Депозит обновлён' });
-    },
+    }
   });
 };
 
@@ -93,6 +93,20 @@ export const useDeleteClient = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент удалён' });
-    },
+    }
+  });
+};
+
+export const useArchiveClient = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Client, ClientUpdatePayload>('/api/v1/clients', { id, archived: true }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(id) });
+      addNotification.success({ message: 'Клиент архивирован' });
+    }
   });
 };

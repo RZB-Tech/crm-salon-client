@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ActionIcon,
   Alert,
+  Badge,
   Button,
   Checkbox,
   Group,
@@ -13,21 +14,21 @@ import {
   Table,
   Text,
   TextInput,
-  Textarea,
+  Textarea
 } from '@mantine/core';
-import { DotsThree, MagnifyingGlass, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { Archive, DotsThree, MagnifyingGlass, PencilSimple, Plus } from '@phosphor-icons/react';
 import {
+  useArchiveMaterial,
   useCreateMaterial,
-  useDeleteMaterial,
   useMaterials,
   useUpdateMaterial,
-  useUpdateMaterialQuantity,
+  useUpdateMaterialQuantity
 } from '@/shared/api/hooks/useMaterials';
 import type {
   Material,
   MaterialCreatePayload,
   MaterialUpdatePayload,
-  MeasurementUnit,
+  MeasurementUnit
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
@@ -37,8 +38,14 @@ import { usePagination } from '@/shared/lib/hooks/usePagination';
 
 const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({
   value,
-  label,
+  label
 }));
+
+const getStockStatus = (quantity: number): { label: string; color: string } => {
+  if (quantity <= 0) return { label: 'Нет', color: 'red' };
+  if (quantity <= 3) return { label: 'Мало', color: 'orange' };
+  return { label: 'В наличии', color: 'green' };
+};
 
 interface MaterialFormState {
   article: string;
@@ -65,7 +72,7 @@ const emptyForm = (): MaterialFormState => ({
   retail_price: 0,
   wholesale_price: 0,
   sell_price: 0,
-  can_be_product: false,
+  can_be_product: false
 });
 
 const materialToForm = (material: Material): MaterialFormState => ({
@@ -79,7 +86,7 @@ const materialToForm = (material: Material): MaterialFormState => ({
   retail_price: material.retail_price,
   wholesale_price: material.wholesale_price,
   sell_price: material.sell_price,
-  can_be_product: material.can_be_product,
+  can_be_product: material.can_be_product
 });
 
 export const MaterialsPage: React.FC = () => {
@@ -91,13 +98,13 @@ export const MaterialsPage: React.FC = () => {
   const [form, setForm] = React.useState<MaterialFormState>(emptyForm);
   const [quantityValue, setQuantityValue] = React.useState(1);
   const [quantityOperation, setQuantityOperation] = React.useState<'1' | '-1'>('1');
-  const [deleteTarget, setDeleteTarget] = React.useState<Material | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Material | null>(null);
 
   const { data: materials, isLoading, isError } = useMaterials();
   const createMaterial = useCreateMaterial();
   const updateMaterial = useUpdateMaterial();
   const updateQuantity = useUpdateMaterialQuantity();
-  const deleteMaterial = useDeleteMaterial();
+  const archiveMaterial = useArchiveMaterial();
 
   const filtered = React.useMemo(
     () =>
@@ -105,24 +112,15 @@ export const MaterialsPage: React.FC = () => {
         .filter((item) => {
           const q = search.toLowerCase();
           return (
-            !q ||
-            item.name.toLowerCase().includes(q) ||
-            item.article.toLowerCase().includes(q)
+            !q || item.name.toLowerCase().includes(q) || item.article.toLowerCase().includes(q)
           );
         })
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    [materials, search],
+    [materials, search]
   );
 
-  const {
-    page,
-    pageSize,
-    paginatedItems,
-    total,
-    setPage,
-    setPageSize,
-    resetPage,
-  } = usePagination(filtered);
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
+    usePagination(filtered);
 
   // Сбрасываем страницу при изменении поиска
   React.useEffect(() => {
@@ -161,7 +159,7 @@ export const MaterialsPage: React.FC = () => {
         retail_price: form.retail_price,
         wholesale_price: form.wholesale_price,
         sell_price: form.sell_price,
-        can_be_product: form.can_be_product,
+        can_be_product: form.can_be_product
       };
       updateMaterial.mutate(payload, { onSuccess: () => setFormOpen(false) });
       return;
@@ -178,7 +176,7 @@ export const MaterialsPage: React.FC = () => {
       retail_price: form.retail_price,
       wholesale_price: form.wholesale_price,
       sell_price: form.sell_price,
-      can_be_product: form.can_be_product,
+      can_be_product: form.can_be_product
     };
     createMaterial.mutate(payload, { onSuccess: () => setFormOpen(false) });
   }, [editing, form, createMaterial, updateMaterial]);
@@ -189,25 +187,25 @@ export const MaterialsPage: React.FC = () => {
       {
         id: quantityTarget.id,
         operation: Number(quantityOperation) as 1 | -1,
-        quantity: quantityValue,
+        quantity: quantityValue
       },
-      { onSuccess: () => setQuantityOpen(false) },
+      { onSuccess: () => setQuantityOpen(false) }
     );
   }, [quantityTarget, quantityOperation, quantityValue, updateQuantity]);
 
   if (isLoading) {
     return (
-      <ListPage title="Склад">
-        <Skeleton height={48} mb="md" />
-        <Skeleton height={400} radius="md" />
+      <ListPage title='Склад'>
+        <Skeleton height={48} mb='md' />
+        <Skeleton height={400} radius='md' />
       </ListPage>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Склад">
-        <Alert color="red" title="Не удалось загрузить материалы">
+      <ListPage title='Склад'>
+        <Alert color='red' title='Не удалось загрузить материалы'>
           Проверьте доступность API
         </Alert>
       </ListPage>
@@ -216,16 +214,16 @@ export const MaterialsPage: React.FC = () => {
 
   return (
     <ListPage
-      title="Склад"
+      title='Склад'
       subtitle={`${materials?.length ?? 0} материалов`}
       actions={
-        <Group gap="sm">
+        <Group gap='sm'>
           <TextInput
-            placeholder="Поиск по названию или артикулу..."
+            placeholder='Поиск по названию или артикулу...'
             leftSection={<MagnifyingGlass size={15} />}
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
-            size="sm"
+            size='sm'
             style={{ width: 280 }}
           />
           <Button leftSection={<Plus size={16} />} onClick={openCreate}>
@@ -239,61 +237,73 @@ export const MaterialsPage: React.FC = () => {
           { key: 'article', label: 'Артикул' },
           { key: 'name', label: 'Название' },
           { key: 'quantity', label: 'Кол-во' },
+          { key: 'status', label: 'Статус' },
           { key: 'price', label: 'Цена продажи' },
-          { key: 'actions', label: '', width: 48 },
+          { key: 'actions', label: '', width: 48 }
         ]}
         isEmpty={filtered.length === 0}
-        emptyMessage="Материалы не найдены"
+        emptyMessage='Материалы не найдены'
       >
-        {paginatedItems.map((material) => (
-          <DataTableRow key={material.id}>
-            <Table.Td>
-              <Text size="sm" ff="monospace" c="dimmed">
-                {material.article}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm" fw={500}>
-                {material.name}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm">
-                {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm" fw={600}>
-                {formatPrice(material.sell_price)}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Menu shadow="sm" width={180} radius="md">
-                <Menu.Target>
-                  <ActionIcon variant="subtle" color="gray" size="sm">
-                    <DotsThree size={16} weight="bold" />
-                  </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<PencilSimple size={14} />}
-                    onClick={() => openEdit(material)}
-                  >
-                    Редактировать
-                  </Menu.Item>
-                  <Menu.Item onClick={() => openQuantity(material)}>Изменить количество</Menu.Item>
-                  <Menu.Item
-                    leftSection={<Trash size={14} />}
-                    color="red"
-                    onClick={() => setDeleteTarget(material)}
-                  >
-                    Удалить
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            </Table.Td>
-          </DataTableRow>
-        ))}
+        {paginatedItems.map((material) => {
+          const stockStatus = getStockStatus(material.quantity);
+
+          return (
+            <DataTableRow key={material.id} muted={material.quantity <= 0}>
+              <Table.Td>
+                <Text size='sm' ff='monospace' c='dimmed'>
+                  {material.article}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size='sm' fw={500}>
+                  {material.name}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size='sm'>
+                  {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Badge size='sm' variant='light' color={stockStatus.color}>
+                  {stockStatus.label}
+                </Badge>
+              </Table.Td>
+              <Table.Td>
+                <Text size='sm' fw={600}>
+                  {formatPrice(material.sell_price)}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Menu shadow='sm' width={180} radius='md'>
+                  <Menu.Target>
+                    <ActionIcon variant='subtle' color='gray' size='sm'>
+                      <DotsThree size={16} weight='bold' />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<PencilSimple size={14} />}
+                      onClick={() => openEdit(material)}
+                    >
+                      Редактировать
+                    </Menu.Item>
+                    <Menu.Item onClick={() => openQuantity(material)}>
+                      Изменить количество
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<Archive size={14} />}
+                      color='orange'
+                      onClick={() => setArchiveTarget(material)}
+                    >
+                      Архивировать
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Table.Td>
+            </DataTableRow>
+          );
+        })}
       </DataTable>
 
       <Pagination
@@ -308,40 +318,40 @@ export const MaterialsPage: React.FC = () => {
         opened={formOpen}
         onClose={() => setFormOpen(false)}
         title={editing ? 'Редактировать материал' : 'Новый материал'}
-        radius="md"
-        size="lg"
+        radius='md'
+        size='lg'
       >
-        <Group grow mb="md">
+        <Group grow mb='md'>
           <TextInput
-            label="Артикул"
+            label='Артикул'
             required
             value={form.article}
             onChange={(event) => setForm({ ...form, article: event.currentTarget.value })}
           />
           <TextInput
-            label="Название"
+            label='Название'
             required
             value={form.name}
             onChange={(event) => setForm({ ...form, name: event.currentTarget.value })}
           />
         </Group>
         <Textarea
-          label="Описание"
-          mb="md"
+          label='Описание'
+          mb='md'
           value={form.description}
           onChange={(event) => setForm({ ...form, description: event.currentTarget.value })}
         />
-        <Group grow mb="md">
+        <Group grow mb='md'>
           {!editing && (
             <NumberInput
-              label="Начальное количество"
+              label='Начальное количество'
               min={0}
               value={form.quantity}
               onChange={(value) => setForm({ ...form, quantity: Number(value) || 0 })}
             />
           )}
           <Select
-            label="Единица измерения"
+            label='Единица измерения'
             data={MEASUREMENT_OPTIONS}
             value={form.measurement_unit}
             onChange={(value) =>
@@ -349,54 +359,54 @@ export const MaterialsPage: React.FC = () => {
             }
           />
           <NumberInput
-            label="Объём"
+            label='Объём'
             min={0}
             value={form.volume}
             onChange={(value) => setForm({ ...form, volume: Number(value) || 0 })}
           />
         </Group>
-        <Group grow mb="md">
+        <Group grow mb='md'>
           <NumberInput
-            label="Закупочная"
+            label='Закупочная'
             min={0}
             value={form.purchase_price}
             onChange={(value) => setForm({ ...form, purchase_price: Number(value) || 0 })}
           />
           <NumberInput
-            label="Розничная"
+            label='Розничная'
             min={0}
             value={form.retail_price}
             onChange={(value) => setForm({ ...form, retail_price: Number(value) || 0 })}
           />
           <NumberInput
-            label="Оптовая"
+            label='Оптовая'
             min={0}
             value={form.wholesale_price}
             onChange={(value) => setForm({ ...form, wholesale_price: Number(value) || 0 })}
           />
           <NumberInput
-            label="Продажная"
+            label='Продажная'
             min={0}
             value={form.sell_price}
             onChange={(value) => setForm({ ...form, sell_price: Number(value) || 0 })}
           />
         </Group>
         <Checkbox
-          label="Можно продавать как товар"
-          mb="lg"
+          label='Можно продавать как товар'
+          mb='lg'
           checked={form.can_be_product}
           onChange={(event) => setForm({ ...form, can_be_product: event.currentTarget.checked })}
         />
         {editing && (
           <>
-            <Text size="sm" fw={600} mb="xs">
+            <Text size='sm' fw={600} mb='xs'>
               История изменений
             </Text>
-            <AuditLogsPanel tableName="materials" recordId={editing.id} />
+            <AuditLogsPanel tableName='materials' recordId={editing.id} />
           </>
         )}
-        <Group justify="flex-end" mt={editing ? 'md' : undefined}>
-          <Button variant="subtle" color="gray" onClick={() => setFormOpen(false)}>
+        <Group justify='flex-end' mt={editing ? 'md' : undefined}>
+          <Button variant='subtle' color='gray' onClick={() => setFormOpen(false)}>
             Отмена
           </Button>
           <Button
@@ -412,28 +422,28 @@ export const MaterialsPage: React.FC = () => {
       <Modal
         opened={quantityOpen}
         onClose={() => setQuantityOpen(false)}
-        title="Изменить количество"
-        radius="md"
+        title='Изменить количество'
+        radius='md'
       >
         <Select
-          label="Операция"
-          mb="md"
+          label='Операция'
+          mb='md'
           data={[
             { value: '1', label: 'Приход' },
-            { value: '-1', label: 'Расход' },
+            { value: '-1', label: 'Расход' }
           ]}
           value={quantityOperation}
           onChange={(value) => setQuantityOperation((value as '1' | '-1') ?? '1')}
         />
         <NumberInput
-          label="Количество"
+          label='Количество'
           min={1}
-          mb="lg"
+          mb='lg'
           value={quantityValue}
           onChange={(value) => setQuantityValue(Number(value) || 1)}
         />
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setQuantityOpen(false)}>
+        <Group justify='flex-end'>
+          <Button variant='subtle' color='gray' onClick={() => setQuantityOpen(false)}>
             Отмена
           </Button>
           <Button onClick={submitQuantity} loading={updateQuantity.isPending}>
@@ -443,15 +453,17 @@ export const MaterialsPage: React.FC = () => {
       </Modal>
 
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title="Удалить материал"
-        message={`Удалить «${deleteTarget?.name ?? ''}»?`}
-        loading={deleteMaterial.isPending}
+        opened={Boolean(archiveTarget)}
+        title='Архивировать материал'
+        message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал исчезнет из активного склада и продажи.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveMaterial.isPending}
         onConfirm={() =>
-          deleteTarget &&
-          deleteMaterial.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+          archiveTarget &&
+          archiveMaterial.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) })
         }
-        onClose={() => setDeleteTarget(null)}
+        onClose={() => setArchiveTarget(null)}
       />
     </ListPage>
   );

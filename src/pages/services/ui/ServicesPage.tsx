@@ -13,20 +13,27 @@ import {
   Modal,
   Select,
   NumberInput,
-  Table,
+  Table
 } from '@mantine/core';
-import { MagnifyingGlass, Sparkle, Plus, DotsThree, PencilSimple, Trash, UploadSimple, Archive } from '@phosphor-icons/react';
 import {
+  MagnifyingGlass,
+  Sparkle,
+  Plus,
+  DotsThree,
+  PencilSimple,
+  UploadSimple,
+  Archive
+} from '@phosphor-icons/react';
+import {
+  useArchiveService,
   useArchiveServiceCategory,
   useCreateService,
   useCreateServiceCategory,
-  useDeleteService,
-  useDeleteServiceCategory,
   useImportServices,
   useServiceCategories,
   useServices,
   useUpdateService,
-  useUpdateServiceCategory,
+  useUpdateServiceCategory
 } from '@/shared/api/hooks/useServices';
 import type {
   Service,
@@ -34,10 +41,17 @@ import type {
   ServiceCategoryCreatePayload,
   ServiceCategoryUpdatePayload,
   ServiceCreatePayload,
-  ServiceUpdatePayload,
+  ServiceUpdatePayload
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination, listPageStyles } from '@/shared/ui';
+import {
+  ConfirmModal,
+  DataTable,
+  DataTableRow,
+  ListPage,
+  Pagination,
+  listPageStyles
+} from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import styles from './services-page.module.css';
@@ -52,22 +66,27 @@ export const ServicesPage: React.FC = () => {
   const [serviceName, setServiceName] = React.useState('');
   const [servicePrice, setServicePrice] = React.useState(0);
   const [serviceCategory, setServiceCategory] = React.useState<string | null>(null);
-  const [deleteServiceTarget, setDeleteServiceTarget] = React.useState<Service | null>(null);
+  const [archiveServiceTarget, setArchiveServiceTarget] = React.useState<Service | null>(null);
 
   const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
   const [editingCategory, setEditingCategory] = React.useState<ServiceCategory | null>(null);
   const [categoryName, setCategoryName] = React.useState('');
-  const [deleteCategoryTarget, setDeleteCategoryTarget] = React.useState<ServiceCategory | null>(null);
+  const [archiveCategoryTarget, setArchiveCategoryTarget] = React.useState<ServiceCategory | null>(
+    null
+  );
 
   const { data: services, isLoading: servicesLoading, isError: servicesError } = useServices();
-  const { data: categories, isLoading: categoriesLoading, isError: categoriesError } = useServiceCategories();
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    isError: categoriesError
+  } = useServiceCategories();
 
   const createService = useCreateService();
   const updateService = useUpdateService();
-  const deleteService = useDeleteService();
+  const archiveService = useArchiveService();
   const createCategory = useCreateServiceCategory();
   const updateCategory = useUpdateServiceCategory();
-  const deleteCategory = useDeleteServiceCategory();
   const archiveCategory = useArchiveServiceCategory();
   const importServices = useImportServices();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -89,18 +108,11 @@ export const ServicesPage: React.FC = () => {
         const matchSearch = !search || service.name.toLowerCase().includes(search.toLowerCase());
         return matchCategory && matchSearch;
       }),
-    [services, activeCategory, search],
+    [services, activeCategory, search]
   );
 
-  const {
-    page,
-    pageSize,
-    paginatedItems,
-    total,
-    setPage,
-    setPageSize,
-    resetPage,
-  } = usePagination(filtered);
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
+    usePagination(filtered);
 
   React.useEffect(() => {
     resetPage();
@@ -143,7 +155,7 @@ export const ServicesPage: React.FC = () => {
         id: editingService.id,
         name: serviceName,
         price: servicePrice > 0 ? servicePrice : undefined,
-        category_id: serviceCategory ? Number(serviceCategory) : null,
+        category_id: serviceCategory ? Number(serviceCategory) : null
       };
       updateService.mutate(payload, { onSuccess: closeServiceForm });
       return;
@@ -151,7 +163,7 @@ export const ServicesPage: React.FC = () => {
 
     const payload: ServiceCreatePayload = {
       name: serviceName,
-      category_id: serviceCategory ? Number(serviceCategory) : null,
+      category_id: serviceCategory ? Number(serviceCategory) : null
     };
 
     createService.mutate(payload, {
@@ -159,12 +171,12 @@ export const ServicesPage: React.FC = () => {
         if (servicePrice > 0) {
           updateService.mutate(
             { id: created.id, price: servicePrice },
-            { onSuccess: closeServiceForm },
+            { onSuccess: closeServiceForm }
           );
           return;
         }
         closeServiceForm();
-      },
+      }
     });
   }, [
     serviceName,
@@ -173,7 +185,7 @@ export const ServicesPage: React.FC = () => {
     editingService,
     createService,
     updateService,
-    closeServiceForm,
+    closeServiceForm
   ]);
 
   const openCategoryCreate = React.useCallback(() => {
@@ -209,22 +221,22 @@ export const ServicesPage: React.FC = () => {
       importServices.mutate(file);
       event.target.value = '';
     },
-    [importServices],
+    [importServices]
   );
 
   if (isLoading) {
     return (
-      <ListPage title="Услуги">
-        <Skeleton height={48} mb="md" />
-        <Skeleton height={400} radius="md" />
+      <ListPage title='Услуги'>
+        <Skeleton height={48} mb='md' />
+        <Skeleton height={400} radius='md' />
       </ListPage>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Услуги">
-        <Alert color="red" title="Не удалось загрузить данные">
+      <ListPage title='Услуги'>
+        <Alert color='red' title='Не удалось загрузить данные'>
           Проверьте доступность API
         </Alert>
       </ListPage>
@@ -233,12 +245,12 @@ export const ServicesPage: React.FC = () => {
 
   const categoryOptions = (categories ?? []).map((category) => ({
     value: String(category.id),
-    label: category.name,
+    label: category.name
   }));
 
   return (
     <ListPage
-      title="Услуги"
+      title='Услуги'
       subtitle={`${services?.length ?? 0} услуг · ${categories?.length ?? 0} категорий`}
       actions={
         <Group>
@@ -246,13 +258,13 @@ export const ServicesPage: React.FC = () => {
             <>
               <input
                 ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls"
+                type='file'
+                accept='.xlsx,.xls'
                 hidden
                 onChange={handleImportFile}
               />
               <Button
-                variant="light"
+                variant='light'
                 leftSection={<UploadSimple size={16} />}
                 onClick={handleImportClick}
                 loading={importServices.isPending}
@@ -273,27 +285,27 @@ export const ServicesPage: React.FC = () => {
       <Tabs
         value={mainTab}
         onChange={(value) => setMainTab(value ?? 'services')}
-        variant="pills"
-        radius="md"
-        mb="md"
+        variant='pills'
+        radius='md'
+        mb='md'
       >
         <Tabs.List>
-          <Tabs.Tab value="services">Услуги ({services?.length ?? 0})</Tabs.Tab>
-          <Tabs.Tab value="categories">Категории ({categories?.length ?? 0})</Tabs.Tab>
+          <Tabs.Tab value='services'>Услуги ({services?.length ?? 0})</Tabs.Tab>
+          <Tabs.Tab value='categories'>Категории ({categories?.length ?? 0})</Tabs.Tab>
         </Tabs.List>
       </Tabs>
 
       {mainTab === 'services' ? (
         <>
-          <Group gap="md" className={styles.filtersRow} mb="md">
+          <Group gap='md' className={styles.filtersRow} mb='md'>
             <Tabs
               value={activeCategory}
               onChange={(value) => setActiveCategory(value ?? 'all')}
-              variant="pills"
-              radius="md"
+              variant='pills'
+              radius='md'
             >
               <Tabs.List>
-                <Tabs.Tab value="all" fw={500} leftSection={<Sparkle size={14} />}>
+                <Tabs.Tab value='all' fw={500} leftSection={<Sparkle size={14} />}>
                   Все
                 </Tabs.Tab>
                 {(categories ?? []).map((category) => (
@@ -304,11 +316,11 @@ export const ServicesPage: React.FC = () => {
               </Tabs.List>
             </Tabs>
             <TextInput
-              placeholder="Поиск услуги..."
+              placeholder='Поиск услуги...'
               leftSection={<MagnifyingGlass size={15} />}
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
-              size="sm"
+              size='sm'
               className={listPageStyles.searchInput}
             />
           </Group>
@@ -318,10 +330,10 @@ export const ServicesPage: React.FC = () => {
               { key: 'name', label: 'Услуга' },
               { key: 'category', label: 'Категория' },
               { key: 'price', label: 'Цена', align: 'right' },
-              { key: 'actions', label: '', width: 48 },
+              { key: 'actions', label: '', width: 48 }
             ]}
             isEmpty={filtered.length === 0}
-            emptyMessage="Услуги не найдены"
+            emptyMessage='Услуги не найдены'
           >
             {paginatedItems.map((service) => {
               const categoryLabel =
@@ -332,31 +344,31 @@ export const ServicesPage: React.FC = () => {
               return (
                 <DataTableRow key={service.id}>
                   <Table.Td>
-                    <Text size="sm" fw={600}>
+                    <Text size='sm' fw={600}>
                       {service.name}
                     </Text>
                   </Table.Td>
                   <Table.Td>
                     {categoryLabel !== '—' ? (
-                      <Badge size="sm" variant="light" color="gray">
+                      <Badge size='sm' variant='light' color='gray'>
                         {categoryLabel}
                       </Badge>
                     ) : (
-                      <Text size="sm" c="dimmed">
+                      <Text size='sm' c='dimmed'>
                         —
                       </Text>
                     )}
                   </Table.Td>
-                  <Table.Td ta="right">
-                    <Text size="sm" fw={700}>
+                  <Table.Td ta='right'>
+                    <Text size='sm' fw={700}>
                       {service.price > 0 ? formatPrice(service.price) : '—'}
                     </Text>
                   </Table.Td>
                   <Table.Td>
-                    <Menu shadow="sm" width={160} radius="md">
+                    <Menu shadow='sm' width={160} radius='md'>
                       <Menu.Target>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <DotsThree size={16} weight="bold" />
+                        <ActionIcon variant='subtle' color='gray' size='sm'>
+                          <DotsThree size={16} weight='bold' />
                         </ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
@@ -367,11 +379,11 @@ export const ServicesPage: React.FC = () => {
                           Редактировать
                         </Menu.Item>
                         <Menu.Item
-                          leftSection={<Trash size={14} />}
-                          color="red"
-                          onClick={() => setDeleteServiceTarget(service)}
+                          leftSection={<Archive size={14} />}
+                          color='orange'
+                          onClick={() => setArchiveServiceTarget(service)}
                         >
-                          Удалить
+                          Архивировать
                         </Menu.Item>
                       </Menu.Dropdown>
                     </Menu>
@@ -394,28 +406,28 @@ export const ServicesPage: React.FC = () => {
           columns={[
             { key: 'name', label: 'Категория' },
             { key: 'count', label: 'Услуг' },
-            { key: 'actions', label: '', width: 48 },
+            { key: 'actions', label: '', width: 48 }
           ]}
           isEmpty={(categories ?? []).length === 0}
-          emptyMessage="Категории не найдены"
+          emptyMessage='Категории не найдены'
         >
           {(categories ?? []).map((category) => (
             <DataTableRow key={category.id}>
               <Table.Td>
-                <Text size="sm" fw={600}>
+                <Text size='sm' fw={600}>
                   {category.name}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm" c="dimmed">
+                <Text size='sm' c='dimmed'>
                   {categoryServiceCount.get(category.id) ?? 0}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Menu shadow="sm" width={160} radius="md">
+                <Menu shadow='sm' width={160} radius='md'>
                   <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray" size="sm">
-                      <DotsThree size={16} weight="bold" />
+                    <ActionIcon variant='subtle' color='gray' size='sm'>
+                      <DotsThree size={16} weight='bold' />
                     </ActionIcon>
                   </Menu.Target>
                   <Menu.Dropdown>
@@ -427,16 +439,10 @@ export const ServicesPage: React.FC = () => {
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<Archive size={14} />}
-                      onClick={() => archiveCategory.mutate(category.id)}
+                      color='orange'
+                      onClick={() => setArchiveCategoryTarget(category)}
                     >
                       Архивировать
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<Trash size={14} />}
-                      color="red"
-                      onClick={() => setDeleteCategoryTarget(category)}
-                    >
-                      Удалить
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
@@ -450,42 +456,42 @@ export const ServicesPage: React.FC = () => {
         opened={serviceFormOpen}
         onClose={closeServiceForm}
         title={editingService ? 'Редактировать услугу' : 'Новая услуга'}
-        radius="md"
+        radius='md'
       >
         <TextInput
-          label="Название"
+          label='Название'
           required
-          mb="md"
+          mb='md'
           value={serviceName}
           onChange={(event) => setServiceName(event.currentTarget.value)}
         />
         <NumberInput
-          label="Цена"
+          label='Цена'
           min={0}
-          mb="md"
+          mb='md'
           value={servicePrice}
           onChange={(value) => setServicePrice(Number(value) || 0)}
-          thousandSeparator=" "
-          suffix=" сум"
+          thousandSeparator=' '
+          suffix=' сум'
         />
         <Select
-          label="Категория"
+          label='Категория'
           data={categoryOptions}
           clearable
-          mb="lg"
+          mb='lg'
           value={serviceCategory}
           onChange={setServiceCategory}
         />
         {editingService && (
           <>
-            <Text size="sm" fw={600} mb="xs">
+            <Text size='sm' fw={600} mb='xs'>
               История изменений
             </Text>
-            <AuditLogsPanel tableName="services" recordId={editingService.id} />
+            <AuditLogsPanel tableName='services' recordId={editingService.id} />
           </>
         )}
-        <Group justify="flex-end" mt={editingService ? 'md' : undefined}>
-          <Button variant="subtle" color="gray" onClick={closeServiceForm}>
+        <Group justify='flex-end' mt={editingService ? 'md' : undefined}>
+          <Button variant='subtle' color='gray' onClick={closeServiceForm}>
             Отмена
           </Button>
           <Button
@@ -502,25 +508,25 @@ export const ServicesPage: React.FC = () => {
         opened={categoryFormOpen}
         onClose={() => setCategoryFormOpen(false)}
         title={editingCategory ? 'Редактировать категорию' : 'Новая категория'}
-        radius="md"
+        radius='md'
       >
         <TextInput
-          label="Название"
+          label='Название'
           required
-          mb="lg"
+          mb='lg'
           value={categoryName}
           onChange={(event) => setCategoryName(event.currentTarget.value)}
         />
         {editingCategory && (
           <>
-            <Text size="sm" fw={600} mb="xs">
+            <Text size='sm' fw={600} mb='xs'>
               История изменений
             </Text>
-            <AuditLogsPanel tableName="service_categories" recordId={editingCategory.id} />
+            <AuditLogsPanel tableName='service_categories' recordId={editingCategory.id} />
           </>
         )}
-        <Group justify="flex-end" mt={editingCategory ? 'md' : undefined}>
-          <Button variant="subtle" color="gray" onClick={() => setCategoryFormOpen(false)}>
+        <Group justify='flex-end' mt={editingCategory ? 'md' : undefined}>
+          <Button variant='subtle' color='gray' onClick={() => setCategoryFormOpen(false)}>
             Отмена
           </Button>
           <Button
@@ -534,26 +540,34 @@ export const ServicesPage: React.FC = () => {
       </Modal>
 
       <ConfirmModal
-        opened={Boolean(deleteServiceTarget)}
-        title="Удалить услугу"
-        message={`Удалить «${deleteServiceTarget?.name ?? ''}»?`}
-        loading={deleteService.isPending}
+        opened={Boolean(archiveServiceTarget)}
+        title='Архивировать услугу'
+        message={`Архивировать «${archiveServiceTarget?.name ?? ''}»? Услуга исчезнет из активного прайса и форм записи.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveService.isPending}
         onConfirm={() =>
-          deleteServiceTarget &&
-          deleteService.mutate(deleteServiceTarget.id, { onSuccess: () => setDeleteServiceTarget(null) })
+          archiveServiceTarget &&
+          archiveService.mutate(archiveServiceTarget.id, {
+            onSuccess: () => setArchiveServiceTarget(null)
+          })
         }
-        onClose={() => setDeleteServiceTarget(null)}
+        onClose={() => setArchiveServiceTarget(null)}
       />
       <ConfirmModal
-        opened={Boolean(deleteCategoryTarget)}
-        title="Удалить категорию"
-        message={`Удалить «${deleteCategoryTarget?.name ?? ''}»?`}
-        loading={deleteCategory.isPending}
+        opened={Boolean(archiveCategoryTarget)}
+        title='Архивировать категорию'
+        message={`Архивировать «${archiveCategoryTarget?.name ?? ''}»? Новые услуги нельзя будет привязать к этой категории.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveCategory.isPending}
         onConfirm={() =>
-          deleteCategoryTarget &&
-          deleteCategory.mutate(deleteCategoryTarget.id, { onSuccess: () => setDeleteCategoryTarget(null) })
+          archiveCategoryTarget &&
+          archiveCategory.mutate(archiveCategoryTarget.id, {
+            onSuccess: () => setArchiveCategoryTarget(null)
+          })
         }
-        onClose={() => setDeleteCategoryTarget(null)}
+        onClose={() => setArchiveCategoryTarget(null)}
       />
     </ListPage>
   );

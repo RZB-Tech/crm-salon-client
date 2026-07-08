@@ -1,4 +1,12 @@
-import type { AbsenceType, Client, Employee, PayrollType, Sex } from '@/shared/api/types';
+import type {
+  AbsenceType,
+  AppointmentCancelledReason,
+  AppointmentStatus,
+  Client,
+  Employee,
+  PayrollType,
+  Sex
+} from '@/shared/api/types';
 
 const AVATAR_COLORS = [
   '#4f46e5',
@@ -64,6 +72,27 @@ export const PAYROLL_TYPE_LABELS: Record<PayrollType, string> = {
 
 export const PAYROLL_TYPE_OPTIONS = Object.entries(PAYROLL_TYPE_LABELS).map(([value, label]) => ({
   value: value as PayrollType,
+  label
+}));
+
+export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  awaiting: 'Ожидает',
+  started: 'Начата',
+  finished: 'Завершена',
+  cancelled: 'Отменена'
+};
+
+export const APPOINTMENT_CANCEL_REASON_LABELS: Record<AppointmentCancelledReason, string> = {
+  'client changed his mind': 'Клиент передумал',
+  'mistaken input': 'Ошибочный ввод',
+  'incorrect client': 'Некорректный клиент',
+  'incorrect date': 'Некорректная дата'
+};
+
+export const APPOINTMENT_CANCEL_REASON_OPTIONS = Object.entries(
+  APPOINTMENT_CANCEL_REASON_LABELS
+).map(([value, label]) => ({
+  value: value as AppointmentCancelledReason,
   label
 }));
 

@@ -11,7 +11,7 @@ import {
   Skeleton,
   Table,
   Tabs,
-  Text,
+  Text
 } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import { useAppointments } from '@/shared/api/hooks/useAppointments';
@@ -19,6 +19,7 @@ import { useClients } from '@/shared/api/hooks/useClients';
 import { useMaterials } from '@/shared/api/hooks/useMaterials';
 import { useCreatePayment, usePayments } from '@/shared/api/hooks/usePayments';
 import { useCancelReceipt, useCreateReceipt, useReceipts } from '@/shared/api/hooks/useReceipts';
+import { useTenantPreferences } from '@/shared/api/hooks/useTenantPreferences';
 import type { Payment, PaymentMethod, Receipt, ReceiptType } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal, DataTable, DataTableRow, ListPage } from '@/shared/ui';
@@ -29,7 +30,7 @@ import {
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHOD_OPTIONS,
   RECEIPT_STATUS_LABELS,
-  RECEIPT_TYPE_LABELS,
+  RECEIPT_TYPE_LABELS
 } from '@/shared/lib/format';
 import { TransactionsTab } from './TransactionsTab';
 import { PayoutsTab } from './PayoutsTab';
@@ -58,6 +59,7 @@ export const FinancePage: React.FC = () => {
   const { data: appointments } = useAppointments();
   const { data: clients } = useClients();
   const { data: materials } = useMaterials();
+  const { data: tenantPreferences } = useTenantPreferences();
 
   const createReceipt = useCreateReceipt();
   const cancelReceipt = useCancelReceipt();
@@ -69,14 +71,14 @@ export const FinancePage: React.FC = () => {
         .filter((item) => !item.paid)
         .map((item) => ({
           value: String(item.id),
-          label: `#${item.id} · ${item.client ? getClientFullName(item.client) : 'Клиент'} · ${formatPrice(item.total_price)}`,
+          label: `#${item.id} · ${item.client ? getClientFullName(item.client) : 'Клиент'} · ${formatPrice(item.total_price)}`
         })),
-    [appointments],
+    [appointments]
   );
 
   const clientOptions = React.useMemo(
     () => (clients ?? []).map((c) => ({ value: String(c.id), label: getClientFullName(c) })),
-    [clients],
+    [clients]
   );
 
   const materialOptions = React.useMemo(
@@ -85,14 +87,14 @@ export const FinancePage: React.FC = () => {
         .filter((material) => material.quantity > 0)
         .map((material) => ({
           value: String(material.id),
-          label: `${material.name} · ${material.quantity} шт. · ${formatPrice(material.sell_price)}`,
+          label: `${material.name} · ${material.quantity} шт. · ${formatPrice(material.sell_price)}`
         })),
-    [materials],
+    [materials]
   );
 
   const selectedMaterial = React.useMemo(
     () => (materials ?? []).find((material) => String(material.id) === materialId) ?? null,
-    [materials, materialId],
+    [materials, materialId]
   );
 
   const openReceiptForm = React.useCallback(() => {
@@ -110,28 +112,31 @@ export const FinancePage: React.FC = () => {
         .filter((r) => r.status === 'pending')
         .map((r) => ({
           value: String(r.id),
-          label: `#${r.id} · ${formatPrice(r.remaining_amount)}`,
+          label: `#${r.id} · ${formatPrice(r.remaining_amount)}`
         })),
-    [receipts],
+    [receipts]
   );
 
-  const openPaymentForm = React.useCallback((receiptId?: number) => {
-    const receipt = (receipts ?? []).find((r) => r.id === receiptId);
-    setPaymentReceiptId(receiptId != null ? String(receiptId) : null);
-    setPaymentAmount(receipt?.remaining_amount ?? 0);
-    setPaymentMethod('cash');
-    setAddChangeToDeposit(false);
-    setPaymentFormOpen(true);
-  }, [receipts]);
+  const openPaymentForm = React.useCallback(
+    (receiptId?: number) => {
+      const receipt = (receipts ?? []).find((r) => r.id === receiptId);
+      setPaymentReceiptId(receiptId != null ? String(receiptId) : null);
+      setPaymentAmount(receipt?.remaining_amount ?? 0);
+      setPaymentMethod('cash');
+      setAddChangeToDeposit(false);
+      setPaymentFormOpen(true);
+    },
+    [receipts]
+  );
 
   const submitReceipt = React.useCallback(() => {
     if (receiptType === 'appointment') {
       createReceipt.mutate(
         {
           receipt_type: 'appointment',
-          appointment_id: appointmentId ? Number(appointmentId) : null,
+          appointment_id: appointmentId ? Number(appointmentId) : null
         },
-        { onSuccess: () => setReceiptFormOpen(false) },
+        { onSuccess: () => setReceiptFormOpen(false) }
       );
       return;
     }
@@ -142,9 +147,9 @@ export const FinancePage: React.FC = () => {
         client_id: clientId ? Number(clientId) : null,
         receipt_items: materialId
           ? [{ material_id: Number(materialId), quantity: materialQty }]
-          : [],
+          : []
       },
-      { onSuccess: () => setReceiptFormOpen(false) },
+      { onSuccess: () => setReceiptFormOpen(false) }
     );
   }, [receiptType, appointmentId, clientId, materialId, materialQty, createReceipt]);
 
@@ -155,9 +160,9 @@ export const FinancePage: React.FC = () => {
         receipt_id: Number(paymentReceiptId),
         amount: paymentAmount,
         method: paymentMethod,
-        add_change_to_deposit: addChangeToDeposit,
+        add_change_to_deposit: addChangeToDeposit
       },
-      { onSuccess: () => setPaymentFormOpen(false) },
+      { onSuccess: () => setPaymentFormOpen(false) }
     );
   }, [paymentReceiptId, paymentAmount, paymentMethod, addChangeToDeposit, createPayment]);
 
@@ -166,17 +171,17 @@ export const FinancePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ListPage title="Финансы">
-        <Skeleton height={48} mb="md" />
-        <Skeleton height={400} radius="md" />
+      <ListPage title='Финансы'>
+        <Skeleton height={48} mb='md' />
+        <Skeleton height={400} radius='md' />
       </ListPage>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Финансы">
-        <Alert color="red" title="Не удалось загрузить финансы">
+      <ListPage title='Финансы'>
+        <Alert color='red' title='Не удалось загрузить финансы'>
           Проверьте доступность API
         </Alert>
       </ListPage>
@@ -185,12 +190,12 @@ export const FinancePage: React.FC = () => {
 
   return (
     <ListPage
-      title="Финансы"
+      title='Финансы'
       subtitle={`${receipts?.length ?? 0} чеков · ${payments?.length ?? 0} оплат`}
       actions={
         tab !== 'transactions' && tab !== 'payouts' ? (
           <Group>
-            <Button variant="light" onClick={() => openPaymentForm()}>
+            <Button variant='light' onClick={() => openPaymentForm()}>
               Провести оплату
             </Button>
             <Button leftSection={<Plus size={16} />} onClick={openReceiptForm}>
@@ -200,12 +205,17 @@ export const FinancePage: React.FC = () => {
         ) : undefined
       }
     >
-      <Tabs value={tab} onChange={(value) => setTab(value ?? 'receipts')} variant="pills" radius="md">
-        <Tabs.List mb="md">
-          <Tabs.Tab value="receipts">Чеки</Tabs.Tab>
-          <Tabs.Tab value="payments">Оплаты</Tabs.Tab>
-          <Tabs.Tab value="transactions">Транзакции</Tabs.Tab>
-          <Tabs.Tab value="payouts">Выплаты</Tabs.Tab>
+      <Tabs
+        value={tab}
+        onChange={(value) => setTab(value ?? 'receipts')}
+        variant='pills'
+        radius='md'
+      >
+        <Tabs.List mb='md'>
+          <Tabs.Tab value='receipts'>Чеки</Tabs.Tab>
+          <Tabs.Tab value='payments'>Оплаты</Tabs.Tab>
+          <Tabs.Tab value='transactions'>Транзакции</Tabs.Tab>
+          <Tabs.Tab value='payouts'>Выплаты</Tabs.Tab>
         </Tabs.List>
       </Tabs>
 
@@ -218,35 +228,35 @@ export const FinancePage: React.FC = () => {
             { key: 'remaining', label: 'Остаток' },
             { key: 'status', label: 'Статус' },
             { key: 'date', label: 'Дата' },
-            { key: 'actions', label: '', width: 220 },
+            { key: 'actions', label: '', width: 220 }
           ]}
           isEmpty={(receipts ?? []).length === 0}
-          emptyMessage="Чеков нет"
+          emptyMessage='Чеков нет'
         >
           {(receipts ?? []).map((receipt) => (
             <DataTableRow key={receipt.id}>
               <Table.Td>
-                <Text size="sm" ff="monospace" c="dimmed">
+                <Text size='sm' ff='monospace' c='dimmed'>
                   #{receipt.id}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">
+                <Text size='sm'>
                   {RECEIPT_TYPE_LABELS[receipt.receipt_type] ?? receipt.receipt_type}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm" fw={600}>
+                <Text size='sm' fw={600}>
                   {formatPrice(receipt.total_amount)}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">{formatPrice(receipt.remaining_amount)}</Text>
+                <Text size='sm'>{formatPrice(receipt.remaining_amount)}</Text>
               </Table.Td>
               <Table.Td>
                 <Badge
-                  size="sm"
-                  variant="light"
+                  size='sm'
+                  variant='light'
                   color={
                     receipt.status === 'paid'
                       ? 'green'
@@ -259,22 +269,22 @@ export const FinancePage: React.FC = () => {
                 </Badge>
               </Table.Td>
               <Table.Td>
-                <Text size="xs">{formatDateTime(receipt.created_at)}</Text>
+                <Text size='xs'>{formatDateTime(receipt.created_at)}</Text>
               </Table.Td>
               <Table.Td>
                 <Group gap={6}>
-                  <Button size="xs" variant="subtle" onClick={() => setHistoryReceipt(receipt)}>
+                  <Button size='xs' variant='subtle' onClick={() => setHistoryReceipt(receipt)}>
                     История
                   </Button>
                   {receipt.status === 'pending' && (
                     <>
-                      <Button size="xs" variant="light" onClick={() => openPaymentForm(receipt.id)}>
+                      <Button size='xs' variant='light' onClick={() => openPaymentForm(receipt.id)}>
                         Оплатить
                       </Button>
                       <Button
-                        size="xs"
-                        variant="subtle"
-                        color="red"
+                        size='xs'
+                        variant='subtle'
+                        color='red'
                         onClick={() => setCancelTarget(receipt.id)}
                       >
                         Отменить
@@ -296,36 +306,34 @@ export const FinancePage: React.FC = () => {
             { key: 'amount', label: 'Сумма' },
             { key: 'method', label: 'Способ' },
             { key: 'date', label: 'Дата' },
-            { key: 'actions', label: '', width: 100 },
+            { key: 'actions', label: '', width: 100 }
           ]}
           isEmpty={(payments ?? []).length === 0}
-          emptyMessage="Оплат нет"
+          emptyMessage='Оплат нет'
         >
           {(payments ?? []).map((payment) => (
             <DataTableRow key={payment.id}>
               <Table.Td>
-                <Text size="sm" ff="monospace" c="dimmed">
+                <Text size='sm' ff='monospace' c='dimmed'>
                   #{payment.id}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">#{payment.receipt_id}</Text>
+                <Text size='sm'>#{payment.receipt_id}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm" fw={600}>
+                <Text size='sm' fw={600}>
                   {formatPrice(payment.amount)}
                 </Text>
               </Table.Td>
               <Table.Td>
-                <Text size="sm">
-                  {PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}
-                </Text>
+                <Text size='sm'>{PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}</Text>
               </Table.Td>
               <Table.Td>
-                <Text size="xs">{formatDateTime(payment.created_at)}</Text>
+                <Text size='xs'>{formatDateTime(payment.created_at)}</Text>
               </Table.Td>
               <Table.Td>
-                <Button size="xs" variant="subtle" onClick={() => setHistoryPayment(payment)}>
+                <Button size='xs' variant='subtle' onClick={() => setHistoryPayment(payment)}>
                   История
                 </Button>
               </Table.Td>
@@ -341,25 +349,25 @@ export const FinancePage: React.FC = () => {
       <Modal
         opened={receiptFormOpen}
         onClose={() => setReceiptFormOpen(false)}
-        title="Новый чек"
-        radius="md"
-        size="md"
+        title='Новый чек'
+        radius='md'
+        size='md'
       >
         <Select
-          label="Тип чека"
-          mb="md"
+          label='Тип чека'
+          mb='md'
           data={[
             { value: 'appointment', label: 'По записи' },
-            { value: 'direct sale', label: 'Прямая продажа' },
+            { value: 'direct sale', label: 'Прямая продажа' }
           ]}
           value={receiptType}
           onChange={(value) => setReceiptType((value as ReceiptType) ?? 'appointment')}
         />
         {receiptType === 'appointment' ? (
           <Select
-            label="Запись"
+            label='Запись'
             searchable
-            mb="lg"
+            mb='lg'
             data={appointmentOptions}
             value={appointmentId}
             onChange={setAppointmentId}
@@ -367,51 +375,51 @@ export const FinancePage: React.FC = () => {
         ) : (
           <>
             <Select
-              label="Клиент"
+              label='Клиент'
               searchable
               clearable
-              mb="md"
+              mb='md'
               data={clientOptions}
               value={clientId}
               onChange={setClientId}
             />
             <Select
-              label="Материал"
+              label='Материал'
               searchable
-              mb="md"
+              mb='md'
               data={materialOptions}
               value={materialId}
               onChange={setMaterialId}
-              nothingFoundMessage="Нет материалов на складе"
+              nothingFoundMessage='Нет материалов на складе'
               comboboxProps={{ withinPortal: true }}
-              placeholder={materialOptions.length === 0 ? 'Сначала добавьте остаток на складе' : 'Выберите материал'}
+              placeholder={
+                materialOptions.length === 0
+                  ? 'Сначала добавьте остаток на складе'
+                  : 'Выберите материал'
+              }
             />
             <NumberInput
-              label="Количество"
+              label='Количество'
               min={1}
               max={selectedMaterial?.quantity ?? undefined}
-              mb="lg"
+              mb='lg'
               value={materialQty}
               onChange={(value) => setMaterialQty(Number(value) || 1)}
               description={
-                selectedMaterial
-                  ? `Доступно: ${selectedMaterial.quantity} шт.`
-                  : undefined
+                selectedMaterial ? `Доступно: ${selectedMaterial.quantity} шт.` : undefined
               }
             />
           </>
         )}
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setReceiptFormOpen(false)}>
+        <Group justify='flex-end'>
+          <Button variant='subtle' color='gray' onClick={() => setReceiptFormOpen(false)}>
             Отмена
           </Button>
           <Button
             onClick={submitReceipt}
             loading={createReceipt.isPending}
             disabled={
-              receiptType === 'appointment'
-                ? !appointmentId
-                : !materialId || materialQty <= 0
+              receiptType === 'appointment' ? !appointmentId : !materialId || materialQty <= 0
             }
           >
             Создать
@@ -422,41 +430,41 @@ export const FinancePage: React.FC = () => {
       <Modal
         opened={paymentFormOpen}
         onClose={() => setPaymentFormOpen(false)}
-        title="Провести оплату"
-        radius="md"
+        title='Провести оплату'
+        radius='md'
       >
         <Select
-          label="Чек"
+          label='Чек'
           searchable
-          mb="md"
+          mb='md'
           data={pendingReceiptOptions}
           value={paymentReceiptId}
           onChange={setPaymentReceiptId}
         />
         <NumberInput
-          label="Сумма"
+          label='Сумма'
           min={1}
-          mb="md"
+          mb='md'
           value={paymentAmount}
           onChange={(value) => setPaymentAmount(Number(value) || 0)}
-          thousandSeparator=" "
-          suffix=" сум"
+          thousandSeparator=' '
+          suffix=' сум'
         />
         <Select
-          label="Способ оплаты"
-          mb="md"
+          label='Способ оплаты'
+          mb='md'
           data={PAYMENT_METHOD_OPTIONS}
           value={paymentMethod}
           onChange={(value) => setPaymentMethod((value as PaymentMethod) ?? 'cash')}
         />
         <Checkbox
-          label="Сдачу на депозит клиента"
-          mb="lg"
+          label='Сдачу на депозит клиента'
+          mb='lg'
           checked={addChangeToDeposit}
           onChange={(event) => setAddChangeToDeposit(event.currentTarget.checked)}
         />
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={() => setPaymentFormOpen(false)}>
+        <Group justify='flex-end'>
+          <Button variant='subtle' color='gray' onClick={() => setPaymentFormOpen(false)}>
             Отмена
           </Button>
           <Button
@@ -471,8 +479,10 @@ export const FinancePage: React.FC = () => {
 
       <ConfirmModal
         opened={cancelTarget != null}
-        title="Отменить чек"
-        message="Отменить этот чек?"
+        title='Отменить чек'
+        message={`Отменить этот чек? Если в чеке есть оплаты, их можно отменить только в течение ${tenantPreferences?.cancel_payment_due ?? 24} ч. после создания.`}
+        confirmLabel='Отменить чек'
+        confirmColor='orange'
         loading={cancelReceipt.isPending}
         onConfirm={() =>
           cancelTarget != null &&
@@ -485,21 +495,21 @@ export const FinancePage: React.FC = () => {
         opened={Boolean(historyReceipt)}
         onClose={() => setHistoryReceipt(null)}
         title={historyReceipt ? `История чека #${historyReceipt.id}` : 'История чека'}
-        radius="md"
-        size="lg"
+        radius='md'
+        size='lg'
       >
         {historyReceipt && (
           <>
-            <Text size="sm" fw={600} mb="xs">
+            <Text size='sm' fw={600} mb='xs'>
               Чек
             </Text>
-            <AuditLogsPanel tableName="receipts" recordId={historyReceipt.id} />
+            <AuditLogsPanel tableName='receipts' recordId={historyReceipt.id} />
             {historyReceipt.items.map((item) => (
               <React.Fragment key={item.id}>
-                <Text size="sm" fw={600} mt="md" mb="xs">
+                <Text size='sm' fw={600} mt='md' mb='xs'>
                   Позиция #{item.id}
                 </Text>
-                <AuditLogsPanel tableName="receipt_items" recordId={item.id} />
+                <AuditLogsPanel tableName='receipt_items' recordId={item.id} />
               </React.Fragment>
             ))}
           </>
@@ -510,12 +520,10 @@ export const FinancePage: React.FC = () => {
         opened={Boolean(historyPayment)}
         onClose={() => setHistoryPayment(null)}
         title={historyPayment ? `История оплаты #${historyPayment.id}` : 'История оплаты'}
-        radius="md"
-        size="md"
+        radius='md'
+        size='md'
       >
-        {historyPayment && (
-          <AuditLogsPanel tableName="payments" recordId={historyPayment.id} />
-        )}
+        {historyPayment && <AuditLogsPanel tableName='payments' recordId={historyPayment.id} />}
       </Modal>
     </ListPage>
   );

@@ -9,7 +9,8 @@ export interface SpecializationCreatePayload {
 
 export interface SpecializationUpdatePayload {
   id: number;
-  name: string;
+  name?: string;
+  archived?: boolean;
 }
 
 export type Sex = 'male' | 'female';
@@ -55,6 +56,7 @@ export interface ClientUpdatePayload {
   birth_date?: string | null;
   sex?: Sex;
   notes?: string | null;
+  archived?: boolean;
 }
 
 export interface ClientDepositPayload {
@@ -83,6 +85,7 @@ export interface ServiceUpdatePayload {
   name?: string;
   price?: number;
   category_id?: number | null;
+  archived?: boolean;
 }
 
 export interface ServiceCategoryCreatePayload {
@@ -92,6 +95,7 @@ export interface ServiceCategoryCreatePayload {
 export interface ServiceCategoryUpdatePayload {
   id: number;
   name?: string;
+  archived?: boolean;
 }
 
 export interface Employee extends BaseEntity {
@@ -135,6 +139,7 @@ export interface EmployeeUpdatePayload {
   salary_fixed?: number;
   percent_from_services?: number;
   percent_from_sales?: number;
+  archived?: boolean;
 }
 
 export interface WorkSchedule extends BaseEntity {
@@ -234,16 +239,26 @@ export interface AppointmentRecordNested {
   services: AppointmentServiceNested[];
 }
 
+export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
+
+export type AppointmentCancelledReason =
+  | 'client changed his mind'
+  | 'mistaken input'
+  | 'incorrect client'
+  | 'incorrect date';
+
 export interface Appointment extends BaseEntity {
   client_id: number;
   client: { id: number; firstname: string; lastname: string | null; phone: string | null } | null;
   start_time_est: string;
   end_time_est: string;
+  status: AppointmentStatus;
   paid: boolean;
   total_price: number;
   records: AppointmentRecordNested[] | null;
   notes: string | null;
-  cancelled_at: string | null;
+  cancelled_reason: AppointmentCancelledReason | null;
+  cancelled_at?: string | null;
 }
 
 export interface AppointmentServiceInput {
@@ -333,6 +348,7 @@ export interface MaterialUpdatePayload {
   wholesale_price?: number;
   sell_price?: number;
   can_be_product?: boolean;
+  archived?: boolean;
 }
 
 export interface MaterialQuantityPayload {

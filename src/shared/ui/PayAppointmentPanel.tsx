@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Checkbox, Group, NumberInput, Select, Stack, Text } from '@mantine/core';
+import { Badge, Button, Checkbox, Group, NumberInput, Select, Stack, Text } from '@mantine/core';
 import { useCreatePayment } from '@/shared/api/hooks/usePayments';
 import { useCreateReceipt, useReceipts } from '@/shared/api/hooks/useReceipts';
 import type { Appointment, PaymentMethod } from '@/shared/api/types';
@@ -21,11 +21,9 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
   const receipt = React.useMemo(
     () =>
       (receipts ?? []).find(
-        (item) =>
-          item.appointment_id === appointment.id &&
-          item.status !== 'cancelled',
+        (item) => item.appointment_id === appointment.id && item.status !== 'cancelled'
       ),
-    [receipts, appointment.id],
+    [receipts, appointment.id]
   );
 
   React.useEffect(() => {
@@ -39,7 +37,7 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
   const handleCreateReceipt = React.useCallback(() => {
     createReceipt.mutate({
       receipt_type: 'appointment',
-      appointment_id: appointment.id,
+      appointment_id: appointment.id
     });
   }, [appointment.id, createReceipt]);
 
@@ -49,21 +47,22 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
       receipt_id: receipt.id,
       amount,
       method,
-      add_change_to_deposit: addChangeToDeposit,
+      add_change_to_deposit: addChangeToDeposit
     });
   }, [receipt, amount, method, addChangeToDeposit, createPayment]);
 
   const isPaid = appointment.paid || receipt?.status === 'paid';
   const isLoading = createReceipt.isPending || createPayment.isPending;
+  const overpayment = receipt ? Math.max(0, amount - receipt.remaining_amount) : 0;
 
   if (isPaid) {
     return (
-      <Stack gap="xs">
-        <Text size="sm" c="green" fw={600}>
+      <Stack gap='xs'>
+        <Text size='sm' c='green' fw={600}>
           Запись оплачена
         </Text>
         {receipt && (
-          <Text size="xs" c="dimmed">
+          <Text size='xs' c='dimmed'>
             Чек #{receipt.id} · {formatPrice(receipt.total_amount)}
           </Text>
         )}
@@ -72,14 +71,14 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
   }
 
   return (
-    <Stack gap="sm">
-      <Text size="sm" fw={600}>
+    <Stack gap='sm'>
+      <Text size='sm' fw={600}>
         Оплата · {formatPrice(appointment.total_price)}
       </Text>
 
       {!receipt ? (
         <Button
-          variant="light"
+          variant='light'
           onClick={handleCreateReceipt}
           loading={createReceipt.isPending}
           disabled={!appointment.records?.length}
@@ -88,29 +87,48 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
         </Button>
       ) : (
         <>
-          <Text size="xs" c="dimmed">
-            Чек #{receipt.id} · к оплате {formatPrice(receipt.remaining_amount)}
-          </Text>
+          <Stack gap={4}>
+            <Text size='xs' c='dimmed'>
+              Чек #{receipt.id}
+            </Text>
+            <Group gap={6} wrap='wrap'>
+              <Badge size='sm' variant='light' color='gray'>
+                Выставлено: {formatPrice(receipt.total_amount)}
+              </Badge>
+              <Badge size='sm' variant='light' color='blue'>
+                Оплачено: {formatPrice(receipt.paid_amount)}
+              </Badge>
+              <Badge size='sm' variant='light' color='orange'>
+                Остаток: {formatPrice(receipt.remaining_amount)}
+              </Badge>
+            </Group>
+          </Stack>
           <NumberInput
-            label="Сумма"
+            label='Сумма'
             min={1}
             value={amount}
             onChange={(value) => setAmount(Number(value) || 0)}
-            thousandSeparator=" "
-            suffix=" сум"
+            thousandSeparator=' '
+            suffix=' сум'
           />
           <Select
-            label="Способ оплаты"
+            label='Способ оплаты'
             data={PAYMENT_METHOD_OPTIONS}
             value={method}
             onChange={(value) => setMethod((value as PaymentMethod) ?? 'cash')}
           />
           <Checkbox
-            label="Сдачу на депозит клиента"
+            label='Сдачу на депозит клиента'
             checked={addChangeToDeposit}
             onChange={(event) => setAddChangeToDeposit(event.currentTarget.checked)}
+            disabled={overpayment <= 0}
           />
-          <Group justify="flex-end">
+          {overpayment > 0 && (
+            <Text size='xs' c='dimmed'>
+              Сдача: {formatPrice(overpayment)}
+            </Text>
+          )}
+          <Group justify='flex-end'>
             <Button onClick={handlePay} loading={isLoading} disabled={amount <= 0}>
               Оплатить
             </Button>

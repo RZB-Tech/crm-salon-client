@@ -11,23 +11,19 @@ import {
   Divider,
   Button,
   ActionIcon,
-  Menu,
+  Menu
 } from '@mantine/core';
-import { Plus, DotsThree, Trash, ArrowRight } from '@phosphor-icons/react';
+import { Archive, Plus, DotsThree, ArrowRight } from '@phosphor-icons/react';
 import {
+  useArchiveEmployee,
   useCreateEmployee,
-  useDeleteEmployee,
-  useEmployees,
+  useEmployees
 } from '@/shared/api/hooks/useEmployees';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PersonAvatar } from '@/shared/ui/PersonAvatar';
-import {
-  formatPrice,
-  getEmployeeFullName,
-  getEmployeeInitials,
-} from '@/shared/lib/format';
+import { formatPrice, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import styles from './employees-page.module.css';
 
@@ -35,67 +31,99 @@ interface EmployeeCardProps {
   employee: Employee;
   specializationName: string | null;
   onOpen: (employee: Employee) => void;
-  onDelete: (employee: Employee) => void;
+  onArchive: (employee: Employee) => void;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationName, onOpen, onDelete }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({
+  employee,
+  specializationName,
+  onOpen,
+  onArchive
+}) => {
   const servicesCount = employee.services?.length ?? 0;
 
   return (
     <Card
-      padding="lg"
-      radius="lg"
-      shadow="xs"
+      padding='lg'
+      radius='lg'
+      shadow='xs'
       className={styles.card}
       onClick={() => onOpen(employee)}
-      role="button"
+      role='button'
       tabIndex={0}
     >
-      <Group justify="space-between" align="flex-start" mb="md">
+      <Group justify='space-between' align='flex-start' mb='md'>
         <Group gap={12}>
-          <PersonAvatar
-            seed={employee.id}
-            initials={getEmployeeInitials(employee)}
-            size="lg"
-          />
+          <PersonAvatar seed={employee.id} initials={getEmployeeInitials(employee)} size='lg' />
           <div>
-            <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
-            <Text size="sm" c="dimmed">{specializationName ?? employee.phone ?? '—'}</Text>
+            <Text fw={700} size='md'>
+              {getEmployeeFullName(employee)}
+            </Text>
+            <Text size='sm' c='dimmed'>
+              {specializationName ?? employee.phone ?? '—'}
+            </Text>
           </div>
         </Group>
         <Group gap={6}>
-          <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">{employee.active ? 'Активен' : 'Неактивен'}</Badge>
-          <Menu shadow="sm" width={180} radius="md">
+          <Badge color={employee.active ? 'green' : 'gray'} variant='light' size='sm'>
+            {employee.active ? 'Активен' : 'Неактивен'}
+          </Badge>
+          <Menu shadow='sm' width={180} radius='md'>
             <Menu.Target>
               <ActionIcon
-                variant="subtle"
-                color="gray"
-                size="sm"
+                variant='subtle'
+                color='gray'
+                size='sm'
                 onClick={(e) => e.stopPropagation()}
               >
-                <DotsThree size={16} weight="bold" />
+                <DotsThree size={16} weight='bold' />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item leftSection={<ArrowRight size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
+              <Menu.Item
+                leftSection={<ArrowRight size={14} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpen(employee);
+                }}
+              >
                 Открыть профиль
               </Menu.Item>
-              <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
-                Удалить
+              <Menu.Item
+                leftSection={<Archive size={14} />}
+                color='orange'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onArchive(employee);
+                }}
+              >
+                Архивировать
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
         </Group>
       </Group>
 
-      <Group gap={6} mb="md">
-        <Badge size="xs" variant="light" color="gray">Услуг: {servicesCount}</Badge>
-        {employee.salary_fixed > 0 && <Badge size="xs" variant="light" color="blue">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
-        {employee.percent_from_services > 0 && <Badge size="xs" variant="light" color="teal">% услуг: {employee.percent_from_services}</Badge>}
+      <Group gap={6} mb='md'>
+        <Badge size='xs' variant='light' color='gray'>
+          Услуг: {servicesCount}
+        </Badge>
+        {employee.salary_fixed > 0 && (
+          <Badge size='xs' variant='light' color='blue'>
+            Фикс: {formatPrice(employee.salary_fixed)}
+          </Badge>
+        )}
+        {employee.percent_from_services > 0 && (
+          <Badge size='xs' variant='light' color='teal'>
+            % услуг: {employee.percent_from_services}
+          </Badge>
+        )}
       </Group>
 
-      <Divider mb="md" />
-      <Text size="xs" c="dimmed">Дата рождения: {employee.birth_date}</Text>
+      <Divider mb='md' />
+      <Text size='xs' c='dimmed'>
+        Дата рождения: {employee.birth_date}
+      </Text>
     </Card>
   );
 };
@@ -103,12 +131,12 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = React.useState(false);
-  const [deleteTarget, setDeleteTarget] = React.useState<Employee | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Employee | null>(null);
 
   const { data: employees, isLoading, isError } = useEmployees();
   const { data: specializations } = useSpecializations();
   const createEmployee = useCreateEmployee();
-  const deleteEmployee = useDeleteEmployee();
+  const archiveEmployee = useArchiveEmployee();
 
   const specializationMap = React.useMemo(() => {
     const map = new Map<number, string>();
@@ -118,32 +146,44 @@ export const EmployeesPage: React.FC = () => {
 
   const openProfile = React.useCallback(
     (employee: Employee) => navigate(`/employees/${employee.id}`),
-    [navigate],
+    [navigate]
   );
 
   const handleCreate = React.useCallback(
     (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
-      createEmployee.mutate(payload as EmployeeCreatePayload, { onSuccess: () => setFormOpen(false) });
+      createEmployee.mutate(payload as EmployeeCreatePayload, {
+        onSuccess: () => setFormOpen(false)
+      });
     },
-    [createEmployee],
+    [createEmployee]
   );
 
-  const handleDelete = React.useCallback(() => {
-    if (!deleteTarget) return;
-    deleteEmployee.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) });
-  }, [deleteTarget, deleteEmployee]);
+  const handleArchive = React.useCallback(() => {
+    if (!archiveTarget) return;
+    archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) });
+  }, [archiveTarget, archiveEmployee]);
 
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <Skeleton height={48} mb="md" />
-        <SimpleGrid cols={2} spacing="md">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={280} radius="lg" />)}</SimpleGrid>
+        <Skeleton height={48} mb='md' />
+        <SimpleGrid cols={2} spacing='md'>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} height={280} radius='lg' />
+          ))}
+        </SimpleGrid>
       </div>
     );
   }
 
   if (isError) {
-    return <div className={styles.page}><Alert color="red" title="Не удалось загрузить сотрудников">Проверьте доступность API</Alert></div>;
+    return (
+      <div className={styles.page}>
+        <Alert color='red' title='Не удалось загрузить сотрудников'>
+          Проверьте доступность API
+        </Alert>
+      </div>
+    );
   }
 
   const list = employees ?? [];
@@ -152,23 +192,33 @@ export const EmployeesPage: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <div>
-          <Text size="xl" fw={700}>Сотрудники</Text>
-          <Text size="sm" c="dimmed" mt={2}>{list.length} в системе</Text>
+          <Text size='xl' fw={700}>
+            Сотрудники
+          </Text>
+          <Text size='sm' c='dimmed' mt={2}>
+            {list.length} в системе
+          </Text>
         </div>
-        <Button leftSection={<Plus size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
+        <Button leftSection={<Plus size={16} />} onClick={() => setFormOpen(true)}>
+          Добавить сотрудника
+        </Button>
       </div>
 
       {list.length === 0 ? (
-        <Text c="dimmed">Сотрудники не найдены</Text>
+        <Text c='dimmed'>Сотрудники не найдены</Text>
       ) : (
-        <SimpleGrid cols={2} spacing="md">
+        <SimpleGrid cols={2} spacing='md'>
           {list.map((employee) => (
             <EmployeeCard
               key={employee.id}
               employee={employee}
-              specializationName={employee.specialization_id != null ? specializationMap.get(employee.specialization_id) ?? null : null}
+              specializationName={
+                employee.specialization_id != null
+                  ? (specializationMap.get(employee.specialization_id) ?? null)
+                  : null
+              }
               onOpen={openProfile}
-              onDelete={setDeleteTarget}
+              onArchive={setArchiveTarget}
             />
           ))}
         </SimpleGrid>
@@ -183,12 +233,14 @@ export const EmployeesPage: React.FC = () => {
       />
 
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title="Удалить сотрудника"
-        message={`Удалить ${deleteTarget ? getEmployeeFullName(deleteTarget) : ''}?`}
-        loading={deleteEmployee.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setDeleteTarget(null)}
+        opened={Boolean(archiveTarget)}
+        title='Архивировать сотрудника'
+        message={`Архивировать ${archiveTarget ? getEmployeeFullName(archiveTarget) : ''}? Сотрудник исчезнет из активного расписания, но история сохранится.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveEmployee.isPending}
+        onConfirm={handleArchive}
+        onClose={() => setArchiveTarget(null)}
       />
     </div>
   );

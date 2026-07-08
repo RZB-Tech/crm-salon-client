@@ -12,13 +12,23 @@ import {
   Alert,
   Menu,
   CopyButton,
-  Tooltip,
+  Tooltip
 } from '@mantine/core';
-import { ArrowLeft, PencilSimple, Trash, Phone, Cake, DotsThree, LockKey, Copy, Check } from '@phosphor-icons/react';
 import {
+  Archive,
+  ArrowLeft,
+  PencilSimple,
+  Phone,
+  Cake,
+  DotsThree,
+  LockKey,
+  Copy,
+  Check
+} from '@phosphor-icons/react';
+import {
+  useArchiveEmployee,
   useEmployee,
-  useUpdateEmployee,
-  useDeleteEmployee,
+  useUpdateEmployee
 } from '@/shared/api/hooks/useEmployees';
 import { useResetPassword } from '@/shared/api/hooks/useAuth';
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
@@ -45,12 +55,12 @@ export const EmployeeProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [editOpen, setEditOpen] = React.useState(false);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [archiveOpen, setArchiveOpen] = React.useState(false);
 
   const employeeId = Number(id);
   const { data: employee, isLoading, isError } = useEmployee(employeeId);
   const updateEmployee = useUpdateEmployee();
-  const deleteEmployee = useDeleteEmployee();
+  const archiveEmployee = useArchiveEmployee();
   const resetPassword = useResetPassword();
 
   const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
@@ -62,33 +72,35 @@ export const EmployeeProfilePage: React.FC = () => {
     (value: string | null) => {
       setSearchParams({ tab: value ?? 'overview' }, { replace: true });
     },
-    [setSearchParams],
+    [setSearchParams]
   );
 
   const handleSubmit = React.useCallback(
     (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
-      updateEmployee.mutate(payload as EmployeeUpdatePayload, { onSuccess: () => setEditOpen(false) });
+      updateEmployee.mutate(payload as EmployeeUpdatePayload, {
+        onSuccess: () => setEditOpen(false)
+      });
     },
-    [updateEmployee],
+    [updateEmployee]
   );
 
-  const handleDelete = React.useCallback(() => {
-    deleteEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
-  }, [deleteEmployee, employeeId, navigate]);
+  const handleArchive = React.useCallback(() => {
+    archiveEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
+  }, [archiveEmployee, employeeId, navigate]);
 
   const handleResetPassword = React.useCallback(() => {
     resetPassword.mutate(employeeId, {
       onSuccess: (result) => {
         setResetPasswordResult(result.new_password);
-      },
+      }
     });
   }, [resetPassword, employeeId]);
 
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <Skeleton height={120} radius="lg" />
-        <Skeleton height={400} radius="lg" />
+        <Skeleton height={120} radius='lg' />
+        <Skeleton height={400} radius='lg' />
       </div>
     );
   }
@@ -96,10 +108,15 @@ export const EmployeeProfilePage: React.FC = () => {
   if (isError || !employee) {
     return (
       <div className={styles.page}>
-        <Button variant="subtle" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
+        <Button
+          variant='subtle'
+          leftSection={<ArrowLeft size={16} />}
+          onClick={() => navigate('/employees')}
+          w='fit-content'
+        >
           К сотрудникам
         </Button>
-        <Alert color="red" title="Сотрудник не найден">
+        <Alert color='red' title='Сотрудник не найден'>
           Проверьте доступность API или вернитесь к списку.
         </Alert>
       </div>
@@ -108,47 +125,61 @@ export const EmployeeProfilePage: React.FC = () => {
 
   return (
     <div className={styles.page}>
-      <Button variant="subtle" color="gray" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
+      <Button
+        variant='subtle'
+        color='gray'
+        leftSection={<ArrowLeft size={16} />}
+        onClick={() => navigate('/employees')}
+        w='fit-content'
+      >
         К сотрудникам
       </Button>
 
-      <Card padding="lg" radius="lg" shadow="xs" className={styles.headerCard}>
+      <Card padding='lg' radius='lg' shadow='xs' className={styles.headerCard}>
         <div className={styles.headerLeft}>
           <PersonAvatar
             seed={employee.id}
             initials={getEmployeeInitials(employee)}
-            size="profile"
+            size='profile'
           />
           <div>
             <Group gap={10}>
-              <Text fw={700} size="xl">
+              <Text fw={700} size='xl'>
                 {getEmployeeFullName(employee)}
               </Text>
-              <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
+              <Badge color={employee.active ? 'green' : 'gray'} variant='light' size='sm'>
                 {employee.active ? 'Активен' : 'Неактивен'}
               </Badge>
             </Group>
             <div className={styles.contactRow}>
               <Group gap={5}>
-                <Phone size={14} color="var(--mantine-color-gray-5)" />
-                <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
+                <Phone size={14} color='var(--mantine-color-gray-5)' />
+                <Text size='sm' c='dimmed'>
+                  {employee.phone ?? '—'}
+                </Text>
               </Group>
               <Group gap={5}>
-                <Cake size={14} color="var(--mantine-color-gray-5)" />
-                <Text size="sm" c="dimmed">{employee.birth_date}</Text>
+                <Cake size={14} color='var(--mantine-color-gray-5)' />
+                <Text size='sm' c='dimmed'>
+                  {employee.birth_date}
+                </Text>
               </Group>
             </div>
           </div>
         </div>
 
-        <Group gap="sm">
-          <Button variant="light" leftSection={<PencilSimple size={16} />} onClick={() => setEditOpen(true)}>
+        <Group gap='sm'>
+          <Button
+            variant='light'
+            leftSection={<PencilSimple size={16} />}
+            onClick={() => setEditOpen(true)}
+          >
             Редактировать
           </Button>
-          <Menu shadow="md" width={200} position="bottom-end" radius="md">
+          <Menu shadow='md' width={200} position='bottom-end' radius='md'>
             <Menu.Target>
-              <ActionIcon variant="light" color="gray" size="lg" aria-label="Ещё действия">
-                <DotsThree size={18} weight="bold" />
+              <ActionIcon variant='light' color='gray' size='lg' aria-label='Ещё действия'>
+                <DotsThree size={18} weight='bold' />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
@@ -161,11 +192,11 @@ export const EmployeeProfilePage: React.FC = () => {
               </Menu.Item>
               <Menu.Divider />
               <Menu.Item
-                leftSection={<Trash size={14} />}
-                color="red"
-                onClick={() => setDeleteOpen(true)}
+                leftSection={<Archive size={14} />}
+                color='orange'
+                onClick={() => setArchiveOpen(true)}
               >
-                Удалить
+                Архивировать
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
@@ -174,13 +205,13 @@ export const EmployeeProfilePage: React.FC = () => {
 
       {resetPasswordResult && (
         <Alert
-          color="blue"
-          title="Пароль сброшен"
+          color='blue'
+          title='Пароль сброшен'
           onClose={() => setResetPasswordResult(null)}
           withCloseButton
         >
-          <Group gap="sm">
-            <Text size="sm" fw={600}>
+          <Group gap='sm'>
+            <Text size='sm' fw={600}>
               Новый пароль: {resetPasswordResult}
             </Text>
             <CopyButton value={resetPasswordResult}>
@@ -188,9 +219,9 @@ export const EmployeeProfilePage: React.FC = () => {
                 <Tooltip label={copied ? 'Скопировано!' : 'Скопировать'} withArrow>
                   <ActionIcon
                     color={copied ? 'teal' : 'blue'}
-                    variant="light"
+                    variant='light'
                     onClick={copy}
-                    size="sm"
+                    size='sm'
                   >
                     {copied ? <Check size={14} /> : <Copy size={14} />}
                   </ActionIcon>
@@ -198,39 +229,39 @@ export const EmployeeProfilePage: React.FC = () => {
               )}
             </CopyButton>
           </Group>
-          <Text size="xs" c="dimmed" mt="xs">
+          <Text size='xs' c='dimmed' mt='xs'>
             Обязательно передайте этот пароль сотруднику
           </Text>
         </Alert>
       )}
 
-      <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>
+      <Tabs value={activeTab} onChange={handleTabChange} radius='md' keepMounted={false}>
         <Tabs.List>
-          <Tabs.Tab value="overview">Обзор</Tabs.Tab>
-          <Tabs.Tab value="schedule">График</Tabs.Tab>
-          <Tabs.Tab value="payments">Выплаты</Tabs.Tab>
-          <Tabs.Tab value="finance">Финансы</Tabs.Tab>
-          <Tabs.Tab value="services">Услуги</Tabs.Tab>
-          <Tabs.Tab value="audit">История</Tabs.Tab>
+          <Tabs.Tab value='overview'>Обзор</Tabs.Tab>
+          <Tabs.Tab value='schedule'>График</Tabs.Tab>
+          <Tabs.Tab value='payments'>Выплаты</Tabs.Tab>
+          <Tabs.Tab value='finance'>Финансы</Tabs.Tab>
+          <Tabs.Tab value='services'>Услуги</Tabs.Tab>
+          <Tabs.Tab value='audit'>История</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="overview" className={styles.tabPanel}>
+        <Tabs.Panel value='overview' className={styles.tabPanel}>
           <OverviewTab employee={employee} />
         </Tabs.Panel>
-        <Tabs.Panel value="schedule" className={styles.tabPanel}>
+        <Tabs.Panel value='schedule' className={styles.tabPanel}>
           <ScheduleTab employeeId={employee.id} />
         </Tabs.Panel>
-        <Tabs.Panel value="payments" className={styles.tabPanel}>
+        <Tabs.Panel value='payments' className={styles.tabPanel}>
           <PaymentsTab employeeId={employee.id} />
         </Tabs.Panel>
-        <Tabs.Panel value="finance" className={styles.tabPanel}>
+        <Tabs.Panel value='finance' className={styles.tabPanel}>
           <FinanceTab employeeId={employee.id} />
         </Tabs.Panel>
-        <Tabs.Panel value="services" className={styles.tabPanel}>
+        <Tabs.Panel value='services' className={styles.tabPanel}>
           <ServicesTab employee={employee} />
         </Tabs.Panel>
-        <Tabs.Panel value="audit" className={styles.tabPanel}>
-          <AuditLogsPanel tableName="employees" recordId={employee.id} />
+        <Tabs.Panel value='audit' className={styles.tabPanel}>
+          <AuditLogsPanel tableName='employees' recordId={employee.id} />
         </Tabs.Panel>
       </Tabs>
 
@@ -243,12 +274,14 @@ export const EmployeeProfilePage: React.FC = () => {
       />
 
       <ConfirmModal
-        opened={deleteOpen}
-        title="Удалить сотрудника"
-        message={`Удалить ${getEmployeeFullName(employee)}?`}
-        loading={deleteEmployee.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setDeleteOpen(false)}
+        opened={archiveOpen}
+        title='Архивировать сотрудника'
+        message={`Архивировать ${getEmployeeFullName(employee)}? Сотрудник исчезнет из активного расписания, но история сохранится.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveEmployee.isPending}
+        onConfirm={handleArchive}
+        onClose={() => setArchiveOpen(false)}
       />
     </div>
   );

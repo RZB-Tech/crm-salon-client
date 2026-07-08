@@ -14,21 +14,21 @@ import {
   NumberInput,
   Tabs,
   Badge,
-  Table,
+  Table
 } from '@mantine/core';
 import {
   MagnifyingGlass,
   Plus,
   DotsThree,
   PencilSimple,
-  Trash,
+  Archive,
   CalendarBlank
 } from '@phosphor-icons/react';
 import {
+  useArchiveClient,
   useClients,
   useCreateClient,
   useUpdateClient,
-  useDeleteClient,
   useUpdateClientDeposit,
   useClientAppointments
 } from '@/shared/api/hooks/useClients';
@@ -101,7 +101,7 @@ export const ClientsPage: React.FC = () => {
   const [form, setForm] = React.useState<ClientFormState>(emptyForm);
   const [depositAmount, setDepositAmount] = React.useState(0);
   const [depositOperation, setDepositOperation] = React.useState<'1' | '-1'>('1');
-  const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Client | null>(null);
   const [detailTarget, setDetailTarget] = React.useState<Client | null>(null);
   const [detailTab, setDetailTab] = React.useState<string>('appointments');
 
@@ -112,7 +112,7 @@ export const ClientsPage: React.FC = () => {
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const updateDeposit = useUpdateClientDeposit();
-  const deleteClient = useDeleteClient();
+  const archiveClient = useArchiveClient();
 
   const openCreate = React.useCallback(() => {
     setEditing(null);
@@ -162,10 +162,10 @@ export const ClientsPage: React.FC = () => {
     );
   }, [depositTarget, depositAmount, depositOperation, updateDeposit]);
 
-  const handleDelete = React.useCallback(() => {
-    if (!deleteTarget) return;
-    deleteClient.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) });
-  }, [deleteTarget, deleteClient]);
+  const handleArchive = React.useCallback(() => {
+    if (!archiveTarget) return;
+    archiveClient.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) });
+  }, [archiveTarget, archiveClient]);
 
   const filtered = React.useMemo(() => {
     return (clients ?? []).filter((client) => {
@@ -175,15 +175,8 @@ export const ClientsPage: React.FC = () => {
     });
   }, [clients, search]);
 
-  const {
-    page,
-    pageSize,
-    paginatedItems,
-    total,
-    setPage,
-    setPageSize,
-    resetPage,
-  } = usePagination(filtered);
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
+    usePagination(filtered);
 
   React.useEffect(() => {
     resetPage();
@@ -193,17 +186,17 @@ export const ClientsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ListPage title="Клиенты">
+      <ListPage title='Клиенты'>
         <Skeleton height={48} />
-        <Skeleton height={400} radius="lg" />
+        <Skeleton height={400} radius='lg' />
       </ListPage>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Клиенты">
-        <Alert color="red" title="Не удалось загрузить клиентов">
+      <ListPage title='Клиенты'>
+        <Alert color='red' title='Не удалось загрузить клиентов'>
           Проверьте доступность API и авторизацию
         </Alert>
       </ListPage>
@@ -212,16 +205,16 @@ export const ClientsPage: React.FC = () => {
 
   return (
     <ListPage
-      title="Клиенты"
+      title='Клиенты'
       subtitle={`${filtered.length} клиентов`}
       actions={
-        <Group gap="sm">
+        <Group gap='sm'>
           <TextInput
-            placeholder="Поиск по имени, телефону..."
+            placeholder='Поиск по имени, телефону...'
             leftSection={<MagnifyingGlass size={15} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
-            size="sm"
+            size='sm'
             style={{ width: 260 }}
           />
           <Button leftSection={<Plus size={16} />} onClick={openCreate}>
@@ -237,44 +230,44 @@ export const ClientsPage: React.FC = () => {
           { key: 'sex', label: 'Пол' },
           { key: 'deposit', label: 'Депозит' },
           { key: 'birth', label: 'Дата рождения' },
-          { key: 'actions', label: '', width: 48 },
+          { key: 'actions', label: '', width: 48 }
         ]}
         isEmpty={filtered.length === 0}
-        emptyMessage="Клиенты не найдены"
+        emptyMessage='Клиенты не найдены'
       >
         {paginatedItems.map((client) => (
           <DataTableRow key={client.id}>
             <Table.Td>
               <Group gap={10}>
-                <PersonAvatar seed={client.id} initials={getClientInitials(client)} size="xs" />
-                <Text size="sm" fw={600}>
+                <PersonAvatar seed={client.id} initials={getClientInitials(client)} size='xs' />
+                <Text size='sm' fw={600}>
                   {getClientFullName(client)}
                 </Text>
               </Group>
             </Table.Td>
             <Table.Td>
-              <Text size="sm" c="dimmed">
+              <Text size='sm' c='dimmed'>
                 {client.phone ?? '—'}
               </Text>
             </Table.Td>
             <Table.Td>
-              <Text size="sm">{SEX_LABELS[client.sex]}</Text>
+              <Text size='sm'>{SEX_LABELS[client.sex]}</Text>
             </Table.Td>
             <Table.Td>
-              <Text size="sm" fw={600}>
+              <Text size='sm' fw={600}>
                 {formatPrice(client.deposit)}
               </Text>
             </Table.Td>
             <Table.Td>
-              <Text size="sm" c="dimmed">
+              <Text size='sm' c='dimmed'>
                 {formatDate(client.birth_date)}
               </Text>
             </Table.Td>
             <Table.Td>
-              <Menu shadow="sm" width={180} radius="md">
+              <Menu shadow='sm' width={180} radius='md'>
                 <Menu.Target>
-                  <ActionIcon variant="subtle" color="gray" size="sm">
-                    <DotsThree size={16} weight="bold" />
+                  <ActionIcon variant='subtle' color='gray' size='sm'>
+                    <DotsThree size={16} weight='bold' />
                   </ActionIcon>
                 </Menu.Target>
                 <Menu.Dropdown>
@@ -287,16 +280,19 @@ export const ClientsPage: React.FC = () => {
                   >
                     Записи и история
                   </Menu.Item>
-                  <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(client)}>
+                  <Menu.Item
+                    leftSection={<PencilSimple size={14} />}
+                    onClick={() => openEdit(client)}
+                  >
                     Редактировать
                   </Menu.Item>
                   <Menu.Item onClick={() => openDeposit(client)}>Депозит</Menu.Item>
                   <Menu.Item
-                    leftSection={<Trash size={14} />}
-                    color="red"
-                    onClick={() => setDeleteTarget(client)}
+                    leftSection={<Archive size={14} />}
+                    color='orange'
+                    onClick={() => setArchiveTarget(client)}
                   >
-                    Удалить
+                    Архивировать
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
@@ -424,12 +420,14 @@ export const ClientsPage: React.FC = () => {
       </Modal>
 
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title='Удалить клиента'
-        message={`Удалить ${deleteTarget ? getClientFullName(deleteTarget) : ''}?`}
-        loading={deleteClient.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setDeleteTarget(null)}
+        opened={Boolean(archiveTarget)}
+        title='Архивировать клиента'
+        message={`Архивировать ${archiveTarget ? getClientFullName(archiveTarget) : ''}? Клиент исчезнет из активного списка, но история сохранится.`}
+        confirmLabel='Архивировать'
+        confirmColor='orange'
+        loading={archiveClient.isPending}
+        onConfirm={handleArchive}
+        onClose={() => setArchiveTarget(null)}
       />
 
       <Modal
@@ -455,23 +453,27 @@ export const ClientsPage: React.FC = () => {
                 columns={[
                   { key: 'date', label: 'Дата' },
                   { key: 'amount', label: 'Сумма' },
-                  { key: 'status', label: 'Статус' },
+                  { key: 'status', label: 'Статус' }
                 ]}
                 isEmpty={(clientAppointments ?? []).length === 0}
-                emptyMessage="Записей нет"
+                emptyMessage='Записей нет'
               >
                 {(clientAppointments ?? []).map((appointment) => (
                   <DataTableRow key={appointment.id}>
                     <Table.Td>
-                      <Text size="xs">{formatAppointmentDateTime(appointment.start_time_est)}</Text>
+                      <Text size='xs'>{formatAppointmentDateTime(appointment.start_time_est)}</Text>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm" fw={600}>
+                      <Text size='sm' fw={600}>
                         {formatPrice(appointment.total_price)}
                       </Text>
                     </Table.Td>
                     <Table.Td>
-                      <Badge size="xs" color={appointment.paid ? 'green' : 'orange'} variant="light">
+                      <Badge
+                        size='xs'
+                        color={appointment.paid ? 'green' : 'orange'}
+                        variant='light'
+                      >
                         {appointment.paid ? 'Оплачено' : 'Не оплачено'}
                       </Badge>
                     </Table.Td>

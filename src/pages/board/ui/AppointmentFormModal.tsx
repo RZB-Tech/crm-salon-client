@@ -11,20 +11,24 @@ import {
   Table,
   Text,
   Textarea,
-  TextInput,
+  TextInput
 } from '@mantine/core';
 import { Plus, Trash } from '@phosphor-icons/react';
 import type { Appointment, Client } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { PayAppointmentPanel } from '@/shared/ui/PayAppointmentPanel';
-import { formatPrice } from '@/shared/lib/format';
+import {
+  APPOINTMENT_CANCEL_REASON_LABELS,
+  APPOINTMENT_STATUS_LABELS,
+  formatPrice
+} from '@/shared/lib/format';
 import {
   applyStartTimeChange,
   calcServicesTotal,
   createEmptyServiceLine,
   isAppointmentFormValid,
   type AppointmentFormValues,
-  type ServiceOption,
+  type ServiceOption
 } from '../lib/appointmentForm';
 import styles from './appointment-form-modal.module.css';
 
@@ -45,8 +49,8 @@ interface AppointmentFormModalProps {
   onChange: (values: AppointmentFormValues) => void;
   onClose: () => void;
   onSubmit: () => void;
-  onDelete?: () => void;
   onCancel?: () => void;
+  structuralFieldsLocked?: boolean;
 }
 
 export type { AppointmentFormValues };
@@ -66,12 +70,12 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
   onChange,
   onClose,
   onSubmit,
-  onDelete,
   onCancel,
+  structuralFieldsLocked = false
 }) => {
   const selectedClient = React.useMemo(
     () => clients.find((client) => String(client.id) === values.clientId),
-    [clients, values.clientId],
+    [clients, values.clientId]
   );
 
   const total = React.useMemo(() => calcServicesTotal(values.services), [values.services]);
@@ -83,13 +87,11 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       onChange({
         ...values,
         services: values.services.map((line) =>
-          line.key === key
-            ? { ...line, serviceId, price: option?.price ?? line.price }
-            : line,
-        ),
+          line.key === key ? { ...line, serviceId, price: option?.price ?? line.price } : line
+        )
       });
     },
-    [onChange, serviceOptions, values],
+    [onChange, serviceOptions, values]
   );
 
   const handleServiceFieldChange = React.useCallback(
@@ -97,11 +99,11 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       onChange({
         ...values,
         services: values.services.map((line) =>
-          line.key === key ? { ...line, [field]: value } : line,
-        ),
+          line.key === key ? { ...line, [field]: value } : line
+        )
       });
     },
-    [onChange, values],
+    [onChange, values]
   );
 
   const handleRemoveService = React.useCallback(
@@ -109,16 +111,16 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       const next = values.services.filter((line) => line.key !== key);
       onChange({
         ...values,
-        services: next.length > 0 ? next : [createEmptyServiceLine()],
+        services: next.length > 0 ? next : [createEmptyServiceLine()]
       });
     },
-    [onChange, values],
+    [onChange, values]
   );
 
   const handleAddService = React.useCallback(() => {
     onChange({
       ...values,
-      services: [...values.services, createEmptyServiceLine()],
+      services: [...values.services, createEmptyServiceLine()]
     });
   }, [onChange, values]);
 
@@ -127,10 +129,10 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       onChange({
         ...values,
         employeeId,
-        services: [createEmptyServiceLine()],
+        services: [createEmptyServiceLine()]
       });
     },
-    [onChange, values],
+    [onChange, values]
   );
 
   return (
@@ -138,77 +140,92 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       opened={opened}
       onClose={onClose}
       title={mode === 'edit' ? 'Запись клиента' : 'Новая запись'}
-      radius="md"
-      size="lg"
+      radius='md'
+      size='lg'
     >
-      <Group justify="space-between" mb="md">
+      <Group justify='space-between' mb='md'>
         {mode === 'edit' && (
-          <Group gap="xs">
+          <Group gap='xs'>
+            {appointment?.status && (
+              <Badge color={appointment.status === 'cancelled' ? 'red' : 'blue'} variant='light'>
+                {APPOINTMENT_STATUS_LABELS[appointment.status] ?? appointment.status}
+              </Badge>
+            )}
             {cancelled && (
-              <Badge color="red" variant="light">
+              <Badge color='red' variant='light'>
                 Отменена
               </Badge>
             )}
-            <Badge color={paid ? 'green' : 'orange'} variant="light">
+            <Badge color={paid ? 'green' : 'orange'} variant='light'>
               {paid ? 'Оплачено' : 'Не оплачено'}
             </Badge>
+            {appointment?.cancelled_reason && (
+              <Badge color='gray' variant='outline'>
+                {APPOINTMENT_CANCEL_REASON_LABELS[appointment.cancelled_reason]}
+              </Badge>
+            )}
           </Group>
         )}
       </Group>
 
       <div className={styles.section}>
-        <Stack gap="sm">
+        <Stack gap='sm'>
           <div>
             <Select
-              label="Клиент"
+              label='Клиент'
               required
               searchable
               data={clientOptions}
               value={values.clientId}
               onChange={(value) => onChange({ ...values, clientId: value })}
+              disabled={structuralFieldsLocked}
             />
             {selectedClient?.phone && (
-              <Text size="xs" c="dimmed" className={styles.clientPhone}>
+              <Text size='xs' c='dimmed' className={styles.clientPhone}>
                 {selectedClient.phone}
               </Text>
             )}
           </div>
 
-          <Group grow align="flex-start">
+          <Group grow align='flex-start'>
             <TextInput
-              label="Дата"
-              type="date"
+              label='Дата'
+              type='date'
               required
               value={values.date}
               onChange={(event) => onChange({ ...values, date: event.currentTarget.value })}
+              disabled={structuralFieldsLocked}
             />
             <TextInput
-              label="Начало"
-              type="time"
+              label='Начало'
+              type='time'
               required
               step={TIME_STEP}
               value={values.startTime}
               onChange={(event) =>
                 onChange(applyStartTimeChange(values, event.currentTarget.value))
               }
+              disabled={structuralFieldsLocked}
             />
             <TextInput
-              label="Конец"
-              type="time"
+              label='Конец'
+              type='time'
               required
               step={TIME_STEP}
               value={values.endTime}
               onChange={(event) => onChange({ ...values, endTime: event.currentTarget.value })}
+              disabled={structuralFieldsLocked}
             />
           </Group>
 
           <Select
-            label="Сотрудник"
+            label='Сотрудник'
             required
             searchable
             data={employeeOptions}
             value={values.employeeId}
             onChange={handleEmployeeChange}
+            disabled={structuralFieldsLocked}
           />
         </Stack>
       </div>
@@ -219,17 +236,17 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
             Услуги
           </Text>
           <Button
-            variant="light"
-            size="xs"
+            variant='light'
+            size='xs'
             leftSection={<Plus size={14} />}
             onClick={handleAddService}
-            disabled={!values.employeeId}
+            disabled={!values.employeeId || structuralFieldsLocked}
           >
             Добавить
           </Button>
         </div>
 
-        <Table verticalSpacing="xs" withTableBorder withColumnBorders>
+        <Table verticalSpacing='xs' withTableBorder withColumnBorders>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Услуга</Table.Th>
@@ -244,12 +261,12 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                 <Table.Td>
                   <Select
                     searchable
-                    placeholder="Выберите услугу"
+                    placeholder='Выберите услугу'
                     data={serviceOptions}
                     value={line.serviceId}
                     onChange={(value) => handleServiceSelect(line.key, value)}
-                    nothingFoundMessage="Нет услуг у сотрудника"
-                    disabled={!values.employeeId}
+                    nothingFoundMessage='Нет услуг у сотрудника'
+                    disabled={!values.employeeId || structuralFieldsLocked}
                   />
                 </Table.Td>
                 <Table.Td>
@@ -259,6 +276,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                     onChange={(value) =>
                       handleServiceFieldChange(line.key, 'quantity', Number(value) || 1)
                     }
+                    disabled={structuralFieldsLocked}
                   />
                 </Table.Td>
                 <Table.Td>
@@ -268,17 +286,20 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                     onChange={(value) =>
                       handleServiceFieldChange(line.key, 'price', Number(value) || 0)
                     }
-                    suffix=" сум"
-                    thousandSeparator=" "
+                    suffix=' сум'
+                    thousandSeparator=' '
+                    disabled={structuralFieldsLocked}
                   />
                 </Table.Td>
                 <Table.Td>
                   <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    aria-label="Удалить услугу"
+                    variant='subtle'
+                    color='red'
+                    aria-label='Удалить услугу'
                     onClick={() => handleRemoveService(line.key)}
-                    disabled={values.services.length === 1 && !line.serviceId}
+                    disabled={
+                      structuralFieldsLocked || (values.services.length === 1 && !line.serviceId)
+                    }
                   >
                     <Trash size={16} />
                   </ActionIcon>
@@ -289,7 +310,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
         </Table>
 
         <div className={styles.totalRow}>
-          <Text size="sm" fw={600}>
+          <Text size='sm' fw={600}>
             Итого: {formatPrice(total)}
           </Text>
         </div>
@@ -298,7 +319,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       <div className={styles.section}>
         <Text className={styles.sectionTitle}>Комментарий</Text>
         <Textarea
-          placeholder="Заметки к записи"
+          placeholder='Заметки к записи'
           minRows={3}
           value={values.notes}
           onChange={(event) => onChange({ ...values, notes: event.currentTarget.value })}
@@ -313,25 +334,25 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
           </div>
           <div className={styles.section}>
             <Text className={styles.sectionTitle}>История изменений</Text>
-            <Text size="xs" c="dimmed" mb="xs">
+            <Text size='xs' c='dimmed' mb='xs'>
               Запись
             </Text>
-            <AuditLogsPanel tableName="appointments" recordId={appointment.id} />
+            <AuditLogsPanel tableName='appointments' recordId={appointment.id} />
             {(appointment.records ?? []).map((record) => (
               <React.Fragment key={record.id}>
-                <Text size="xs" c="dimmed" mt="md" mb="xs">
+                <Text size='xs' c='dimmed' mt='md' mb='xs'>
                   Сотрудник:{' '}
                   {record.employee
                     ? `${record.employee.firstname} ${record.employee.lastname ?? ''}`.trim()
                     : `#${record.id}`}
                 </Text>
-                <AuditLogsPanel tableName="appointment_records" recordId={record.id} />
+                <AuditLogsPanel tableName='appointment_records' recordId={record.id} />
                 {record.services.map((service) => (
                   <React.Fragment key={service.id}>
-                    <Text size="xs" c="dimmed" mt="sm" mb="xs">
+                    <Text size='xs' c='dimmed' mt='sm' mb='xs'>
                       Услуга: {service.service?.name ?? `#${service.id}`}
                     </Text>
-                    <AuditLogsPanel tableName="appointment_services" recordId={service.id} />
+                    <AuditLogsPanel tableName='appointment_services' recordId={service.id} />
                   </React.Fragment>
                 ))}
               </React.Fragment>
@@ -341,18 +362,18 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       )}
 
       <div className={styles.footer}>
-        <Button variant="subtle" color="gray" onClick={onClose}>
+        <Button variant='subtle' color='gray' onClick={onClose}>
           Отмена
         </Button>
         <div className={styles.footerActions}>
-          {mode === 'edit' && onCancel && !cancelled && (
-            <Button variant="light" color="orange" onClick={onCancel} loading={loading}>
-              Отменить запись
-            </Button>
+          {mode === 'edit' && paid && !cancelled && (
+            <Text size='xs' c='dimmed' className={styles.paidCancelHint}>
+              Для отмены сначала отмените чек
+            </Text>
           )}
-          {mode === 'edit' && onDelete && (
-            <Button variant="light" color="red" onClick={onDelete} loading={loading}>
-              Удалить
+          {mode === 'edit' && onCancel && !cancelled && !paid && (
+            <Button variant='light' color='orange' onClick={onCancel} loading={loading}>
+              Отменить запись
             </Button>
           )}
           {!cancelled && (

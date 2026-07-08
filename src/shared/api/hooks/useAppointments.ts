@@ -5,31 +5,36 @@ import {
   apiPatch,
   apiPost,
   apiPostGetMany,
-  apiRequest,
+  apiRequest
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
-import type { Appointment, AppointmentCreatePayload } from '@/shared/api/types';
+import type {
+  Appointment,
+  AppointmentCancelledReason,
+  AppointmentCreatePayload,
+  AppointmentStatus
+} from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useAppointments = () =>
   useQuery({
     queryKey: queryKeys.appointments.all,
     queryFn: () => apiFetchAllPost<Appointment>('/api/v1/appointments'),
-    staleTime: 1 * 60 * 1000, // 1 минута - часто обновляется
+    staleTime: 1 * 60 * 1000 // 1 минута - часто обновляется
   });
 
 export const useAppointment = (id: number) =>
   useQuery({
     queryKey: queryKeys.appointments.detail(id),
     queryFn: () => apiRequest<Appointment>(`/api/v1/appointments/${id}`),
-    enabled: id > 0,
+    enabled: id > 0
   });
 
 export const useAppointmentsMany = (ids: number[]) =>
   useQuery({
     queryKey: queryKeys.appointments.many(ids),
     queryFn: () => apiPostGetMany<Appointment>('/api/v1/appointments', ids),
-    enabled: ids.length > 0,
+    enabled: ids.length > 0
   });
 
 export const useCreateAppointment = () => {
@@ -46,16 +51,9 @@ export const useCreateAppointment = () => {
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось создать запись' });
-    },
+    }
   });
 };
-
-export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
-export type AppointmentCancelledReason =
-  | 'client changed his mind'
-  | 'mistaken input'
-  | 'incorrect client'
-  | 'incorrect date';
 
 export const useUpdateAppointment = () => {
   const queryClient = useQueryClient();
@@ -70,7 +68,7 @@ export const useUpdateAppointment = () => {
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось обновить запись' });
-    },
+    }
   });
 };
 
@@ -78,19 +76,19 @@ export const useCancelAppointment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) =>
-      apiPatch<Appointment, Record<string, never>>(
-        `/api/v1/appointments/${id}/cancel`,
-        {},
+    mutationFn: (payload: { id: number; reason: AppointmentCancelledReason }) =>
+      apiPatch<Appointment, { id: number; reason: AppointmentCancelledReason }>(
+        `/api/v1/appointments/${payload.id}/cancel`,
+        payload
       ),
-    onSuccess: (_, id) => {
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
       addNotification.success({ message: 'Запись отменена' });
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось отменить запись' });
-    },
+    }
   });
 };
 
@@ -105,6 +103,6 @@ export const useDeleteAppointment = () => {
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось удалить запись' });
-    },
+    }
   });
 };

@@ -1,4 +1,4 @@
-import type { Appointment } from '@/shared/api/types';
+import type { Appointment, AppointmentStatus } from '@/shared/api/types';
 import { parseApiDateTimeParts, toDateInput } from '@/shared/lib/format';
 
 export const SLOT_HEIGHT = 96;
@@ -21,6 +21,7 @@ export interface BoardAppointment {
   client: string;
   service: string;
   employeeName: string;
+  status: AppointmentStatus;
   paid: boolean;
   cancelled: boolean;
   totalPrice: number;
@@ -109,8 +110,9 @@ export const mapAppointmentsToBoard = (
         client: clientName,
         service: serviceName,
         employeeName,
+        status: appt.status,
         paid: appt.paid,
-        cancelled: !!appt.cancelled_at,
+        cancelled: appt.status === 'cancelled' || !!appt.cancelled_at,
         totalPrice: appt.total_price,
         notes: appt.notes
       });

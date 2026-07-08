@@ -1,31 +1,25 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  apiDelete,
-  apiFetchAllPost,
-  apiPatch,
-  apiPost,
-  apiRequest,
-} from '@/shared/api/client';
+import { apiDelete, apiFetchAllPost, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Material,
   MaterialCreatePayload,
   MaterialQuantityPayload,
-  MaterialUpdatePayload,
+  MaterialUpdatePayload
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useMaterials = () =>
   useQuery({
     queryKey: queryKeys.materials.all,
-    queryFn: () => apiFetchAllPost<Material>('/api/v1/materials'),
+    queryFn: () => apiFetchAllPost<Material>('/api/v1/materials')
   });
 
 export const useMaterial = (id: number) =>
   useQuery({
     queryKey: queryKeys.materials.detail(id),
     queryFn: () => apiRequest<Material>(`/api/v1/materials/${id}`),
-    enabled: id > 0,
+    enabled: id > 0
   });
 
 export const useCreateMaterial = () => {
@@ -37,7 +31,7 @@ export const useCreateMaterial = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       addNotification.success({ message: 'Материал создан' });
-    },
+    }
   });
 };
 
@@ -51,7 +45,7 @@ export const useUpdateMaterial = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.detail(payload.id) });
       addNotification.success({ message: 'Материал обновлён' });
-    },
+    }
   });
 };
 
@@ -65,7 +59,7 @@ export const useUpdateMaterialQuantity = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.detail(payload.id) });
       addNotification.success({ message: 'Количество обновлено' });
-    },
+    }
   });
 };
 
@@ -77,6 +71,20 @@ export const useDeleteMaterial = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       addNotification.success({ message: 'Материал удалён' });
-    },
+    }
+  });
+};
+
+export const useArchiveMaterial = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Material, MaterialUpdatePayload>('/api/v1/materials', { id, archived: true }),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.materials.detail(id) });
+      addNotification.success({ message: 'Материал архивирован' });
+    }
   });
 };
