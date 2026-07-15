@@ -90,7 +90,7 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
 
       <Group gap={6} mb="md">
         <Badge size="xs" variant="light" color="gray">Услуг: {servicesCount}</Badge>
-        {employee.salary_fixed > 0 && <Badge size="xs" variant="light" color="blue">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
+        {employee.salary_fixed > 0 && <Badge size="xs" variant="light" color="sage">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
         {employee.percent_from_services > 0 && <Badge size="xs" variant="light" color="teal">% услуг: {employee.percent_from_services}</Badge>}
       </Group>
 

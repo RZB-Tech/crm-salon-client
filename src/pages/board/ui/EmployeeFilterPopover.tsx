@@ -74,7 +74,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
                 ? 'light'
                 : 'default'
           }
-          color={selectedIds.size > 0 ? 'blue' : 'gray'}
+          color={selectedIds.size > 0 ? 'sage' : 'gray'}
           size='sm'
           leftSection={<Users size={16} />}
           rightSection={

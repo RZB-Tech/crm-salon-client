@@ -1,3 +1,42 @@
+:root {
+  /* ─── Core palette ─── */
+  --ink: #111111;
+  --muted: #666666;
+  --bronze: #444444;
+  --gold: #4b6a50;
+  --sage: #4b6a50;
+  --sage-dark: #3a533f;
+  --gold-dark: #3a533f;
+  --gold-soft: #d3ddd6;
+  --gold-wash: #eef2ef;
+  --rose-wash: #eef2ef;
+  --line: #e2e2e2;
+  --line-soft: #ededed;
+  --sand: #eaeaea;
+  --sand-2: #dfdfdf;
+  --pearl: #ffffff;
+  --soft: #fafafa;
+  --page-bg: #f5f5f5;
+
+  /* ─── Semantic ─── */
+  --danger: #b42323;
+  --danger-bg: #fff4f4;
+  --danger-border: #ffd2d2;
+  --warning: #b45309;
+  --warning-bg: #fff9f0;
+  --warning-soft: #fff8e8;
+  --success: #4b6a50;
+  --focus-ring: rgba(75, 106, 80, 0.18);
+  --overlay: rgba(15, 20, 18, 0.48);
+  --brand-tint: rgba(75, 106, 80, 0.08);
+  --brand-glow: rgba(75, 106, 80, 0.22);
+
+  /* ─── Gradients ─── */
+  --grad-gold: linear-gradient(135deg, #4b6a50 0%, #3a533f 100%);
+  --grad-gold-soft: linear-gradient(135deg, #eef2ef 0%, #e1ebe3 100%);
+  --grad-surface: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

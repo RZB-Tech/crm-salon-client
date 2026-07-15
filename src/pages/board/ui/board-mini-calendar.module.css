@@ -59,18 +59,18 @@
 }
 
 .day_today:not(.day_selected) {
-  color: var(--mantine-color-blue-7);
+  color: var(--mantine-color-sage-7);
   font-weight: 700;
 }
 
 .day_selected {
-  background: var(--mantine-color-blue-6);
+  background: var(--mantine-color-sage-6);
   color: var(--mantine-color-white);
   font-weight: 700;
 }
 
 .day_selected:hover {
-  background: var(--mantine-color-blue-7);
+  background: var(--mantine-color-sage-7);
 }
 
 .day_marked::after {
@@ -82,7 +82,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--mantine-color-blue-4);
+  background: var(--mantine-color-sage-4);
 }
 
 .day_selected.day_marked::after {

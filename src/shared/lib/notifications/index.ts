@@ -28,7 +28,7 @@ export const addNotification = {
     notifications.show({
       title,
       message,
-      color: 'blue',
+      color: 'sage',
       autoClose: 3000,
     });
   },

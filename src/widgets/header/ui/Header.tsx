@@ -14,7 +14,7 @@ import {
   Stack,
   Text,
 } from '@mantine/core';
-import { Bell, Key, List, Scissors, SignOut, User } from '@phosphor-icons/react';
+import { Bell, Key, List, SignOut, User } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
@@ -22,6 +22,7 @@ import { authStorage } from '@/shared/api/client';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
 import { formatDateTime } from '@/shared/lib/format';
 import { AUTH_ENABLED } from '@/shared/config/env';
+import LogoSvg from '@/shared/assets/logo.svg?url';
 import styles from './header.module.css';
 import { PersonAvatar } from '@/shared/ui';
 
@@ -30,7 +31,10 @@ interface HeaderProps {
   onToggle: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
+const SIDEBAR_WIDTH = 280;
+const SIDEBAR_COLLAPSED_WIDTH = 72;
+
+export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   const { connected } = useNotificationsWs();
   const { data: notifications } = useNotifications();
   const logout = useLogout();
@@ -68,26 +72,32 @@ export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
 
   return (
     <header className={styles.header}>
-      <Group gap="md" className={styles.left}>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="lg"
-          onClick={onToggle}
-          aria-label="Toggle sidebar"
-        >
-          <List size={20} />
-        </ActionIcon>
+      <div
+        className={styles.left}
+        style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }}
+      >
+        <img
+          src={LogoSvg}
+          alt="Logo"
+          className={styles.logoIcon}
+          style={{ height: collapsed ? 28 : 57 }}
+        />
+      </div>
 
-        <Group gap={8} className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <Scissors size={18} weight="bold" color="white" />
-          </div>
-          <Text fw={700} size="sm" className={styles.logoText}>
-            {tenantName}
-          </Text>
-        </Group>
-      </Group>
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size="lg"
+        onClick={onToggle}
+        aria-label="Toggle sidebar"
+        className={styles.burger}
+      >
+        <List size={20} />
+      </ActionIcon>
+
+      <Text fw={700} size="sm" className={styles.tenantName}>
+        {tenantName}
+      </Text>
 
       <Group gap="sm" className={styles.right}>
         <Popover width={320} position="bottom-end" shadow="md" radius="md">
@@ -171,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggle }) => {
             </Menu.Dropdown>
           </Menu>
         ) : (
-          <Avatar size="sm" radius="md" color="blue">
+          <Avatar size="sm" radius="md" color="sage">
             CRM
           </Avatar>
         )}

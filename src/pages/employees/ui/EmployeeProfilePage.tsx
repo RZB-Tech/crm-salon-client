@@ -174,7 +174,7 @@ export const EmployeeProfilePage: React.FC = () => {
 
       {resetPasswordResult && (
         <Alert
-          color="blue"
+          color="sage"
           title="Пароль сброшен"
           onClose={() => setResetPasswordResult(null)}
           withCloseButton
@@ -187,7 +187,7 @@ export const EmployeeProfilePage: React.FC = () => {
               {({ copied, copy }) => (
                 <Tooltip label={copied ? 'Скопировано!' : 'Скопировать'} withArrow>
                   <ActionIcon
-                    color={copied ? 'teal' : 'blue'}
+                    color={copied ? 'teal' : 'sage'}
                     variant="light"
                     onClick={copy}
                     size="sm"

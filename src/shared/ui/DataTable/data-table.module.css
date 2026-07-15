@@ -46,7 +46,7 @@
 }
 
 .row:hover {
-  background: color-mix(in srgb, var(--mantine-color-blue-0) 55%, white);
+  background: color-mix(in srgb, var(--mantine-color-sage-0) 55%, white);
 }
 
 .rowMuted {

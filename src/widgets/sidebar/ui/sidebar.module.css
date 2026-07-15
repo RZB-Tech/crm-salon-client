@@ -45,12 +45,12 @@
 }
 
 .navItem.active {
-  background: var(--mantine-color-blue-0);
-  color: var(--mantine-color-blue-7);
+  background: var(--mantine-color-sage-0);
+  color: var(--mantine-color-sage-7);
 }
 
 .navItem.active .icon {
-  color: var(--mantine-color-blue-6);
+  color: var(--mantine-color-sage-6);
 }
 
 .navItem.disabled {

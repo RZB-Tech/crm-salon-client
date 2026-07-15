@@ -103,7 +103,7 @@
 }
 
 .employeeHeader_link:focus-visible {
-  outline: 2px solid var(--mantine-color-blue-5);
+  outline: 2px solid var(--mantine-color-sage-5);
   outline-offset: -2px;
 }
 
@@ -214,12 +214,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--mantine-color-blue-1) 75%, white);
+  background: color-mix(in srgb, var(--mantine-color-sage-1) 75%, white);
 }
 
 .createPreview_ok {
   opacity: 0.85;
-  outline: 2px dashed var(--mantine-color-blue-5);
+  outline: 2px dashed var(--mantine-color-sage-5);
   outline-offset: -2px;
 }
 
@@ -230,7 +230,7 @@
 }
 
 .createPreviewText {
-  color: var(--mantine-color-blue-7);
+  color: var(--mantine-color-sage-7);
 }
 
 .createPreview_conflict .createPreviewText {
@@ -238,7 +238,7 @@
 }
 
 .apptColumn_clickable:hover {
-  background: color-mix(in srgb, var(--mantine-color-blue-0) 40%, white);
+  background: color-mix(in srgb, var(--mantine-color-sage-0) 40%, white);
 }
 
 .hint {

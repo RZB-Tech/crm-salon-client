@@ -1,35 +1,39 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 100%;
-  padding: 0 20px;
+  padding: 0 20px 0 0;
   background: var(--mantine-color-white);
   border-bottom: 1px solid var(--mantine-color-gray-2);
   gap: 16px;
 }
 
 .left {
-  flex-shrink: 0;
-}
-
-.logo {
-  align-items: center;
-}
-
-.logoIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--mantine-color-blue-6);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: width 0.2s ease;
+  border-right: 1px solid var(--mantine-color-gray-2);
+  height: 100%;
 }
 
-.logoText {
+.logoIcon {
+  width: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+  transition: height 0.2s ease;
+}
+
+.burger {
+  flex-shrink: 0;
+}
+
+.tenantName {
+  flex: 1;
+  text-align: center;
   color: var(--mantine-color-gray-9);
+  white-space: nowrap;
 }
 
 .center {
@@ -56,7 +60,7 @@
   border-top: 1px solid var(--mantine-color-gray-2);
   text-align: center;
   font-size: var(--mantine-font-size-sm);
-  color: var(--mantine-color-blue-6);
+  color: var(--mantine-color-sage-6);
   text-decoration: none;
 }
 

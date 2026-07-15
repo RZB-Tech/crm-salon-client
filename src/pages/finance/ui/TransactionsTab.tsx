@@ -302,7 +302,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
               <Table.Td>
                 <Group gap={6}>
                   {transaction.auto_generated ? (
-                    <Badge size="xs" variant="outline" color="blue">
+                    <Badge size="xs" variant="outline" color="sage">
                       Авто
                     </Badge>
                   ) : (

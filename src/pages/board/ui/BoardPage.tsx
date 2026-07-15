@@ -568,7 +568,7 @@ export const BoardPage: React.FC = () => {
                     {day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' })}
                   </Text>
                   {isSameDay(day, today) && (
-                    <Badge size='xs' variant='light' color='blue' mt={4}>
+                    <Badge size='xs' variant='light' color='sage' mt={4}>
                       Сегодня
                     </Badge>
                   )}

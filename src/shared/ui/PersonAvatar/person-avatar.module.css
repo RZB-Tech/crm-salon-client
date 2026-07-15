@@ -24,8 +24,8 @@
 }
 
 .personAvatar_selected {
-  border-color: var(--mantine-color-blue-5);
-  box-shadow: 0 0 0 2px var(--mantine-color-blue-2);
+  border-color: var(--mantine-color-sage-5);
+  box-shadow: 0 0 0 2px var(--mantine-color-sage-2);
 }
 
 .personAvatar_muted {
