@@ -125,13 +125,31 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     [specializations],
   );
 
+  const errors = React.useMemo(() => {
+    const e: { firstname?: string; lastname?: string; birth_date?: string } = {};
+    if (!form.firstname.trim()) e.firstname = 'Имя обязательно';
+    if (!form.lastname.trim()) e.lastname = 'Фамилия обязательна';
+    if (form.birth_date) {
+      const birth = new Date(form.birth_date);
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - 18);
+      if (birth > minDate) e.birth_date = 'Сотруднику должно быть не менее 18 лет';
+    } else {
+      e.birth_date = 'Дата рождения обязательна';
+    }
+    return e;
+  }, [form.firstname, form.lastname, form.birth_date]);
+
+  const isValid = Object.keys(errors).length === 0;
+
   const handleSubmit = React.useCallback(() => {
+    if (!isValid) return;
     if (employee) {
       onSubmit(toUpdatePayload(employee.id, form));
     } else {
       onSubmit(toCreatePayload(form));
     }
-  }, [form, employee, onSubmit]);
+  }, [form, employee, onSubmit, isValid]);
 
   return (
     <Modal
@@ -143,12 +161,12 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     >
       <Stack gap="md">
         <Group grow>
-          <TextInput label="Имя" required value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })} />
-          <TextInput label="Фамилия" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })} />
+          <TextInput label="Имя" required value={form.firstname} error={form.firstname.trim() ? undefined : errors.firstname} onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })} />
+          <TextInput label="Фамилия" required value={form.lastname} error={form.lastname.trim() ? undefined : errors.lastname} onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })} />
         </Group>
         <Group grow>
           <TextInput label="Отчество" value={form.middlename} onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })} />
-          <TextInput label="Дата рождения" type="date" required value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
+          <TextInput label="Дата рождения" type="date" required value={form.birth_date} error={errors.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
         </Group>
         <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
         <Select
@@ -178,7 +196,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
         <NumberInput label="% от продаж" min={0} max={100} value={form.percent_from_sales} onChange={(v) => setForm({ ...form, percent_from_sales: Number(v) || 0 })} />
         <Group justify="flex-end">
           <Button variant="subtle" color="gray" onClick={onClose}>Отмена</Button>
-          <Button onClick={handleSubmit} loading={loading} disabled={!form.firstname || !form.birth_date}>
+          <Button onClick={handleSubmit} loading={loading} disabled={!isValid}>
             {employee ? 'Сохранить' : 'Создать'}
           </Button>
         </Group>

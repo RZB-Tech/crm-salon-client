@@ -3,7 +3,6 @@ import {
   ActionIcon,
   Alert,
   Button,
-  Checkbox,
   Group,
   Menu,
   Modal,
@@ -47,11 +46,7 @@ interface MaterialFormState {
   quantity: number;
   measurement_unit: MeasurementUnit;
   volume: number;
-  purchase_price: number;
-  retail_price: number;
-  wholesale_price: number;
   sell_price: number;
-  can_be_product: boolean;
 }
 
 const emptyForm = (): MaterialFormState => ({
@@ -61,11 +56,7 @@ const emptyForm = (): MaterialFormState => ({
   quantity: 0,
   measurement_unit: 'piece',
   volume: 0,
-  purchase_price: 0,
-  retail_price: 0,
-  wholesale_price: 0,
   sell_price: 0,
-  can_be_product: false,
 });
 
 const materialToForm = (material: Material): MaterialFormState => ({
@@ -75,11 +66,7 @@ const materialToForm = (material: Material): MaterialFormState => ({
   quantity: material.quantity,
   measurement_unit: material.measurement_unit,
   volume: material.volume,
-  purchase_price: material.purchase_price,
-  retail_price: material.retail_price,
-  wholesale_price: material.wholesale_price,
   sell_price: material.sell_price,
-  can_be_product: material.can_be_product,
 });
 
 export const MaterialsPage: React.FC = () => {
@@ -157,11 +144,7 @@ export const MaterialsPage: React.FC = () => {
         description: form.description || null,
         measurement_unit: form.measurement_unit,
         volume: form.volume,
-        purchase_price: form.purchase_price,
-        retail_price: form.retail_price,
-        wholesale_price: form.wholesale_price,
         sell_price: form.sell_price,
-        can_be_product: form.can_be_product,
       };
       updateMaterial.mutate(payload, { onSuccess: () => setFormOpen(false) });
       return;
@@ -174,11 +157,7 @@ export const MaterialsPage: React.FC = () => {
       quantity: form.quantity,
       measurement_unit: form.measurement_unit,
       volume: form.volume,
-      purchase_price: form.purchase_price,
-      retail_price: form.retail_price,
-      wholesale_price: form.wholesale_price,
       sell_price: form.sell_price,
-      can_be_product: form.can_be_product,
     };
     createMaterial.mutate(payload, { onSuccess: () => setFormOpen(false) });
   }, [editing, form, createMaterial, updateMaterial]);
@@ -357,36 +336,12 @@ export const MaterialsPage: React.FC = () => {
         </Group>
         <Group grow mb="md">
           <NumberInput
-            label="Закупочная"
-            min={0}
-            value={form.purchase_price}
-            onChange={(value) => setForm({ ...form, purchase_price: Number(value) || 0 })}
-          />
-          <NumberInput
-            label="Розничная"
-            min={0}
-            value={form.retail_price}
-            onChange={(value) => setForm({ ...form, retail_price: Number(value) || 0 })}
-          />
-          <NumberInput
-            label="Оптовая"
-            min={0}
-            value={form.wholesale_price}
-            onChange={(value) => setForm({ ...form, wholesale_price: Number(value) || 0 })}
-          />
-          <NumberInput
-            label="Продажная"
+            label="Цена продажи"
             min={0}
             value={form.sell_price}
             onChange={(value) => setForm({ ...form, sell_price: Number(value) || 0 })}
           />
         </Group>
-        <Checkbox
-          label="Можно продавать как товар"
-          mb="lg"
-          checked={form.can_be_product}
-          onChange={(event) => setForm({ ...form, can_be_product: event.currentTarget.checked })}
-        />
         {editing && (
           <>
             <Text size="sm" fw={600} mb="xs">

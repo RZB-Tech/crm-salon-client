@@ -29,6 +29,7 @@ export const useCreateSpecialization = () => {
       apiPost<Specialization, SpecializationCreatePayload>('/api/v1/specializations', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({ message: 'Специализация создана' });
     },
   });
@@ -43,6 +44,7 @@ export const useUpdateSpecialization = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.detail(payload.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({ message: 'Специализация обновлена' });
     },
   });
@@ -55,6 +57,7 @@ export const useDeleteSpecialization = () => {
     mutationFn: (id: number) => apiDelete(`/api/v1/specializations/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({ message: 'Специализация удалена' });
     },
   });

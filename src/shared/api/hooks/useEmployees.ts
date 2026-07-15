@@ -23,7 +23,6 @@ export const useEmployees = () =>
   useQuery({
     queryKey: queryKeys.employees.all,
     queryFn: () => apiFetchAllPost<Employee>('/api/v1/employees'),
-    staleTime: 3 * 60 * 1000, // 3 минуты - редко меняются
   });
 
 export const useEmployee = (id: number) =>
@@ -82,6 +81,7 @@ export const useCreateEmployee = () => {
       apiPost<Employee, EmployeeCreatePayload>('/api/v1/employees', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       addNotification.success({ message: 'Сотрудник создан' });
     },
   });
@@ -96,6 +96,9 @@ export const useUpdateEmployee = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(payload.id) });
+      // Услуги сотрудника влияют на форму создания посещения
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       addNotification.success({ message: 'Сотрудник обновлён' });
     },
   });
@@ -108,6 +111,8 @@ export const useDeleteEmployee = () => {
     mutationFn: (id: number) => apiDelete(`/api/v1/employees/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       addNotification.success({ message: 'Сотрудник удалён' });
     },
   });

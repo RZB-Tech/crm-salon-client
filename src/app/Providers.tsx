@@ -47,9 +47,7 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000, // Кэш хранится 10 минут в памяти
       retry: 1,
       refetchOnWindowFocus: false, // Не перезагружать при возврате на вкладку
-      refetchOnMount: false, // ⚠️ НЕ перезагружать при монтировании — используем кэш
       refetchOnReconnect: true, // Только при восстановлении сети
-      // Запросы будут выполняться только при первом вызове или по истечению staleTime
     },
     mutations: {
       retry: 1,

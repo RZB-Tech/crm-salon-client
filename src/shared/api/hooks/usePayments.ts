@@ -28,6 +28,7 @@ export const useCreatePayment = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       addNotification.success({ message: 'Оплата проведена' });
     },
   });

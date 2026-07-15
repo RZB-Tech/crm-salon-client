@@ -300,11 +300,7 @@ export interface Material extends BaseEntity {
   quantity: number;
   measurement_unit: MeasurementUnit;
   volume: number;
-  purchase_price: number;
-  retail_price: number;
-  wholesale_price: number;
   sell_price: number;
-  can_be_product: boolean;
 }
 
 export interface MaterialCreatePayload {
@@ -314,11 +310,7 @@ export interface MaterialCreatePayload {
   quantity?: number;
   measurement_unit?: MeasurementUnit;
   volume?: number;
-  purchase_price?: number;
-  retail_price?: number;
-  wholesale_price?: number;
   sell_price?: number;
-  can_be_product?: boolean;
 }
 
 export interface MaterialUpdatePayload {
@@ -328,11 +320,7 @@ export interface MaterialUpdatePayload {
   description?: string | null;
   measurement_unit?: MeasurementUnit;
   volume?: number;
-  purchase_price?: number;
-  retail_price?: number;
-  wholesale_price?: number;
   sell_price?: number;
-  can_be_product?: boolean;
 }
 
 export interface MaterialQuantityPayload {

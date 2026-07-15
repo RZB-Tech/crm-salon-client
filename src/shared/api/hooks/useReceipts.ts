@@ -33,6 +33,8 @@ export const useCancelReceipt = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Чек отменён' });
     },
   });

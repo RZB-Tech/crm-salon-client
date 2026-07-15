@@ -50,10 +50,9 @@ export const useCancelTransaction = () => {
         {},
       ),
     onSuccess: (_, id) => {
-      queryClient.setQueryData<Transaction[]>(queryKeys.transactions.all, (prev) =>
-        prev?.map((item) => (item.id === id ? { ...item, cancelled: true } : item)),
-      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
       addNotification.success({ message: 'Транзакция отменена' });
     },
     onError: (error: Error) => {

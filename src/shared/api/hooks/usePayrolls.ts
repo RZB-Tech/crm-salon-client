@@ -84,6 +84,7 @@ export const useCancelPayroll = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       addNotification.success({ message: 'Начисление отменено' });
     },
   });

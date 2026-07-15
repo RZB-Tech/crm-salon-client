@@ -19,4 +19,6 @@ export const useAuditLogs = (params: AuditLogsParams) =>
       return apiRequest<PaginatedResponse<AuditLog>>(`/api/v1/audit-logs?${qs}`);
     },
     enabled: params.record_id > 0,
+    staleTime: 0, // Всегда перезапрашивать при монтировании
+    gcTime: 0, // Не хранить в кэше — данные меняются после каждой мутации
   });
