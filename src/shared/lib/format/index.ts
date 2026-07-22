@@ -80,6 +80,24 @@ export const ABSENCE_TYPE_OPTIONS = Object.entries(ABSENCE_TYPE_LABELS).map(([va
   label
 }));
 
+export const DAY_OF_WEEK_LABELS: Record<number, string> = {
+  1: 'Пн',
+  2: 'Вт',
+  3: 'Ср',
+  4: 'Чт',
+  5: 'Пт',
+  6: 'Сб',
+  7: 'Вс',
+};
+
+export const DAY_OF_WEEK_OPTIONS = Object.entries(DAY_OF_WEEK_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}));
+
+export const formatDays = (days: number[]): string =>
+  [...days].sort((a, b) => a - b).map((d) => DAY_OF_WEEK_LABELS[d] ?? d).join(', ');
+
 export const formatTime = (time: string): string => time.slice(0, 5);
 
 const API_DATETIME_RE = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/;

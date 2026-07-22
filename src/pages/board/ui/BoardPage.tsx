@@ -2,15 +2,13 @@ import React from 'react';
 import {
   Button,
   Text,
-  Badge,
-  SegmentedControl,
   Skeleton,
   Alert,
   Stack,
 } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import { useEmployees } from '@/shared/api/hooks/useEmployees';
+import { useEmployees, useAssignedEmployeesByDate } from '@/shared/api/hooks/useEmployees';
 import {
   useAppointments,
   useAppointment,
@@ -42,8 +40,6 @@ import {
   TIME_START,
   TOTAL_HEIGHT,
   getApptStyle,
-  getWeekDays,
-  getWeekStart,
   mapAppointmentsToBoard,
 } from '../lib/appointmentBoard';
 import { hasBoardTimeConflict } from '../lib/hasBoardTimeConflict';
@@ -73,14 +69,6 @@ interface BoardEmployee {
 
 const formatHeaderDate = (d: Date): string =>
   d.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-
-const formatWeekRange = (weekStart: Date): string => {
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 6);
-  const start = weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-  const end = weekEnd.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-  return `${start} — ${end}`;
-};
 
 const mapEmployee = (employee: Employee): BoardEmployee => {
   const color = getEmployeeColor(employee.id);
@@ -171,11 +159,18 @@ const BoardSkeleton = () => (
 );
 
 export const BoardPage: React.FC = () => {
+  const [date, setDate] = React.useState(() => new Date());
+
+  const dateStr = React.useMemo(() => toDateInput(date), [date]);
+
   const {
-    data: apiEmployees,
+    data: assignedEmployees,
     isLoading: employeesLoading,
     isError: employeesError,
     isFetching: employeesFetching,
+  } = useAssignedEmployeesByDate(dateStr);
+  const {
+    data: allEmployees,
   } = useEmployees();
   const {
     data: appointments,
@@ -190,8 +185,6 @@ export const BoardPage: React.FC = () => {
   const deleteAppointment = useDeleteAppointment();
   const cancelAppointment = useCancelAppointment();
 
-  const [date, setDate] = React.useState(() => new Date());
-  const [view, setView] = React.useState<'day' | 'week'>('day');
   const [employeeFilter, setEmployeeFilter] = React.useState<Set<number>>(() => new Set());
   const [formOpen, setFormOpen] = React.useState(false);
   const [formMode, setFormMode] = React.useState<'create' | 'edit'>('create');
@@ -206,19 +199,22 @@ export const BoardPage: React.FC = () => {
   const { data: editingAppointment, isLoading: editingLoading } = useAppointment(editingId ?? 0);
 
   const today = React.useMemo(() => new Date(), []);
-  const weekStart = React.useMemo(() => getWeekStart(date), [date]);
-  const weekDays = React.useMemo(() => getWeekDays(weekStart), [weekStart]);
 
   const activeEmployees = React.useMemo(
-    () => (apiEmployees ?? []).filter((e) => e.active),
-    [apiEmployees]
+    () => (allEmployees ?? []).filter((e) => e.active),
+    [allEmployees]
+  );
+
+  const boardEmployees = React.useMemo(
+    () => assignedEmployees ?? [],
+    [assignedEmployees]
   );
 
   const employees = React.useMemo(() => {
-    const mapped = activeEmployees.map(mapEmployee);
+    const mapped = boardEmployees.map(mapEmployee);
     if (employeeFilter.size === 0) return mapped;
     return mapped.filter((e) => employeeFilter.has(e.id));
-  }, [activeEmployees, employeeFilter]);
+  }, [boardEmployees, employeeFilter]);
 
   const filterSet = React.useMemo(
     () => (employeeFilter.size > 0 ? employeeFilter : undefined),
@@ -245,12 +241,9 @@ export const BoardPage: React.FC = () => {
 
   const navigate = React.useCallback(
     (delta: number) => {
-      setDate((d) => {
-        const step = view === 'week' ? delta * 7 : delta;
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate() + step);
-      });
+      setDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + delta));
     },
-    [view]
+    []
   );
 
   const goToday = React.useCallback(() => setDate(new Date()), []);
@@ -260,14 +253,10 @@ export const BoardPage: React.FC = () => {
   }, []);
 
   const isToday = isSameDay(date, today);
-  const isCurrentWeek = weekDays.some((d) => isSameDay(d, today));
 
-  const dateNavLabel = React.useMemo(
-    () => (view === 'day' ? formatHeaderDate(date) : formatWeekRange(weekStart)),
-    [view, date, weekStart]
-  );
+  const dateNavLabel = React.useMemo(() => formatHeaderDate(date), [date]);
 
-  const isAtToday = view === 'day' ? isToday : isCurrentWeek;
+  const isAtToday = isToday;
 
   const currentTimeMinutes = isToday ? today.getHours() * 60 + today.getMinutes() : -1;
   const currentTimeTop =
@@ -443,25 +432,14 @@ export const BoardPage: React.FC = () => {
       <div className={styles.toolbar}>
         <div className={styles.toolbarMain}>
           <div className={styles.toolbarGroup}>
-            {activeEmployees.length > 0 && (
+            {boardEmployees.length > 0 && (
               <EmployeeFilterPopover
-                employees={activeEmployees}
+                employees={boardEmployees}
                 selectedIds={employeeFilter}
                 onChange={setEmployeeFilter}
                 embedded
               />
             )}
-
-            <SegmentedControl
-              classNames={{ root: styles.viewSwitch }}
-              size='sm'
-              value={view}
-              onChange={(v) => setView((v as 'day' | 'week') ?? 'day')}
-              data={[
-                { value: 'day', label: 'День' },
-                { value: 'week', label: 'Неделя' }
-              ]}
-            />
           </div>
 
           <Button
@@ -475,7 +453,6 @@ export const BoardPage: React.FC = () => {
         </div>
 
         <BoardDateNav
-          view={view}
           date={date}
           label={dateNavLabel}
           isAtToday={isAtToday}
@@ -492,14 +469,13 @@ export const BoardPage: React.FC = () => {
             <Alert color='gray' title='Фильтр сотрудников' m='md'>
               Выберите сотрудников в панели выше или сбросьте фильтр
             </Alert>
-          ) : activeEmployees.length === 0 ? (
-            <Alert color='gray' title='Нет активных сотрудников' m='md'>
-              Добавьте сотрудников, чтобы отобразить рабочий стол
+          ) : boardEmployees.length === 0 ? (
+            <Alert color='gray' title='Нет сотрудников с графиком' m='md'>
+              На выбранную дату нет сотрудников с рабочим графиком
             </Alert>
           ) : (
             <>
             <div className={styles.gridScroll}>
-          {view === 'day' ? (
             <div
               className={styles.grid}
               style={{ gridTemplateColumns: `72px repeat(${Math.max(employees.length, 1)}, 1fr)` }}
@@ -556,66 +532,6 @@ export const BoardPage: React.FC = () => {
                 );
               })}
             </div>
-          ) : (
-            <div
-              className={styles.grid}
-              style={{ gridTemplateColumns: `72px repeat(7, minmax(140px, 1fr))` }}
-            >
-              <div className={styles.cornerCell} />
-              {weekDays.map((day) => (
-                <div key={day.toISOString()} className={styles.employeeHeader}>
-                  <Text size='sm' fw={600} tt='capitalize'>
-                    {day.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' })}
-                  </Text>
-                  {isSameDay(day, today) && (
-                    <Badge size='xs' variant='light' color='sage' mt={4}>
-                      Сегодня
-                    </Badge>
-                  )}
-                </div>
-              ))}
-
-              {renderTimeGrid()}
-
-              {weekDays.map((day) => {
-                const dayAppts = mapAppointmentsToBoard(appointments ?? [], day, filterSet);
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={`${styles.apptColumn} ${styles.apptColumn_clickable}`}
-                    style={{ height: TOTAL_HEIGHT }}
-                    onMouseDown={(event) =>
-                      handleColumnMouseDown(event, {
-                        columnKey: `day-${day.toISOString()}`,
-                        targetDate: day
-                      })
-                    }
-                  >
-                    {renderGridLines(isSameDay(day, today))}
-                    {preview?.columnKey === `day-${day.toISOString()}` && (
-                      <CreatePreview preview={preview} />
-                    )}
-                    {dayAppts.map((appt) => {
-                      const emp = employees.find((e) => e.id === appt.employeeId) ?? {
-                        color: getEmployeeColor(appt.employeeId),
-                        lightColor: getEmployeeLightColor(getEmployeeColor(appt.employeeId))
-                      };
-                      return (
-                        <AppointmentCard
-                          key={`${appt.id}-${appt.employeeId}`}
-                          appt={appt}
-                          color={emp.color}
-                          lightColor={emp.lightColor}
-                          showEmployee
-                          onClick={handleApptClick}
-                        />
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          )}
             </div>
 
             <Text size='xs' c='dimmed' px='md' py={6} className={styles.hint}>

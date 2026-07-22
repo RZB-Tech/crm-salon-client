@@ -47,6 +47,14 @@ export const useEmployeeWorkSchedules = (id: number) =>
     enabled: id > 0,
   });
 
+export const useAssignedEmployeesByDate = (day: string) =>
+  useQuery({
+    queryKey: ['assigned-employees', day] as const,
+    queryFn: () =>
+      apiRequest<Employee[]>(`/api/v1/work-schedules/get-assigned-employees-by-date?day=${day}`),
+    enabled: day.length > 0,
+  });
+
 export const useEmployeePayrolls = (id: number) =>
   useQuery({
     queryKey: queryKeys.employees.payrolls(id),

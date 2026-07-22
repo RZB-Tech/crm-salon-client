@@ -5,7 +5,6 @@ import { toDateInput } from '@/shared/lib/format';
 import styles from './board-date-nav.module.css';
 
 interface BoardDateNavProps {
-  view: 'day' | 'week';
   date: Date;
   label: string;
   isAtToday: boolean;
@@ -17,7 +16,6 @@ interface BoardDateNavProps {
 }
 
 export const BoardDateNav: React.FC<BoardDateNavProps> = ({
-  view,
   date,
   label,
   isAtToday,
@@ -55,7 +53,7 @@ export const BoardDateNav: React.FC<BoardDateNavProps> = ({
           <Popover.Target>
             <button
               type='button'
-              className={`${styles.dateNavLabel} ${view === 'week' ? styles.dateNavLabel_week : ''}`}
+              className={styles.dateNavLabel}
               onClick={() => setPickerOpen((value) => !value)}
             >
               <Text fw={600} size='sm' tt='capitalize' lineClamp={1}>

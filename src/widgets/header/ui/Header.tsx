@@ -14,7 +14,7 @@ import {
   Stack,
   Text,
 } from '@mantine/core';
-import { Bell, Key, List, SignOut, User } from '@phosphor-icons/react';
+import { BellIcon, KeyIcon, ListIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
         aria-label="Toggle sidebar"
         className={styles.burger}
       >
-        <List size={20} />
+        <ListIcon size={20} />
       </ActionIcon>
 
       <Text fw={700} size="sm" className={styles.tenantName}>
@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
               disabled={!connected}
             >
               <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
-                <Bell size={20} />
+                <BellIcon size={20} />
               </ActionIcon>
             </Indicator>
           </Popover.Target>
@@ -160,18 +160,18 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
             </Menu.Target>
             <Menu.Dropdown>
               <Menu.Label>Аккаунт</Menu.Label>
-              <Menu.Item leftSection={<User size={14} />} disabled>
+              <Menu.Item leftSection={<UserIcon size={14} />} disabled>
                 Профиль
               </Menu.Item>
               <Menu.Item
-                leftSection={<Key size={14} />}
+                leftSection={<KeyIcon size={14} />}
                 onClick={() => setChangePasswordOpen(true)}
               >
                 Сменить пароль
               </Menu.Item>
               <Menu.Divider />
               <Menu.Item
-                leftSection={<SignOut size={14} />}
+                leftSection={<SignOutIcon size={14} />}
                 color="red"
                 onClick={handleLogout}
                 disabled={logout.isPending}

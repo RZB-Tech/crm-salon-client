@@ -139,23 +139,23 @@ export interface EmployeeUpdatePayload {
 
 export interface WorkSchedule extends BaseEntity {
   employee_id: number;
-  day: string;
+  days: number[];
   start_time: string;
   end_time: string;
 }
 
 export interface WorkScheduleCreatePayload {
   employee_id: number;
-  day: string;
+  days: number[];
   start_time: string;
   end_time: string;
 }
 
 export interface WorkScheduleUpdatePayload {
   id: number;
-  day?: string;
-  start_time?: string;
-  end_time?: string;
+  days: number[];
+  start_time: string;
+  end_time: string;
 }
 
 export interface Absence extends BaseEntity {
