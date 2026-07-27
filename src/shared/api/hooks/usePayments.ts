@@ -7,13 +7,13 @@ import { addNotification } from '@/shared/lib/notifications';
 export const usePayments = () =>
   useQuery({
     queryKey: queryKeys.payments.all,
-    queryFn: () => apiFetchAllPost<Payment>('/api/v1/payments'),
+    queryFn: () => apiFetchAllPost<Payment>('/api/v1/transactions'),
   });
 
 export const usePayment = (id: number) =>
   useQuery({
     queryKey: queryKeys.payments.detail(id),
-    queryFn: () => apiRequest<Payment>(`/api/v1/payments/${id}`),
+    queryFn: () => apiRequest<Payment>(`/api/v1/transactions/${id}`),
     enabled: id > 0,
   });
 
@@ -22,7 +22,7 @@ export const useCreatePayment = () => {
 
   return useMutation({
     mutationFn: (payload: PaymentCreatePayload) =>
-      apiPost<Receipt, PaymentCreatePayload>('/api/v1/payments', payload),
+      apiPost<Receipt, PaymentCreatePayload>('/api/v1/transactions', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
