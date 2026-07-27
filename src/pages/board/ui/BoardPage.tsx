@@ -200,11 +200,6 @@ export const BoardPage: React.FC = () => {
 
   const today = React.useMemo(() => new Date(), []);
 
-  const activeEmployees = React.useMemo(
-    () => (allEmployees ?? []).filter((e) => e.active),
-    [allEmployees]
-  );
-
   const boardEmployees = React.useMemo(
     () => assignedEmployees ?? [],
     [assignedEmployees]
@@ -357,8 +352,8 @@ export const BoardPage: React.FC = () => {
   }, [editingId, cancelAppointment, closeForm]);
 
   const selectedEmployee = React.useMemo(
-    () => activeEmployees.find((e) => String(e.id) === formValues.employeeId),
-    [activeEmployees, formValues.employeeId]
+    () => (allEmployees ?? []).find((e) => String(e.id) === formValues.employeeId),
+    [allEmployees, formValues.employeeId]
   );
 
   const clientOptions = React.useMemo(
@@ -367,8 +362,12 @@ export const BoardPage: React.FC = () => {
   );
 
   const employeeOptions = React.useMemo(
-    () => activeEmployees.map((e) => ({ value: String(e.id), label: getEmployeeFullName(e) })),
-    [activeEmployees]
+    () => {
+      const boardIds = new Set(boardEmployees.map((e) => e.id));
+      const all = (allEmployees ?? []).filter((e) => e.active || boardIds.has(e.id));
+      return all.map((e) => ({ value: String(e.id), label: getEmployeeFullName(e) }));
+    },
+    [allEmployees, boardEmployees]
   );
 
   const serviceOptions = React.useMemo(
@@ -446,7 +445,7 @@ export const BoardPage: React.FC = () => {
             leftSection={<Plus size={16} />}
             size='sm'
             onClick={() => openCreateForm()}
-            disabled={clientOptions.length === 0 || employeeOptions.length === 0}
+            disabled={employeeOptions.length === 0}
           >
             Новая запись
           </Button>

@@ -20,6 +20,7 @@ import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
 import { authStorage } from '@/shared/api/client';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
+import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime } from '@/shared/lib/format';
 import { AUTH_ENABLED } from '@/shared/config/env';
 import LogoSvg from '@/shared/assets/logo.svg?url';
@@ -39,7 +40,14 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   const { data: notifications } = useNotifications();
   const logout = useLogout();
   const changePassword = useChangePassword();
-  const recent = (notifications ?? []).slice(0, 5);
+  const recent = React.useMemo(
+    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').slice(0, 5),
+    [notifications],
+  );
+  const unreadCount = React.useMemo(
+    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').length,
+    [notifications],
+  );
 
   const [changePasswordOpen, setChangePasswordOpen] = React.useState(false);
   const [oldPassword, setOldPassword] = React.useState('');
@@ -103,10 +111,12 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
         <Popover width={320} position="bottom-end" shadow="md" radius="md">
           <Popover.Target>
             <Indicator
-              color={connected ? 'green' : 'gray'}
-              size={8}
+              label={unreadCount > 0 ? String(unreadCount) : undefined}
+              color="red"
+              size={unreadCount > 0 ? 16 : 8}
               offset={4}
-              disabled={!connected}
+              disabled={unreadCount === 0 && !connected}
+              processing={unreadCount > 0}
             >
               <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
                 <BellIcon size={20} />

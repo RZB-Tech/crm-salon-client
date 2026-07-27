@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   apiDelete,
-  apiFetchAllGet,
   apiPatch,
   apiPost,
   apiRequest,
@@ -14,17 +13,11 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useWorkSchedules = () =>
+export const useEmployeeWorkSchedule = (employeeId: number) =>
   useQuery({
-    queryKey: queryKeys.workSchedules.all,
-    queryFn: () => apiFetchAllGet<WorkSchedule>('/api/v1/work-schedules'),
-  });
-
-export const useWorkSchedule = (id: number) =>
-  useQuery({
-    queryKey: queryKeys.workSchedules.detail(id),
-    queryFn: () => apiRequest<WorkSchedule>(`/api/v1/work-schedules/${id}`),
-    enabled: id > 0,
+    queryKey: queryKeys.employees.workSchedules(employeeId),
+    queryFn: () => apiRequest<WorkSchedule>(`/api/v1/work-schedules/${employeeId}`),
+    enabled: employeeId > 0,
   });
 
 export const useCreateWorkSchedule = () => {
@@ -36,10 +29,11 @@ export const useCreateWorkSchedule = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workSchedules.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({
         queryKey: queryKeys.employees.workSchedules(payload.employee_id),
       });
-      addNotification.success({ message: 'Смена добавлена' });
+      addNotification.success({ message: 'График сохранён' });
     },
   });
 };
@@ -53,8 +47,9 @@ export const useUpdateWorkSchedule = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workSchedules.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      addNotification.success({ message: 'Смена обновлена' });
+      addNotification.success({ message: 'График обновлён' });
     },
   });
 };
@@ -67,6 +62,7 @@ export const useDeleteWorkSchedule = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workSchedules.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       addNotification.success({ message: 'Смена удалена' });
     },

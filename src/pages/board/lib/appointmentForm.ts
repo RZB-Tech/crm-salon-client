@@ -32,6 +32,7 @@ export interface ServiceOption {
   value: string;
   label: string;
   price: number;
+  estimatedTime: number;
 }
 
 export const createEmptyServiceLine = (): AppointmentServiceLine => ({
@@ -56,12 +57,16 @@ export const buildServiceOptions = (
   employee: Employee | undefined
 ): ServiceOption[] => {
   if (!employee) return [];
-  const priceMap = new Map(catalog.map((service) => [service.id, service.price]));
-  return (employee.services ?? []).map((service) => ({
-    value: String(service.id),
-    label: service.name,
-    price: priceMap.get(service.id) ?? 0
-  }));
+  const serviceMap = new Map(catalog.map((service) => [service.id, service]));
+  return (employee.services ?? []).map((service) => {
+    const full = serviceMap.get(service.id);
+    return {
+      value: String(service.id),
+      label: service.name,
+      price: full?.price ?? 0,
+      estimatedTime: full?.estimated_time ?? 0
+    };
+  });
 };
 
 export const calcServicesTotal = (lines: AppointmentServiceLine[]): number =>
@@ -117,12 +122,44 @@ export const formValuesToPayload = (values: AppointmentFormValues): AppointmentC
 
 export const applyStartTimeChange = (
   values: AppointmentFormValues,
-  startTime: string
-): AppointmentFormValues => ({
-  ...values,
-  startTime,
-  endTime: addMinutesToTime(startTime, 60)
-});
+  startTime: string,
+  totalEstimatedTime?: number
+): AppointmentFormValues => {
+  const duration = totalEstimatedTime && totalEstimatedTime > 0 ? totalEstimatedTime : 60;
+  return {
+    ...values,
+    startTime,
+    endTime: addMinutesToTime(startTime, duration)
+  };
+};
+
+export const calcTotalEstimatedTime = (
+  lines: AppointmentServiceLine[],
+  serviceOptions: ServiceOption[]
+): number => {
+  const optionMap = new Map(serviceOptions.map((opt) => [opt.value, opt]));
+  let total = 0;
+  for (const line of lines) {
+    if (!line.serviceId) continue;
+    const opt = optionMap.get(line.serviceId);
+    if (opt && opt.estimatedTime > 0) {
+      total += opt.estimatedTime * line.quantity;
+    }
+  }
+  return total;
+};
+
+export const applyServiceDuration = (
+  values: AppointmentFormValues,
+  serviceOptions: ServiceOption[]
+): AppointmentFormValues => {
+  const totalTime = calcTotalEstimatedTime(values.services, serviceOptions);
+  if (totalTime <= 0) return values;
+  return {
+    ...values,
+    endTime: addMinutesToTime(values.startTime, totalTime)
+  };
+};
 
 export const isAppointmentFormValid = (values: AppointmentFormValues): boolean =>
   Boolean(values.clientId) &&

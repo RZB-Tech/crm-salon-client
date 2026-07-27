@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, authStorage, API_BASE_URL } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { SalonNotification, SalonNotificationWsPayload } from '@/shared/api/types';
+import { useReadNotification } from '@/shared/api/hooks/useNotifications';
 import { SalonNotificationAlertModal } from '@/shared/lib/notifications/SalonNotificationAlertModal';
 import {
   getNotificationDelayMs,
@@ -36,6 +37,7 @@ const toSalonNotification = (payload: SalonNotificationWsPayload): SalonNotifica
   title: payload.title,
   body: payload.body,
   type: payload.type,
+  status: 'pending',
   scheduled_at: payload.scheduled_at,
   delivered_at: payload.delivered_at ?? new Date().toISOString(),
   created_at: payload.scheduled_at,
@@ -44,6 +46,7 @@ const toSalonNotification = (payload: SalonNotificationWsPayload): SalonNotifica
 
 export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
+  const readNotification = useReadNotification();
   const [connected, setConnected] = React.useState(false);
   const [liveNotifications, setLiveNotifications] = React.useState<SalonNotificationWsPayload[]>([]);
   const [alertQueue, setAlertQueue] = React.useState<SalonNotificationWsPayload[]>([]);
@@ -221,13 +224,28 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
     [connected, liveNotifications],
   );
 
+  const handleReadAlert = React.useCallback(
+    (id: number, comment: string) => {
+      readNotification.mutate(
+        { id, comment },
+        {
+          onSuccess: () => dismissAlert(),
+          onError: () => dismissAlert(),
+        },
+      );
+    },
+    [readNotification, dismissAlert],
+  );
+
   return (
     <NotificationsWsContext.Provider value={value}>
       {children}
       <SalonNotificationAlertModal
         notification={currentAlert}
         queueLength={alertQueue.length}
+        loading={readNotification.isPending}
         onDismiss={dismissAlert}
+        onRead={handleReadAlert}
       />
     </NotificationsWsContext.Provider>
   );

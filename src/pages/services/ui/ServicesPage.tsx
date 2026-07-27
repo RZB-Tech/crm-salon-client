@@ -51,6 +51,7 @@ export const ServicesPage: React.FC = () => {
   const [editingService, setEditingService] = React.useState<Service | null>(null);
   const [serviceName, setServiceName] = React.useState('');
   const [servicePrice, setServicePrice] = React.useState(0);
+  const [serviceEstimatedTime, setServiceEstimatedTime] = React.useState(0);
   const [serviceCategory, setServiceCategory] = React.useState<string | null>(null);
   const [deleteServiceTarget, setDeleteServiceTarget] = React.useState<Service | null>(null);
 
@@ -120,6 +121,7 @@ export const ServicesPage: React.FC = () => {
     setEditingService(null);
     setServiceName('');
     setServicePrice(0);
+    setServiceEstimatedTime(0);
     setServiceCategory(null);
     setServiceFormOpen(true);
   }, []);
@@ -128,6 +130,7 @@ export const ServicesPage: React.FC = () => {
     setEditingService(service);
     setServiceName(service.name);
     setServicePrice(service.price);
+    setServiceEstimatedTime(service.estimated_time ?? 0);
     setServiceCategory(service.category_id != null ? String(service.category_id) : null);
     setServiceFormOpen(true);
   }, []);
@@ -144,6 +147,7 @@ export const ServicesPage: React.FC = () => {
         name: serviceName,
         price: servicePrice > 0 ? servicePrice : undefined,
         category_id: serviceCategory ? Number(serviceCategory) : null,
+        estimated_time: serviceEstimatedTime > 0 ? serviceEstimatedTime : null,
       };
       updateService.mutate(payload, { onSuccess: closeServiceForm });
       return;
@@ -152,6 +156,7 @@ export const ServicesPage: React.FC = () => {
     const payload: ServiceCreatePayload = {
       name: serviceName,
       category_id: serviceCategory ? Number(serviceCategory) : null,
+      estimated_time: serviceEstimatedTime > 0 ? serviceEstimatedTime : null,
     };
 
     createService.mutate(payload, {
@@ -169,6 +174,7 @@ export const ServicesPage: React.FC = () => {
   }, [
     serviceName,
     servicePrice,
+    serviceEstimatedTime,
     serviceCategory,
     editingService,
     createService,
@@ -317,6 +323,7 @@ export const ServicesPage: React.FC = () => {
             columns={[
               { key: 'name', label: 'Услуга' },
               { key: 'category', label: 'Категория' },
+              { key: 'duration', label: 'Длительность' },
               { key: 'price', label: 'Цена', align: 'right' },
               { key: 'actions', label: '', width: 48 },
             ]}
@@ -346,6 +353,11 @@ export const ServicesPage: React.FC = () => {
                         —
                       </Text>
                     )}
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm" c="dimmed">
+                      {service.estimated_time > 0 ? `${service.estimated_time} мин` : '—'}
+                    </Text>
                   </Table.Td>
                   <Table.Td ta="right">
                     <Text size="sm" fw={700}>
@@ -467,6 +479,15 @@ export const ServicesPage: React.FC = () => {
           onChange={(value) => setServicePrice(Number(value) || 0)}
           thousandSeparator=" "
           suffix=" сум"
+        />
+        <NumberInput
+          label="Длительность (мин)"
+          min={0}
+          step={5}
+          mb="md"
+          value={serviceEstimatedTime}
+          onChange={(value) => setServiceEstimatedTime(Number(value) || 0)}
+          suffix=" мин"
         />
         <Select
           label="Категория"

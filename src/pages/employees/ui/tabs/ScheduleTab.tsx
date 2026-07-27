@@ -30,7 +30,7 @@ import {
 import type {
   Absence,
   AbsenceType,
-  WorkSchedule,
+  WorkScheduleDay,
   WorkScheduleCreatePayload,
   WorkScheduleUpdatePayload,
 } from '@/shared/api/types';
@@ -52,21 +52,23 @@ interface ScheduleTabProps {
   employeeId: number;
 }
 
+interface DayTimeEntry {
+  day: number;
+  startTime: string;
+  endTime: string;
+}
+
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   const [scheduleFormOpen, setScheduleFormOpen] = React.useState(false);
   const [absenceFormOpen, setAbsenceFormOpen] = React.useState(false);
-  const [editingSchedule, setEditingSchedule] = React.useState<WorkSchedule | null>(null);
   const [editingAbsence, setEditingAbsence] = React.useState<Absence | null>(null);
-  const [selectedDays, setSelectedDays] = React.useState<string[]>([]);
-  const [startTime, setStartTime] = React.useState('09:00');
-  const [endTime, setEndTime] = React.useState('18:00');
+  const [dayEntries, setDayEntries] = React.useState<DayTimeEntry[]>([]);
   const [startDate, setStartDate] = React.useState(new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = React.useState(new Date().toISOString().slice(0, 10));
   const [absenceType, setAbsenceType] = React.useState<AbsenceType>('vacation');
   const [reason, setReason] = React.useState('');
-  const [deleteScheduleTarget, setDeleteScheduleTarget] = React.useState<WorkSchedule | null>(null);
   const [deleteAbsenceTarget, setDeleteAbsenceTarget] = React.useState<Absence | null>(null);
 
   const { data, isLoading } = useEmployeeWorkSchedules(employeeId);
@@ -77,63 +79,107 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   const updateAbsence = useUpdateAbsence();
   const deleteAbsence = useDeleteAbsence();
 
-  const schedules = data?.work_schedules ?? [];
+  const schedules: WorkScheduleDay[] = data?.work_schedules ?? [];
   const absences = data?.absences ?? [];
 
   const hasSchedule = schedules.length > 0;
 
-  // Карта: день → расписание
   const dayScheduleMap = React.useMemo(() => {
-    const map = new Map<number, WorkSchedule>();
-    for (const s of schedules) {
-      for (const d of s.days) map.set(d, s);
-    }
+    const map = new Map<number, WorkScheduleDay>();
+    for (const s of schedules) map.set(s.day, s);
     return map;
   }, [schedules]);
 
+  const openScheduleForm = React.useCallback(() => {
+    const entries: DayTimeEntry[] = ALL_DAYS.map((day) => {
+      const existing = dayScheduleMap.get(day);
+      return {
+        day,
+        startTime: existing ? formatTime(existing.start_time) : '09:00',
+        endTime: existing ? formatTime(existing.end_time) : '18:00',
+      };
+    });
+    setDayEntries(entries.filter((e) => dayScheduleMap.has(e.day)));
+    setScheduleFormOpen(true);
+  }, [dayScheduleMap]);
+
   const openNewSchedule = React.useCallback(() => {
-    setEditingSchedule(null);
-    setSelectedDays([]);
-    setStartTime('09:00');
-    setEndTime('18:00');
+    setDayEntries([]);
     setScheduleFormOpen(true);
   }, []);
 
-  const openEditSchedule = React.useCallback((schedule: WorkSchedule) => {
-    setEditingSchedule(schedule);
-    // Ставим ВСЕ рабочие дни из всего графика сотрудника
-    const allWorkingDays = new Set<string>();
-    for (const s of schedules) {
-      for (const d of s.days) allWorkingDays.add(String(d));
-    }
-    setSelectedDays(Array.from(allWorkingDays));
-    setStartTime(formatTime(schedule.start_time));
-    setEndTime(formatTime(schedule.end_time));
-    setScheduleFormOpen(true);
-  }, [schedules]);
+  const updateDayTime = React.useCallback((day: number, field: 'startTime' | 'endTime', value: string) => {
+    setDayEntries((prev) =>
+      prev.map((e) => (e.day === day ? { ...e, [field]: value } : e)),
+    );
+  }, []);
 
   const submitSchedule = React.useCallback(() => {
-    const days = selectedDays.map(Number);
-    if (days.length === 0) return;
+    if (dayEntries.length === 0) return;
 
-    if (editingSchedule) {
+    if (hasSchedule) {
+      // Update existing schedule entries
       const payload: WorkScheduleUpdatePayload = {
-        id: editingSchedule.id,
-        days,
-        start_time: toApiTime(startTime),
-        end_time: toApiTime(endTime),
+        work_schedules: schedules
+          .filter((s) => dayEntries.some((e) => e.day === s.day))
+          .map((s) => {
+            const entry = dayEntries.find((e) => e.day === s.day)!;
+            return { id: s.id, start_time: toApiTime(entry.startTime), end_time: toApiTime(entry.endTime) };
+          }),
       };
-      updateSchedule.mutate(payload, { onSuccess: () => setScheduleFormOpen(false) });
+
+      // For new days that don't exist yet, we create
+      const newDays = dayEntries.filter((e) => !dayScheduleMap.has(e.day));
+      const removedDays = schedules.filter((s) => !dayEntries.some((e) => e.day === s.day));
+
+      // Delete removed days
+      for (const removed of removedDays) {
+        deleteSchedule.mutate(removed.id);
+      }
+
+      if (payload.work_schedules.length > 0) {
+        updateSchedule.mutate(payload, {
+          onSuccess: () => {
+            if (newDays.length > 0) {
+              const createPayload: WorkScheduleCreatePayload = {
+                employee_id: employeeId,
+                work_schedules: newDays.map((e) => ({
+                  day: e.day,
+                  start_time: toApiTime(e.startTime),
+                  end_time: toApiTime(e.endTime),
+                })),
+              };
+              createSchedule.mutate(createPayload, { onSuccess: () => setScheduleFormOpen(false) });
+            } else {
+              setScheduleFormOpen(false);
+            }
+          },
+        });
+      } else if (newDays.length > 0) {
+        const createPayload: WorkScheduleCreatePayload = {
+          employee_id: employeeId,
+          work_schedules: newDays.map((e) => ({
+            day: e.day,
+            start_time: toApiTime(e.startTime),
+            end_time: toApiTime(e.endTime),
+          })),
+        };
+        createSchedule.mutate(createPayload, { onSuccess: () => setScheduleFormOpen(false) });
+      } else {
+        setScheduleFormOpen(false);
+      }
     } else {
       const payload: WorkScheduleCreatePayload = {
         employee_id: employeeId,
-        days,
-        start_time: toApiTime(startTime),
-        end_time: toApiTime(endTime),
+        work_schedules: dayEntries.map((e) => ({
+          day: e.day,
+          start_time: toApiTime(e.startTime),
+          end_time: toApiTime(e.endTime),
+        })),
       };
       createSchedule.mutate(payload, { onSuccess: () => setScheduleFormOpen(false) });
     }
-  }, [selectedDays, startTime, endTime, employeeId, editingSchedule, createSchedule, updateSchedule]);
+  }, [dayEntries, hasSchedule, schedules, dayScheduleMap, employeeId, createSchedule, updateSchedule, deleteSchedule]);
 
   const submitAbsence = React.useCallback(() => {
     if (editingAbsence) {
@@ -158,7 +204,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
         <div className={styles.toolbar}>
           <Text fw={600}>Недельный график</Text>
           {hasSchedule ? (
-            <Button size="xs" variant="light" leftSection={<PencilSimple size={14} />} onClick={() => openEditSchedule(schedules[0])}>
+            <Button size="xs" variant="light" leftSection={<PencilSimple size={14} />} onClick={openScheduleForm}>
               Редактировать
             </Button>
           ) : (
@@ -235,40 +281,64 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
         </DataTable>
       </div>
 
-      {/* Модалка смены */}
+      {/* Модалка графика */}
       <Modal
         opened={scheduleFormOpen}
         onClose={() => setScheduleFormOpen(false)}
-        title={editingSchedule ? 'Редактировать график' : 'Новый график'}
+        title={hasSchedule ? 'Редактировать график' : 'Новый график'}
         radius="md"
-        size="md"
+        size="lg"
       >
-        <Text size="sm" fw={500} mb={6}>Дни недели</Text>
-        <Chip.Group multiple value={selectedDays} onChange={setSelectedDays}>
+        <Text size="sm" fw={500} mb={6}>Выберите рабочие дни и задайте время</Text>
+        <Chip.Group multiple value={dayEntries.map((e) => String(e.day))} onChange={(values) => {
+          const newDays = values.map(Number);
+          setDayEntries((prev) => {
+            const kept = prev.filter((e) => newDays.includes(e.day));
+            const added = newDays
+              .filter((d) => !prev.some((e) => e.day === d))
+              .map((d) => ({ day: d, startTime: '09:00', endTime: '18:00' }));
+            return [...kept, ...added].sort((a, b) => a.day - b.day);
+          });
+        }}>
           <Group gap="xs" mb="md">
             {DAY_OF_WEEK_OPTIONS.map((opt) => (
               <Chip key={opt.value} value={opt.value} radius="md" size="sm">{opt.label}</Chip>
             ))}
           </Group>
         </Chip.Group>
-        <Group grow mb="lg">
-          <TextInput label="Начало" type="time" value={startTime} onChange={(e) => setStartTime(e.currentTarget.value)} />
-          <TextInput label="Конец" type="time" value={endTime} onChange={(e) => setEndTime(e.currentTarget.value)} />
-        </Group>
-        {editingSchedule && (
-          <>
-            <Text size="sm" fw={600} mb="xs">История изменений</Text>
-            <AuditLogsPanel tableName="employee_work_schedules" recordId={editingSchedule.id} />
-          </>
+
+        {dayEntries.length > 0 && (
+          <Stack gap="xs" mb="lg">
+            {dayEntries.map((entry) => (
+              <Group key={entry.day} grow align="center">
+                <Text size="sm" fw={500} style={{ minWidth: 30 }}>
+                  {DAY_OF_WEEK_LABELS[entry.day]}
+                </Text>
+                <TextInput
+                  type="time"
+                  size="xs"
+                  value={entry.startTime}
+                  onChange={(e) => updateDayTime(entry.day, 'startTime', e.currentTarget.value)}
+                />
+                <Text size="xs" c="dimmed" ta="center">—</Text>
+                <TextInput
+                  type="time"
+                  size="xs"
+                  value={entry.endTime}
+                  onChange={(e) => updateDayTime(entry.day, 'endTime', e.currentTarget.value)}
+                />
+              </Group>
+            ))}
+          </Stack>
         )}
+
         <Group justify="flex-end" mt="md">
           <Button variant="subtle" color="gray" onClick={() => setScheduleFormOpen(false)}>Отмена</Button>
-          {editingSchedule && (
-            <Button variant="light" color="red" onClick={() => { setScheduleFormOpen(false); setDeleteScheduleTarget(editingSchedule); }}>
-              Удалить
-            </Button>
-          )}
-          <Button onClick={submitSchedule} loading={createSchedule.isPending || updateSchedule.isPending} disabled={selectedDays.length === 0}>
+          <Button
+            onClick={submitSchedule}
+            loading={createSchedule.isPending || updateSchedule.isPending}
+            disabled={dayEntries.length === 0}
+          >
             Сохранить
           </Button>
         </Group>
@@ -294,7 +364,6 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
         </Group>
       </Modal>
 
-      <ConfirmModal opened={Boolean(deleteScheduleTarget)} title="Удалить смену" message="Удалить эту смену?" loading={deleteSchedule.isPending} onConfirm={() => deleteScheduleTarget && deleteSchedule.mutate(deleteScheduleTarget.id, { onSuccess: () => setDeleteScheduleTarget(null) })} onClose={() => setDeleteScheduleTarget(null)} />
       <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Удалить отсутствие" message="Удалить это отсутствие?" loading={deleteAbsence.isPending} onConfirm={() => deleteAbsenceTarget && deleteAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTarget(null) })} onClose={() => setDeleteAbsenceTarget(null)} />
     </Stack>
   );

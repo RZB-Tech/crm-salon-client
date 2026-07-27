@@ -71,11 +71,13 @@ export interface Service extends BaseEntity {
   name: string;
   price: number;
   category_id: number | null;
+  estimated_time: number;
 }
 
 export interface ServiceCreatePayload {
   name: string;
   category_id?: number | null;
+  estimated_time?: number | null;
 }
 
 export interface ServiceUpdatePayload {
@@ -83,6 +85,7 @@ export interface ServiceUpdatePayload {
   name?: string;
   price?: number;
   category_id?: number | null;
+  estimated_time?: number | null;
 }
 
 export interface ServiceCategoryCreatePayload {
@@ -137,25 +140,36 @@ export interface EmployeeUpdatePayload {
   percent_from_sales?: number;
 }
 
-export interface WorkSchedule extends BaseEntity {
+export interface WorkScheduleDay extends BaseEntity {
+  day: number;
+  start_time: string;
+  end_time: string;
+}
+
+export interface WorkSchedule {
   employee_id: number;
-  days: number[];
+  work_schedules: WorkScheduleDay[];
+}
+
+export interface WorkScheduleDayInput {
+  day: number;
   start_time: string;
   end_time: string;
 }
 
 export interface WorkScheduleCreatePayload {
   employee_id: number;
-  days: number[];
+  work_schedules: WorkScheduleDayInput[];
+}
+
+export interface WorkScheduleItemUpdatePayload {
+  id: number;
   start_time: string;
   end_time: string;
 }
 
 export interface WorkScheduleUpdatePayload {
-  id: number;
-  days: number[];
-  start_time: string;
-  end_time: string;
+  work_schedules: WorkScheduleItemUpdatePayload[];
 }
 
 export interface Absence extends BaseEntity {
@@ -183,7 +197,7 @@ export interface AbsenceUpdatePayload {
 }
 
 export interface EmployeeWorkScheduleResponse {
-  work_schedules: WorkSchedule[];
+  work_schedules: WorkScheduleDay[];
   absences: Absence[];
 }
 
@@ -382,6 +396,8 @@ export interface PaymentCreatePayload {
 
 export type SalonNotificationType = 'reminder' | 'other';
 
+export type SalonNotificationStatus = 'pending' | 'read' | 'cancelled';
+
 export interface SalonNotificationWsPayload {
   id: number;
   client_id: number | null;
@@ -397,6 +413,7 @@ export interface SalonNotification extends BaseEntity {
   title: string | null;
   body: string;
   type: SalonNotificationType;
+  status?: SalonNotificationStatus;
   scheduled_at: string;
   delivered_at: string | null;
 }

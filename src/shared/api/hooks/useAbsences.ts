@@ -28,6 +28,7 @@ export const useCreateAbsence = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.absences.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({
         queryKey: queryKeys.employees.workSchedules(payload.employee_id),
       });
@@ -45,6 +46,7 @@ export const useUpdateAbsence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.absences.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       addNotification.success({ message: 'Отсутствие обновлено' });
     },
@@ -59,6 +61,7 @@ export const useDeleteAbsence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.absences.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       addNotification.success({ message: 'Отсутствие удалено' });
     },

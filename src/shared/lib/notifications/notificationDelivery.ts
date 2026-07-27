@@ -1,4 +1,12 @@
 import type { SalonNotification, SalonNotificationWsPayload } from '@/shared/api/types';
+import type { SalonNotificationStatus } from '@/shared/api/types';
+
+/** Вычисляет эффективный статус уведомления (fallback когда бэк не отдаёт status) */
+export const getEffectiveStatus = (n: SalonNotification): SalonNotificationStatus => {
+  if (n.status) return n.status;
+  if (n.delivered_at) return 'read';
+  return 'pending';
+};
 
 export const toNotificationWsPayload = (
   notification: SalonNotification,

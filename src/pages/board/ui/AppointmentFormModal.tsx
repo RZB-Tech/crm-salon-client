@@ -15,12 +15,15 @@ import {
 } from '@mantine/core';
 import { Plus, Trash } from '@phosphor-icons/react';
 import type { Appointment, Client } from '@/shared/api/types';
+import { useCreateClient } from '@/shared/api/hooks/useClients';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { PayAppointmentPanel } from '@/shared/ui/PayAppointmentPanel';
 import { formatPrice } from '@/shared/lib/format';
 import {
+  applyServiceDuration,
   applyStartTimeChange,
   calcServicesTotal,
+  calcTotalEstimatedTime,
   createEmptyServiceLine,
   isAppointmentFormValid,
   type AppointmentFormValues,
@@ -74,45 +77,52 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
     [clients, values.clientId],
   );
 
+  const [quickClientOpen, setQuickClientOpen] = React.useState(false);
+  const [quickClientName, setQuickClientName] = React.useState('');
+  const [quickClientPhone, setQuickClientPhone] = React.useState('');
+
+  const createClient = useCreateClient();
+
   const total = React.useMemo(() => calcServicesTotal(values.services), [values.services]);
   const isValid = isAppointmentFormValid(values);
 
   const handleServiceSelect = React.useCallback(
     (key: string, serviceId: string | null) => {
       const option = serviceOptions.find((item) => item.value === serviceId);
-      onChange({
-        ...values,
-        services: values.services.map((line) =>
-          line.key === key
-            ? { ...line, serviceId, price: option?.price ?? line.price }
-            : line,
-        ),
-      });
+      const nextServices = values.services.map((line) =>
+        line.key === key
+          ? { ...line, serviceId, price: option?.price ?? line.price }
+          : line,
+      );
+      const updated = { ...values, services: nextServices };
+      onChange(applyServiceDuration(updated, serviceOptions));
     },
     [onChange, serviceOptions, values],
   );
 
   const handleServiceFieldChange = React.useCallback(
     (key: string, field: 'quantity' | 'price', value: number) => {
-      onChange({
-        ...values,
-        services: values.services.map((line) =>
-          line.key === key ? { ...line, [field]: value } : line,
-        ),
-      });
+      const nextServices = values.services.map((line) =>
+        line.key === key ? { ...line, [field]: value } : line,
+      );
+      const updated = { ...values, services: nextServices };
+      if (field === 'quantity') {
+        onChange(applyServiceDuration(updated, serviceOptions));
+      } else {
+        onChange(updated);
+      }
     },
-    [onChange, values],
+    [onChange, serviceOptions, values],
   );
 
   const handleRemoveService = React.useCallback(
     (key: string) => {
       const next = values.services.filter((line) => line.key !== key);
-      onChange({
-        ...values,
-        services: next.length > 0 ? next : [createEmptyServiceLine()],
-      });
+      const nextServices = next.length > 0 ? next : [createEmptyServiceLine()];
+      const updated = { ...values, services: nextServices };
+      onChange(applyServiceDuration(updated, serviceOptions));
     },
-    [onChange, values],
+    [onChange, serviceOptions, values],
   );
 
   const handleAddService = React.useCallback(() => {
@@ -159,15 +169,85 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
       <div className={styles.section}>
         <Stack gap="sm">
           <div>
-            <Select
-              label="Клиент"
-              required
-              searchable
-              data={clientOptions}
-              value={values.clientId}
-              onChange={(value) => onChange({ ...values, clientId: value })}
-            />
-            {selectedClient?.phone && (
+            {!quickClientOpen ? (
+              <Group align="flex-end" gap="xs">
+                <Select
+                  label="Клиент"
+                  required
+                  searchable
+                  data={clientOptions}
+                  value={values.clientId}
+                  onChange={(value) => onChange({ ...values, clientId: value })}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  variant="light"
+                  size="sm"
+                  leftSection={<Plus size={14} />}
+                  onClick={() => setQuickClientOpen(true)}
+                >
+                  Новый
+                </Button>
+              </Group>
+            ) : (
+              <Stack gap="xs">
+                <Text size="sm" fw={600}>Новый клиент</Text>
+                <Group grow>
+                  <TextInput
+                    label="Имя"
+                    required
+                    value={quickClientName}
+                    onChange={(event) => setQuickClientName(event.currentTarget.value)}
+                    placeholder="Имя клиента"
+                  />
+                  <TextInput
+                    label="Телефон"
+                    value={quickClientPhone}
+                    onChange={(event) => setQuickClientPhone(event.currentTarget.value)}
+                    placeholder="+7..."
+                  />
+                </Group>
+                <Group gap="xs">
+                  <Button
+                    size="xs"
+                    disabled={!quickClientName.trim()}
+                    loading={createClient.isPending}
+                    onClick={() => {
+                      createClient.mutate(
+                        {
+                          firstname: quickClientName.trim(),
+                          phone: quickClientPhone.trim() || undefined,
+                          sex: 'female' as const,
+                        },
+                        {
+                          onSuccess: (created) => {
+                            onChange({ ...values, clientId: String(created.id) });
+                            setQuickClientOpen(false);
+                            setQuickClientName('');
+                            setQuickClientPhone('');
+                          },
+                        },
+                      );
+                    }}
+                  >
+                    Создать
+                  </Button>
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => {
+                      setQuickClientOpen(false);
+                      setQuickClientName('');
+                      setQuickClientPhone('');
+                    }}
+                  >
+                    Отмена
+                  </Button>
+                </Group>
+              </Stack>
+            )}
+            {selectedClient?.phone && !quickClientOpen && (
               <Text size="xs" c="dimmed" className={styles.clientPhone}>
                 {selectedClient.phone}
               </Text>
@@ -189,7 +269,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
               step={TIME_STEP}
               value={values.startTime}
               onChange={(event) =>
-                onChange(applyStartTimeChange(values, event.currentTarget.value))
+                onChange(applyStartTimeChange(values, event.currentTarget.value, calcTotalEstimatedTime(values.services, serviceOptions)))
               }
             />
             <TextInput

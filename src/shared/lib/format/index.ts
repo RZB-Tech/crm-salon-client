@@ -245,4 +245,7 @@ export const toDateInput = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const toApiTime = (time: string): string => (time.length === 5 ? `${time}:00` : time);
+export const toApiTime = (time: string): string => {
+  if (!time) return '00:00';
+  return time.slice(0, 5);
+};

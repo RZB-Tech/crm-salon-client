@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Button, Group, Modal, Stack, Text } from '@mantine/core';
+import { Badge, Button, Group, Modal, Stack, Text, Textarea } from '@mantine/core';
 import { Bell } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
@@ -8,62 +8,92 @@ import styles from './salon-notification-alert-modal.module.css';
 interface SalonNotificationAlertModalProps {
   notification: SalonNotificationWsPayload | null;
   queueLength: number;
+  loading?: boolean;
   onDismiss: () => void;
+  onRead: (id: number, comment: string) => void;
 }
 
 export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalProps> = ({
   notification,
   queueLength,
+  loading = false,
   onDismiss,
-}) => (
-  <Modal
-    opened={notification != null}
-    onClose={onDismiss}
-    centered
-    radius="lg"
-    size="md"
-    withCloseButton
-    closeOnClickOutside={false}
-    closeOnEscape
-    overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
-    title={null}
-    padding="xl"
-    zIndex={1100}
-  >
-    {notification && (
-      <Stack gap="md" className={styles.modalContent}>
-        <div className={styles.iconWrap}>
-          <Bell size={36} weight="fill" />
-        </div>
+  onRead,
+}) => {
+  const [comment, setComment] = React.useState('');
 
-        <Badge size="sm" variant="light" mx="auto">
-          {NOTIFICATION_TYPE_LABELS[notification.type] ?? notification.type}
-        </Badge>
+  React.useEffect(() => {
+    if (notification) setComment('');
+  }, [notification?.id]);
 
-        <Text size="xl" fw={700}>
-          {notification.title ?? 'Напоминание'}
-        </Text>
+  const handleRead = React.useCallback(() => {
+    if (!notification) return;
+    onRead(notification.id, comment.trim());
+  }, [notification, comment, onRead]);
 
-        <Text size="md" c="dimmed" className={styles.body}>
-          {notification.body}
-        </Text>
+  return (
+    <Modal
+      opened={notification != null}
+      onClose={onDismiss}
+      centered
+      radius="lg"
+      size="md"
+      withCloseButton
+      closeOnClickOutside={false}
+      closeOnEscape
+      overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      title={null}
+      padding="xl"
+      zIndex={1100}
+    >
+      {notification && (
+        <Stack gap="md" className={styles.modalContent}>
+          <div className={styles.iconWrap}>
+            <Bell size={36} weight="fill" />
+          </div>
 
-        <Text size="xs" c="dimmed" className={styles.meta}>
-          Запланировано: {formatDateTime(notification.scheduled_at)}
-        </Text>
+          <Badge size="sm" variant="light" mx="auto">
+            {NOTIFICATION_TYPE_LABELS[notification.type] ?? notification.type}
+          </Badge>
 
-        {queueLength > 1 && (
-          <Text size="xs" c="dimmed">
-            Ещё {queueLength - 1} уведомлений в очереди
+          <Text size="xl" fw={700}>
+            {notification.title ?? 'Напоминание'}
           </Text>
-        )}
 
-        <Group justify="center" mt="sm">
-          <Button size="md" onClick={onDismiss} autoFocus>
-            Понятно
-          </Button>
-        </Group>
-      </Stack>
-    )}
-  </Modal>
-);
+          <Text size="md" c="dimmed" className={styles.body}>
+            {notification.body}
+          </Text>
+
+          <Text size="xs" c="dimmed" className={styles.meta}>
+            Запланировано: {formatDateTime(notification.scheduled_at)}
+          </Text>
+
+          {queueLength > 1 && (
+            <Text size="xs" c="dimmed">
+              Ещё {queueLength - 1} уведомлений в очереди
+            </Text>
+          )}
+
+          <Textarea
+            placeholder="Комментарий"
+            label="Комментарий"
+            required
+            minRows={2}
+            value={comment}
+            onChange={(event) => setComment(event.currentTarget.value)}
+            styles={{ input: { textAlign: 'left' } }}
+          />
+
+          <Group justify="center" mt="sm">
+            <Button variant="subtle" color="gray" onClick={onDismiss}>
+              Пропустить
+            </Button>
+            <Button size="md" onClick={handleRead} loading={loading} disabled={!comment.trim()}>
+              Прочитано
+            </Button>
+          </Group>
+        </Stack>
+      )}
+    </Modal>
+  );
+};

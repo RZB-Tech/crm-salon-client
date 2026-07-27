@@ -57,3 +57,41 @@ export const useDeleteNotification = () => {
     },
   });
 };
+
+export interface ReadNotificationPayload {
+  id: number;
+  comment: string;
+}
+
+export const useReadNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: ReadNotificationPayload) =>
+      apiPost<SalonNotification, { comment: string }>(
+        `/api/v1/notifications/${payload.id}/read`,
+        { comment: payload.comment },
+      ),
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(payload.id) });
+    },
+  });
+};
+
+export const useCancelNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPost<SalonNotification, Record<string, never>>(
+        `/api/v1/notifications/${id}/cancel`,
+        {},
+      ),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(id) });
+      addNotification.success({ message: 'Уведомление отменено' });
+    },
+  });
+};
