@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, Button, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
-import { BoardMiniCalendar } from './BoardMiniCalendar';
 import styles from './board-sidebar.module.css';
+import { BoardMiniCalendar } from './BoardMiniCalendar';
 
 interface BoardSidebarProps {
   date: Date;

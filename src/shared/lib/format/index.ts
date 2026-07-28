@@ -11,9 +11,6 @@ export const getEmployeeInitials = (employee: Pick<Employee, 'firstname' | 'last
   return `${first}${last}` || first;
 };
 
-export const getEmployeeLightColor = (color: string): string =>
-  `color-mix(in srgb, ${color} 18%, white)`;
-
 export const formatPrice = (value: string | number): string => {
   const num = typeof value === 'string' ? parseFloat(value) : value;
   return new Intl.NumberFormat('ru-RU').format(num) + ' сум';
@@ -75,9 +72,6 @@ export const DAY_OF_WEEK_OPTIONS = Object.entries(DAY_OF_WEEK_LABELS).map(([valu
   value,
   label,
 }));
-
-export const formatDays = (days: number[]): string =>
-  [...days].sort((a, b) => a - b).map((d) => DAY_OF_WEEK_LABELS[d] ?? d).join(', ');
 
 export const formatTime = (time: string): string => time.slice(0, 5);
 

@@ -1,13 +1,13 @@
 import React from 'react';
 import { Alert, Button, Group, Skeleton, Tabs } from '@mantine/core';
-import { Plus } from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import { usePayments } from '@/shared/api/hooks/usePayments';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
 import { ListPage } from '@/shared/ui';
-import { ReceiptsTab } from './ReceiptsTab';
-import { PaymentsTab } from './PaymentsTab';
-import { TransactionsTab } from './TransactionsTab';
-import { PayoutsTab } from './PayoutsTab';
+import { ReceiptsTab } from './tabs/ReceiptsTab';
+import { PaymentsTab } from './tabs/PaymentsTab';
+import { TransactionsTab } from './tabs/TransactionsTab';
+import { PayoutsTab } from './tabs/PayoutsTab';
 import { ReceiptFormModal } from './ReceiptFormModal';
 import { PaymentFormModal } from './PaymentFormModal';
 
@@ -57,7 +57,7 @@ export const FinancePage: React.FC = () => {
             <Button variant="light" onClick={() => openPaymentForm()}>
               Провести оплату
             </Button>
-            <Button leftSection={<Plus size={16} />} onClick={() => setReceiptFormOpen(true)}>
+            <Button leftSection={<PlusIcon size={16} />} onClick={() => setReceiptFormOpen(true)}>
               Новый чек
             </Button>
           </Group>

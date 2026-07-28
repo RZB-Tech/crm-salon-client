@@ -28,7 +28,7 @@ import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
-import { EmployeeFormModal } from './EmployeeFormModal';
+import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
 import { PaymentsTab } from './tabs/PaymentsTab';

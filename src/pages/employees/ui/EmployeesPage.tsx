@@ -30,7 +30,7 @@ import {
   getEmployeeFullName,
   getEmployeeInitials,
 } from '@/shared/lib/format';
-import { EmployeeFormModal } from './EmployeeFormModal';
+import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import styles from './employees-page.module.css';
 
 interface EmployeeCardProps {
