@@ -25,17 +25,11 @@ export const usePagination = <T>(
   const total = items.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // Сбрасываем страницу если она вышла за пределы
-  const safePage = React.useMemo(
-    () => Math.min(page, totalPages),
-    [page, totalPages],
-  );
-
-  React.useEffect(() => {
-    if (page > totalPages && totalPages > 0) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
+  // Синхронизируем страницу на этапе рендера, если она вышла за пределы (без эффекта)
+  if (page > totalPages) {
+    setPage(totalPages);
+  }
+  const safePage = Math.min(page, totalPages);
 
   const paginatedItems = React.useMemo(() => {
     const start = (safePage - 1) * pageSize;

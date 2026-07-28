@@ -1,16 +1,16 @@
 import React from 'react';
 import { Button, Modal, Table, Text } from '@mantine/core';
-import type { Payment } from '@/shared/api/types';
+import type { Transaction } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatDateTime, formatPrice, PAYMENT_METHOD_LABELS } from '@/shared/lib/format';
 
 interface PaymentsTabProps {
-  payments: Payment[];
+  payments: Transaction[];
 }
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
-  const [historyPayment, setHistoryPayment] = React.useState<Payment | null>(null);
+  const [historyPayment, setHistoryPayment] = React.useState<Transaction | null>(null);
 
   return (
     <>

@@ -4,6 +4,7 @@ import { useCreatePayment } from '@/shared/api/hooks/usePayments';
 import { useCreateReceipt, useReceipts } from '@/shared/api/hooks/useReceipts';
 import type { Appointment, PaymentMethod } from '@/shared/api/types';
 import { formatPrice, PAYMENT_METHOD_OPTIONS } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface PayAppointmentPanelProps {
   appointment: Appointment;
@@ -28,13 +29,12 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
     [receipts, appointment.id],
   );
 
-  React.useEffect(() => {
-    if (receipt) {
-      setAmount(receipt.remaining_amount > 0 ? receipt.remaining_amount : receipt.total_amount);
-    } else {
-      setAmount(appointment.total_price);
-    }
-  }, [receipt, appointment.total_price]);
+  // Сумма к оплате пересинхронизируется при появлении/обновлении чека.
+  // Поле суммы отображается только при наличии чека, поэтому ветку «без чека» опускаем.
+  useResetOnOpen(receipt, () => {
+    if (!receipt) return;
+    setAmount(receipt.remaining_amount > 0 ? receipt.remaining_amount : receipt.total_amount);
+  });
 
   const handleCreateReceipt = React.useCallback(() => {
     createReceipt.mutate({

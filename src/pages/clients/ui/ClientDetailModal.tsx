@@ -5,6 +5,7 @@ import type { Client } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatAppointmentDateTime, formatPrice, getClientFullName } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface ClientDetailModalProps {
   client: Client | null;
@@ -15,9 +16,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
   const [tab, setTab] = React.useState<string>('appointments');
   const { data: appointments, isLoading } = useClientAppointments(client?.id ?? 0);
 
-  React.useEffect(() => {
-    if (client) setTab('appointments');
-  }, [client]);
+  useResetOnOpen(client, () => setTab('appointments'));
 
   return (
     <Modal opened={Boolean(client)} onClose={onClose} title={client ? getClientFullName(client) : 'Клиент'} radius="md" size="lg">

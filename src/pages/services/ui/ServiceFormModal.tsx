@@ -3,6 +3,7 @@ import { Button, Group, Modal, NumberInput, Select, Text, TextInput } from '@man
 import { useCreateService, useUpdateService } from '@/shared/api/hooks/useServices';
 import type { Service, ServiceCategory, ServiceCreatePayload, ServiceUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface ServiceFormModalProps {
   opened: boolean;
@@ -20,13 +21,12 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({ opened, serv
   const createService = useCreateService();
   const updateService = useUpdateService();
 
-  React.useEffect(() => {
-    if (!opened) return;
+  useResetOnOpen(opened, () => {
     setName(service?.name ?? '');
     setPrice(service?.price ?? 0);
     setEstimatedTime(service?.estimated_time ?? 0);
     setCategoryId(service?.category_id != null ? String(service.category_id) : null);
-  }, [opened, service]);
+  });
 
   const categoryOptions = React.useMemo(
     () => categories.map((c) => ({ value: String(c.id), label: c.name })),

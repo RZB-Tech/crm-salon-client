@@ -381,12 +381,6 @@ export interface ReceiptCreatePayload {
   receipt_items?: ReceiptItemCreatePayload[] | null;
 }
 
-export interface Payment extends BaseEntity {
-  receipt_id: number;
-  amount: number;
-  method: PaymentMethod;
-}
-
 export interface PaymentCreatePayload {
   receipt_id: number;
   amount: number;

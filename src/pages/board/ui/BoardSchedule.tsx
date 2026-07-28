@@ -82,12 +82,9 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
 
   const scheduleDateStr = React.useMemo(() => dayjs(date).format('YYYY-MM-DD'), [date]);
 
-  const handleScheduleDateChange = React.useCallback(
-    (_newDate: string) => {
-      // Handled by parent via sidebar
-    },
-    [],
-  );
+  const handleScheduleDateChange = React.useCallback(() => {
+    // Смена даты обрабатывается родителем через сайдбар
+  }, []);
 
   const handleEventClick = React.useCallback(
     (event: ScheduleEventData) => {

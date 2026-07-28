@@ -4,6 +4,7 @@ import { useCreatePayment } from '@/shared/api/hooks/usePayments';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
 import type { PaymentMethod } from '@/shared/api/types';
 import { formatPrice, PAYMENT_METHOD_OPTIONS } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface PaymentFormModalProps {
   opened: boolean;
@@ -28,8 +29,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     [receipts],
   );
 
-  React.useEffect(() => {
-    if (!opened) return;
+  useResetOnOpen(opened, () => {
     const receipt = initialReceiptId != null
       ? (receipts ?? []).find((r) => r.id === initialReceiptId)
       : null;
@@ -37,7 +37,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     setAmount(receipt?.remaining_amount ?? 0);
     setMethod('cash');
     setAddChangeToDeposit(false);
-  }, [opened, initialReceiptId, receipts]);
+  });
 
   const handleSubmit = React.useCallback(() => {
     if (!receiptId) return;

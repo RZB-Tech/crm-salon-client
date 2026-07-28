@@ -4,6 +4,7 @@ import { useCreateMaterial, useUpdateMaterial } from '@/shared/api/hooks/useMate
 import type { Material, MaterialCreatePayload, MaterialUpdatePayload, MeasurementUnit } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({ value, label }));
 
@@ -34,10 +35,7 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ opened, ma
   const createMaterial = useCreateMaterial();
   const updateMaterial = useUpdateMaterial();
 
-  React.useEffect(() => {
-    if (!opened) return;
-    setForm(material ? materialToForm(material) : emptyForm());
-  }, [opened, material]);
+  useResetOnOpen(opened, () => setForm(material ? materialToForm(material) : emptyForm()));
 
   const handleSubmit = React.useCallback(() => {
     if (material) {

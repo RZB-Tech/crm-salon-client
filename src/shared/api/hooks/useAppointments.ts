@@ -4,7 +4,6 @@ import {
   apiFetchAllPost,
   apiPatch,
   apiPost,
-  apiPostGetMany,
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
@@ -25,13 +24,6 @@ export const useAppointment = (id: number) =>
     enabled: id > 0,
   });
 
-export const useAppointmentsMany = (ids: number[]) =>
-  useQuery({
-    queryKey: queryKeys.appointments.many(ids),
-    queryFn: () => apiPostGetMany<Appointment>('/api/v1/appointments', ids),
-    enabled: ids.length > 0,
-  });
-
 export const useCreateAppointment = () => {
   const queryClient = useQueryClient();
 
@@ -46,30 +38,6 @@ export const useCreateAppointment = () => {
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось создать запись' });
-    },
-  });
-};
-
-export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
-export type AppointmentCancelledReason =
-  | 'client changed his mind'
-  | 'mistaken input'
-  | 'incorrect client'
-  | 'incorrect date';
-
-export const useUpdateAppointment = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: { id: number; status?: AppointmentStatus; notes?: string | null }) =>
-      apiPatch<Appointment, typeof payload>('/api/v1/appointments', payload),
-    onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
-      addNotification.success({ message: 'Запись обновлена' });
-    },
-    onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось обновить запись' });
     },
   });
 };

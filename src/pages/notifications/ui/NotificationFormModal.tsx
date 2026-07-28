@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group, Modal, Select, Textarea, TextInput } from '@mantine/core';
 import { useCreateNotification } from '@/shared/api/hooks/useNotifications';
 import type { SalonNotificationType } from '@/shared/api/types';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface NotificationFormModalProps {
   opened: boolean;
@@ -15,9 +16,12 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
   const [scheduledAt, setScheduledAt] = React.useState('');
   const createNotification = useCreateNotification();
 
-  React.useEffect(() => {
-    if (opened) { setTitle(''); setBody(''); setScheduledAt(''); setType('reminder'); }
-  }, [opened]);
+  useResetOnOpen(opened, () => {
+    setTitle('');
+    setBody('');
+    setScheduledAt('');
+    setType('reminder');
+  });
 
   const handleSubmit = React.useCallback(() => {
     createNotification.mutate(

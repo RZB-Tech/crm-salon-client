@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppointment } from '@/shared/api/hooks/useAppointments';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import {
   appointmentToFormValues,
   emptyAppointmentForm,
@@ -41,10 +42,10 @@ export const useBoardForm = ({
     setCancelConfirmOpen(false);
   }, []);
 
-  React.useEffect(() => {
+  useResetOnOpen(editingAppointment, () => {
     if (!editingAppointment || formMode !== 'edit' || editingEmployeeId == null) return;
     setFormValues(appointmentToFormValues(editingAppointment, editingEmployeeId));
-  }, [editingAppointment, editingEmployeeId, formMode]);
+  });
 
   const openCreateForm = React.useCallback(
     (prefill?: Partial<AppointmentFormValues>, targetDate?: Date) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, Button, Group, Skeleton, Tabs } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
-import { usePayments } from '@/shared/api/hooks/usePayments';
+import { useTransactions } from '@/shared/api/hooks/useTransactions';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
 import { ListPage } from '@/shared/ui';
 import { ReceiptsTab } from './tabs/ReceiptsTab';
@@ -18,7 +18,7 @@ export const FinancePage: React.FC = () => {
   const [paymentReceiptId, setPaymentReceiptId] = React.useState<number | null>(null);
 
   const { data: receipts, isLoading: receiptsLoading, isError: receiptsError } = useReceipts();
-  const { data: payments, isLoading: paymentsLoading, isError: paymentsError } = usePayments();
+  const { data: payments, isLoading: paymentsLoading, isError: paymentsError } = useTransactions();
 
   const openPaymentForm = React.useCallback((receiptId?: number) => {
     setPaymentReceiptId(receiptId ?? null);

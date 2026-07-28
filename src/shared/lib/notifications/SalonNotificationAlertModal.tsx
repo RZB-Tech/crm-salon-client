@@ -3,6 +3,7 @@ import { Badge, Box, Button, Group, Modal, Stack, Text, Textarea } from '@mantin
 import { BellIcon } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import styles from './salon-notification-alert-modal.module.css';
 
 interface SalonNotificationAlertModalProps {
@@ -22,9 +23,7 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
 }) => {
   const [comment, setComment] = React.useState('');
 
-  React.useEffect(() => {
-    if (notification) setComment('');
-  }, [notification?.id]);
+  useResetOnOpen(notification?.id, () => setComment(''));
 
   const handleRead = React.useCallback(() => {
     if (!notification) return;

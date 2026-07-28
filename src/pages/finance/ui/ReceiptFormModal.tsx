@@ -6,6 +6,7 @@ import { useMaterials } from '@/shared/api/hooks/useMaterials';
 import { useCreateReceipt } from '@/shared/api/hooks/useReceipts';
 import type { ReceiptType } from '@/shared/api/types';
 import { formatPrice, getClientFullName } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface ReceiptFormModalProps {
   opened: boolean;
@@ -32,9 +33,7 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
     setMaterialQty(1);
   }, []);
 
-  React.useEffect(() => {
-    if (opened) resetForm();
-  }, [opened, resetForm]);
+  useResetOnOpen(opened, resetForm);
 
   const appointmentOptions = React.useMemo(
     () =>

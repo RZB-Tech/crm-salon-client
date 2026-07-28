@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group, Modal, NumberInput, Select } from '@mantine/core';
 import { useUpdateClientDeposit } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface DepositModalProps {
   client: Client | null;
@@ -13,9 +14,10 @@ export const DepositModal: React.FC<DepositModalProps> = ({ client, onClose }) =
   const [operation, setOperation] = React.useState<'1' | '-1'>('1');
   const updateDeposit = useUpdateClientDeposit();
 
-  React.useEffect(() => {
-    if (client) { setAmount(0); setOperation('1'); }
-  }, [client]);
+  useResetOnOpen(client, () => {
+    setAmount(0);
+    setOperation('1');
+  });
 
   const handleSubmit = React.useCallback(() => {
     if (!client || amount <= 0) return;

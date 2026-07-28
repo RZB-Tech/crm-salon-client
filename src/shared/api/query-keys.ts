@@ -7,7 +7,6 @@ export const queryKeys = {
   employees: {
     all: ['employees'] as const,
     detail: (id: number) => ['employees', id] as const,
-    many: (ids: number[]) => ['employees', 'many', ...ids] as const,
     workSchedules: (id: number) => ['employees', id, 'work-schedules'] as const,
     payrolls: (id: number) => ['employees', id, 'payrolls'] as const,
     appointments: (id: number) => ['employees', id, 'appointments'] as const,
@@ -43,17 +42,6 @@ export const queryKeys = {
   appointments: {
     all: ['appointments'] as const,
     detail: (id: number) => ['appointments', id] as const,
-    many: (ids: number[]) => ['appointments', 'many', ...ids] as const,
-  },
-  appointmentRecords: {
-    all: ['appointment-records'] as const,
-    detail: (id: number) => ['appointment-records', id] as const,
-    many: (ids: number[]) => ['appointment-records', 'many', ...ids] as const,
-  },
-  appointmentServices: {
-    all: ['appointment-services'] as const,
-    detail: (id: number) => ['appointment-services', id] as const,
-    many: (ids: number[]) => ['appointment-services', 'many', ...ids] as const,
   },
   materials: {
     all: ['materials'] as const,
@@ -62,10 +50,6 @@ export const queryKeys = {
   receipts: {
     all: ['receipts'] as const,
     detail: (id: number) => ['receipts', id] as const,
-  },
-  payments: {
-    all: ['payments'] as const,
-    detail: (id: number) => ['payments', id] as const,
   },
   notifications: {
     all: ['notifications'] as const,

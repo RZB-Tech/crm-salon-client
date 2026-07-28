@@ -3,6 +3,7 @@ import { Box, Group, Button, MultiSelect, Text, Badge, Skeleton } from '@mantine
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useUpdateEmployee } from '@/shared/api/hooks/useEmployees';
 import type { Employee } from '@/shared/api/types';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import styles from '../employee-profile.module.css';
 
 interface ServicesTabProps {
@@ -17,9 +18,9 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
     (employee.services ?? []).map((s) => String(s.id)),
   );
 
-  React.useEffect(() => {
-    setSelected((employee.services ?? []).map((s) => String(s.id)));
-  }, [employee.services]);
+  useResetOnOpen(employee.services, () =>
+    setSelected((employee.services ?? []).map((s) => String(s.id))),
+  );
 
   const serviceOptions = React.useMemo(
     () => (services ?? []).map((s) => ({ value: String(s.id), label: s.name })),

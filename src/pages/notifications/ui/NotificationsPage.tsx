@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionIcon, Alert, Badge, Button, Group, Modal, Skeleton, Table, Tabs, Text, Textarea, Tooltip } from '@mantine/core';
-import { Check, Plus, X } from '@phosphor-icons/react';
+import { CheckIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
 import { useCancelNotification, useNotifications, useReadNotification } from '@/shared/api/hooks/useNotifications';
 import { DataTable, DataTableRow, ListPage } from '@/shared/ui';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
@@ -48,7 +48,7 @@ export const NotificationsPage: React.FC = () => {
           <Badge variant="light" color={connected ? 'green' : 'gray'} leftSection={<span className={`${styles.statusDot} ${connected ? styles.statusDot_online : styles.statusDot_offline}`} />}>
             {connected ? 'Поток подключён' : 'Поток отключён'}
           </Badge>
-          <Button leftSection={<Plus size={16} />} onClick={() => setFormOpen(true)}>Создать</Button>
+          <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Создать</Button>
         </Group>
       }
     >
@@ -92,12 +92,12 @@ export const NotificationsPage: React.FC = () => {
                     <>
                       <Tooltip label="Прочитано">
                         <ActionIcon variant="subtle" color="green" size="sm" onClick={() => { setReadTarget(item.id); setReadComment(''); }}>
-                          <Check size={14} />
+                          <CheckIcon size={14} />
                         </ActionIcon>
                       </Tooltip>
                       <Tooltip label="Отменить">
                         <ActionIcon variant="subtle" color="orange" size="sm" onClick={() => cancelNotification.mutate(item.id)} loading={cancelNotification.isPending}>
-                          <X size={14} />
+                          <XIcon size={14} />
                         </ActionIcon>
                       </Tooltip>
                     </>

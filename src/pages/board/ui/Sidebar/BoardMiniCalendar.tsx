@@ -1,7 +1,8 @@
 import React from 'react';
 import { ActionIcon, Box, Text, UnstyledButton } from '@mantine/core';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { isSameDay, toDateInput } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import styles from './board-mini-calendar.module.css';
 
 interface BoardMiniCalendarProps {
@@ -40,9 +41,7 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
     month: date.getMonth()
   }));
 
-  React.useEffect(() => {
-    setViewMonth({ year: date.getFullYear(), month: date.getMonth() });
-  }, [date]);
+  useResetOnOpen(date, () => setViewMonth({ year: date.getFullYear(), month: date.getMonth() }));
 
   const monthLabel = React.useMemo(
     () =>
@@ -76,13 +75,13 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
     <Box className={styles.calendar}>
       <Box className={styles.calendarHeader}>
         <ActionIcon variant='subtle' color='gray' size='sm' onClick={handlePrevMonth}>
-          <CaretLeft size={16} />
+          <CaretLeftIcon size={16} />
         </ActionIcon>
         <Text size='sm' fw={600} tt='capitalize' className={styles.calendarTitle}>
           {monthLabel}
         </Text>
         <ActionIcon variant='subtle' color='gray' size='sm' onClick={handleNextMonth}>
-          <CaretRight size={16} />
+          <CaretRightIcon size={16} />
         </ActionIcon>
       </Box>
 

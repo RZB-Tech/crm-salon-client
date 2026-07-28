@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group, Modal, NumberInput, Select } from '@mantine/core';
 import { useUpdateMaterialQuantity } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface QuantityModalProps {
   material: Material | null;
@@ -13,9 +14,10 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
   const [operation, setOperation] = React.useState<'1' | '-1'>('1');
   const updateQuantity = useUpdateMaterialQuantity();
 
-  React.useEffect(() => {
-    if (material) { setValue(1); setOperation('1'); }
-  }, [material]);
+  useResetOnOpen(material, () => {
+    setValue(1);
+    setOperation('1');
+  });
 
   const handleSubmit = React.useCallback(() => {
     if (!material) return;

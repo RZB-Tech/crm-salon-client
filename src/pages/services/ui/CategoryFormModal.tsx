@@ -3,6 +3,7 @@ import { Button, Group, Modal, Text, TextInput } from '@mantine/core';
 import { useCreateServiceCategory, useUpdateServiceCategory } from '@/shared/api/hooks/useServices';
 import type { ServiceCategory, ServiceCategoryCreatePayload, ServiceCategoryUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface CategoryFormModalProps {
   opened: boolean;
@@ -15,10 +16,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ opened, ca
   const createCategory = useCreateServiceCategory();
   const updateCategory = useUpdateServiceCategory();
 
-  React.useEffect(() => {
-    if (!opened) return;
-    setName(category?.name ?? '');
-  }, [opened, category]);
+  useResetOnOpen(opened, () => setName(category?.name ?? ''));
 
   const handleSubmit = React.useCallback(() => {
     if (category) {

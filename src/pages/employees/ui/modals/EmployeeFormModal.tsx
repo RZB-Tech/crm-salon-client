@@ -18,6 +18,7 @@ import type {
   Employee,
   EmployeeUpdatePayload,
 } from '@/shared/api/types';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface EmployeeFormState {
   firstname: string;
@@ -109,11 +110,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const { data: services, isLoading: servicesLoading } = useServices();
   const { data: specializations, isLoading: specializationsLoading } = useSpecializations();
 
-  React.useEffect(() => {
-    if (opened) {
-      setForm(employee ? employeeToForm(employee) : emptyForm());
-    }
-  }, [opened, employee]);
+  useResetOnOpen(opened, () => setForm(employee ? employeeToForm(employee) : emptyForm()));
 
   const serviceOptions = React.useMemo(
     () => (services ?? []).map((s) => ({ value: String(s.id), label: s.name })),

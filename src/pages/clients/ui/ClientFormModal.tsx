@@ -3,6 +3,7 @@ import { Button, Group, Modal, NumberInput, Select, Textarea, TextInput } from '
 import { useCreateClient, useUpdateClient } from '@/shared/api/hooks/useClients';
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { SEX_OPTIONS } from '@/shared/lib/format';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface ClientFormState {
   firstname: string;
@@ -52,10 +53,7 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
 
-  React.useEffect(() => {
-    if (!opened) return;
-    setForm(client ? clientToForm(client) : emptyForm());
-  }, [opened, client]);
+  useResetOnOpen(opened, () => setForm(client ? clientToForm(client) : emptyForm()));
 
   const handleSubmit = React.useCallback(() => {
     if (client) {

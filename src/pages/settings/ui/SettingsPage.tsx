@@ -18,6 +18,7 @@ import {
   type TenantPreferences,
 } from '@/shared/api/hooks/useTenantPreferences';
 import { ListPage } from '@/shared/ui';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { SpecializationsSection } from './SpecializationsSection';
 
 export const SettingsPage: React.FC = () => {
@@ -26,9 +27,8 @@ export const SettingsPage: React.FC = () => {
 
   const [form, setForm] = React.useState<TenantPreferences | null>(null);
 
-  React.useEffect(() => {
-    if (prefs && !form) setForm(prefs);
-  }, [prefs, form]);
+  // Инициализируем форму один раз при загрузке prefs, не затирая правки пользователя
+  useResetOnOpen(prefs, () => setForm((current) => current ?? prefs ?? null));
 
   const handleSave = React.useCallback(() => {
     if (!form) return;

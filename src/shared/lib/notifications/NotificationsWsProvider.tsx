@@ -61,7 +61,9 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
     queryKey: queryKeys.notifications.all,
     queryFn: () => apiFetchAllPost<SalonNotification>('/api/v1/notifications'),
     enabled: isAuthenticated,
-    refetchInterval: POLL_INTERVAL_MS,
+    // Пока SSE подключён — уведомления приходят пушем, опрос не нужен.
+    // Polling включается только как fallback при обрыве соединения.
+    refetchInterval: connected ? false : POLL_INTERVAL_MS,
   });
 
   const currentAlert = alertQueue[0] ?? null;
