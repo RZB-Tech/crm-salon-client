@@ -29,6 +29,8 @@ export const shouldShowNotification = (
   nowMs = Date.now(),
 ): boolean => {
   if (shownIds.has(notification.id)) return false;
+  const status = getEffectiveStatus(notification);
+  if (status === 'read' || status === 'cancelled') return false;
   if (notification.delivered_at) return true;
   return isNotificationDue(notification, nowMs);
 };

@@ -129,7 +129,8 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
 
     for (const notification of notifications) {
       if (!shouldShowNotification(notification, shownIdsRef.current, nowMs)) {
-        if (!notification.delivered_at && getNotificationDelayMs(notification, nowMs) > 0) {
+        const status = notification.status;
+        if (status !== 'read' && status !== 'cancelled' && !notification.delivered_at && getNotificationDelayMs(notification, nowMs) > 0) {
           if (!scheduleTimersRef.current.has(notification.id)) {
             const delay = getNotificationDelayMs(notification, nowMs);
             const timerId = window.setTimeout(() => {

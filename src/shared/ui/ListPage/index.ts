@@ -1,1 +1,1 @@
-export { ListPage, listPageStyles } from './ListPage';
+export { ListPage } from './ListPage';

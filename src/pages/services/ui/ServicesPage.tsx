@@ -37,7 +37,7 @@ import type {
   ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination, listPageStyles } from '@/shared/ui';
+import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import styles from './services-page.module.css';
@@ -315,7 +315,7 @@ export const ServicesPage: React.FC = () => {
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
               size="sm"
-              className={listPageStyles.searchInput}
+              style={{ flex: 1, maxWidth: 360 }}
             />
           </Group>
 

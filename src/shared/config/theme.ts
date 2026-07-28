@@ -1,20 +1,16 @@
 import { createTheme, rem, type MantineColorsTuple } from '@mantine/core';
 
-/**
- * Brand-палитра sage (10 оттенков от светлого к тёмному).
- * Индекс 6 = primary (#4b6a50), индекс 7 = hover/dark (#3a533f).
- */
 const sage: MantineColorsTuple = [
-  '#eef2ef', // 0 — gold-wash / rose-wash
-  '#d3ddd6', // 1 — gold-soft
-  '#b4c7b8', // 2
-  '#8faa94', // 3
-  '#6d8d73', // 4
-  '#567558', // 5
-  '#4b6a50', // 6 — brand primary (gold/sage)
-  '#3a533f', // 7 — sage-dark / hover
-  '#2d4031', // 8
-  '#223026', // 9
+  '#F1EAE3',
+  '#E8DDD4', 
+  '#D9C9BA', 
+  '#CBAE98', 
+  '#C09A7E', 
+  '#B5886A', 
+  '#C8AC95', 
+  '#AC7D63', 
+  '#8B5E44', 
+  '#6B4530', 
 ];
 
 export const theme = createTheme({

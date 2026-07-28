@@ -1,7 +1,5 @@
 import React from 'react';
-import { Group, Text, ActionIcon, Select } from '@mantine/core';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
-import styles from './pagination.module.css';
+import { Group, Pagination as MantinePagination, Select, Text } from '@mantine/core';
 
 interface PaginationProps {
   page: number;
@@ -24,26 +22,27 @@ export const Pagination: React.FC<PaginationProps> = ({
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
 
-  const handlePrev = React.useCallback(() => {
-    if (page > 1) onPageChange(page - 1);
-  }, [page, onPageChange]);
-
-  const handleNext = React.useCallback(() => {
-    if (page < totalPages) onPageChange(page + 1);
-  }, [page, totalPages, onPageChange]);
-
   if (total <= pageSize && !onPageSizeChange) return null;
 
   return (
-    <Group className={styles.root} justify="space-between">
-      <Group gap="sm">
+    <Group
+      justify='space-between'
+      py='sm'
+      px='md'
+      style={{
+        borderTop: '1px solid var(--mantine-color-gray-2)',
+        background: 'var(--mantine-color-white)',
+        borderRadius: '0 0 var(--mantine-radius-lg) var(--mantine-radius-lg)',
+      }}
+    >
+      <Group gap='sm'>
         {onPageSizeChange && (
           <>
-            <Text size="sm" c="dimmed">
+            <Text size='sm' c='dimmed'>
               Показать:
             </Text>
             <Select
-              size="xs"
+              size='xs'
               w={72}
               data={pageSizeOptions.map((size) => ({
                 value: String(size),
@@ -57,36 +56,18 @@ export const Pagination: React.FC<PaginationProps> = ({
             />
           </>
         )}
-        <Text size="sm" c="dimmed">
+        <Text size='sm' c='dimmed'>
           {from}–{to} из {total}
         </Text>
       </Group>
 
-      <Group gap={4}>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="sm"
-          disabled={page <= 1}
-          onClick={handlePrev}
-          aria-label="Предыдущая страница"
-        >
-          <CaretLeft size={16} />
-        </ActionIcon>
-        <Text size="sm" fw={500} className={styles.pageLabel}>
-          {page} / {totalPages}
-        </Text>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          size="sm"
-          disabled={page >= totalPages}
-          onClick={handleNext}
-          aria-label="Следующая страница"
-        >
-          <CaretRight size={16} />
-        </ActionIcon>
-      </Group>
+      <MantinePagination
+        value={page}
+        onChange={onPageChange}
+        total={totalPages}
+        size='sm'
+        radius='md'
+      />
     </Group>
   );
 };

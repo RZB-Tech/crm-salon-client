@@ -1,6 +1,5 @@
 import React from 'react';
-import { Text } from '@mantine/core';
-import styles from './list-page.module.css';
+import { Group, Stack, Text, Title } from '@mantine/core';
 
 interface ListPageProps {
   title: string;
@@ -19,23 +18,25 @@ export const ListPage: React.FC<ListPageProps> = ({
   children,
   className,
 }) => (
-  <div className={[styles.page, className].filter(Boolean).join(' ')}>
-    <div className={styles.header}>
-      <div className={styles.titleBlock}>
-        <Text size="xl" fw={700}>
-          {title}
-        </Text>
+  <Stack
+    gap='lg'
+    p='xl'
+    h='100%'
+    className={className}
+    style={{ overflowY: 'auto', background: 'var(--mantine-color-gray-0)' }}
+  >
+    <Group justify='space-between' align='flex-start' wrap='wrap' gap='md'>
+      <div>
+        <Title order={3}>{title}</Title>
         {subtitle && (
-          <Text size="sm" c="dimmed" mt={2}>
+          <Text size='sm' c='dimmed' mt={2}>
             {subtitle}
           </Text>
         )}
       </div>
       {actions}
-    </div>
-    {filters && <div className={styles.filters}>{filters}</div>}
+    </Group>
+    {filters}
     {children}
-  </div>
+  </Stack>
 );
-
-export { styles as listPageStyles };

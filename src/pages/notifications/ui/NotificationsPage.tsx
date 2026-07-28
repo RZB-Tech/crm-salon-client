@@ -15,16 +15,15 @@ import {
   TextInput,
   Tooltip,
 } from '@mantine/core';
-import { Plus, Trash, Check, X } from '@phosphor-icons/react';
+import { Plus, Check, X } from '@phosphor-icons/react';
 import {
   useCancelNotification,
   useCreateNotification,
-  useDeleteNotification,
   useNotifications,
   useReadNotification,
 } from '@/shared/api/hooks/useNotifications';
 import type { SalonNotificationType } from '@/shared/api/types';
-import { ConfirmModal, DataTable, DataTableRow, ListPage } from '@/shared/ui';
+import { DataTable, DataTableRow, ListPage } from '@/shared/ui';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
@@ -32,7 +31,6 @@ import styles from './notifications-page.module.css';
 
 export const NotificationsPage: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
-  const [deleteTarget, setDeleteTarget] = React.useState<number | null>(null);
   const [title, setTitle] = React.useState('');
   const [body, setBody] = React.useState('');
   const [type, setType] = React.useState<SalonNotificationType>('reminder');
@@ -41,13 +39,23 @@ export const NotificationsPage: React.FC = () => {
   const { connected } = useNotificationsWs();
   const { data: notifications, isLoading, isError } = useNotifications();
   const createNotification = useCreateNotification();
-  const deleteNotification = useDeleteNotification();
   const readNotification = useReadNotification();
   const cancelNotification = useCancelNotification();
 
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
   const [readTarget, setReadTarget] = React.useState<number | null>(null);
   const [readComment, setReadComment] = React.useState('');
+
+  const items = React.useMemo(() => {
+    const all = notifications ?? [];
+    if (statusFilter === 'all') return all;
+    return all.filter((item) => getEffectiveStatus(item) === statusFilter);
+  }, [notifications, statusFilter]);
+
+  const pendingCount = React.useMemo(
+    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').length,
+    [notifications],
+  );
 
   const submitForm = React.useCallback(() => {
     createNotification.mutate(
@@ -86,17 +94,6 @@ export const NotificationsPage: React.FC = () => {
       </ListPage>
     );
   }
-
-  const items = React.useMemo(() => {
-    const all = notifications ?? [];
-    if (statusFilter === 'all') return all;
-    return all.filter((item) => getEffectiveStatus(item) === statusFilter);
-  }, [notifications, statusFilter]);
-
-  const pendingCount = React.useMemo(
-    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').length,
-    [notifications],
-  );
 
   return (
     <ListPage
@@ -218,16 +215,6 @@ export const NotificationsPage: React.FC = () => {
                     </Tooltip>
                   </>
                 )}
-                <Tooltip label="Удалить">
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    size="sm"
-                    onClick={() => setDeleteTarget(item.id)}
-                  >
-                    <Trash size={14} />
-                  </ActionIcon>
-                </Tooltip>
               </Group>
             </Table.Td>
           </DataTableRow>
@@ -271,18 +258,6 @@ export const NotificationsPage: React.FC = () => {
           </Button>
         </Group>
       </Modal>
-
-      <ConfirmModal
-        opened={deleteTarget != null}
-        title="Удалить уведомление"
-        message="Удалить это уведомление?"
-        loading={deleteNotification.isPending}
-        onConfirm={() =>
-          deleteTarget != null &&
-          deleteNotification.mutate(deleteTarget, { onSuccess: () => setDeleteTarget(null) })
-        }
-        onClose={() => setDeleteTarget(null)}
-      />
 
       <Modal
         opened={readTarget != null}
