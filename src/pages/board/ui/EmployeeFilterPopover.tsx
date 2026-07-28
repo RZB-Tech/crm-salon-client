@@ -1,9 +1,9 @@
 import React from 'react';
-import { Badge, Box, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
+import { Avatar, Badge, Box, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlass, Users } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
-import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+
 import styles from './employee-filter-popover.module.css';
 
 interface EmployeeFilterPopoverProps {
@@ -138,11 +138,9 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
                     onClick={(event) => event.stopPropagation()}
                     aria-label={name}
                   />
-                  <PersonAvatar
-                    seed={employee.id}
-                    initials={getEmployeeInitials(employee)}
-                    size='xs'
-                  />
+                  <Avatar radius="md" size="sm" color="sage">
+                    {getEmployeeInitials(employee)}
+                  </Avatar>
                   <Text size='sm' lineClamp={1} className={styles.employeeFilterName}>
                     {name}
                   </Text>

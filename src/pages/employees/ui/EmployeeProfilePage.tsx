@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
+  Avatar,
   Card,
   Group,
   Text,
@@ -25,7 +26,7 @@ import { useResetPassword } from '@/shared/api/hooks/useAuth';
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { EmployeeFormModal } from './EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -116,11 +117,9 @@ export const EmployeeProfilePage: React.FC = () => {
 
         <Card padding="lg" radius="lg" shadow="xs" className={styles.headerCard}>
           <Box className={styles.headerLeft}>
-            <PersonAvatar
-              seed={employee.id}
-              initials={getEmployeeInitials(employee)}
-              size="profile"
-            />
+            <Avatar radius="md" size={64} color="sage">
+              {getEmployeeInitials(employee)}
+            </Avatar>
             <Box>
               <Group gap={10}>
                 <Text fw={700} size="xl">

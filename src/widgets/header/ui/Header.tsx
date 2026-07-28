@@ -28,7 +28,6 @@ import { AUTH_ENABLED } from '@/shared/config/env';
 import LogoSvg from '@/shared/assets/logo.svg?url';
 import MiniLogoSvg from '@/shared/assets/miniLogo.svg?url';
 import styles from './header.module.css';
-import { PersonAvatar } from '@/shared/ui';
 
 interface HeaderProps {
   collapsed: boolean;
@@ -166,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
           <Menu shadow="md" width={200} position="bottom-end" radius="md">
             <Menu.Target>
               <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Профиль">
-                <PersonAvatar seed={1} initials="A" size="md" />
+                <Avatar radius="md" size="md" color="sage">A</Avatar>
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>

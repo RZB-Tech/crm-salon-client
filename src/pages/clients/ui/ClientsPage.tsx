@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Avatar,
   Group,
   Text,
   TextInput,
@@ -35,7 +36,7 @@ import {
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
-import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
@@ -247,7 +248,7 @@ export const ClientsPage: React.FC = () => {
           <DataTableRow key={client.id}>
             <Table.Td>
               <Group gap={10}>
-                <PersonAvatar seed={client.id} initials={getClientInitials(client)} size="xs" />
+                <Avatar radius="md" size="sm" color="sage">{getClientInitials(client)}</Avatar>
                 <Text size="sm" fw={600}>
                   {getClientFullName(client)}
                 </Text>

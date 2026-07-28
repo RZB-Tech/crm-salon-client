@@ -1,22 +1,5 @@
 import type { AbsenceType, Client, Employee, PayrollType, Sex } from '@/shared/api/types';
 
-const AVATAR_COLORS = [
-  '#4f46e5',
-  '#7c3aed',
-  '#2563eb',
-  '#0891b2',
-  '#059669',
-  '#16a34a',
-  '#ca8a04',
-  '#ea580c',
-  '#dc2626',
-  '#db2777',
-  '#c026d3',
-  '#9333ea',
-  '#0d9488',
-  '#0284c7',
-  '#e11d48'
-];
 
 export const getEmployeeFullName = (
   employee: Pick<Employee, 'firstname' | 'lastname' | 'middlename'>
@@ -27,8 +10,6 @@ export const getEmployeeInitials = (employee: Pick<Employee, 'firstname' | 'last
   const last = employee.lastname?.charAt(0).toUpperCase() ?? '';
   return `${first}${last}` || first;
 };
-
-export const getEmployeeColor = (id: number): string => AVATAR_COLORS[id % AVATAR_COLORS.length];
 
 export const getEmployeeLightColor = (color: string): string =>
   `color-mix(in srgb, ${color} 18%, white)`;

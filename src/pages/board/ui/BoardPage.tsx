@@ -9,6 +9,7 @@ import {
   Alert,
   Stack,
   Avatar,
+  Loader,
 } from '@mantine/core';
 import { ResourcesDayView, type ScheduleEventData } from '@mantine/schedule';
 import { Plus } from '@phosphor-icons/react';
@@ -24,7 +25,7 @@ import { useClients } from '@/shared/api/hooks/useClients';
 import { useServices } from '@/shared/api/hooks/useServices';
 import type { Employee } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { BackgroundRefreshIndicator } from '@/shared/ui/BackgroundRefreshIndicator';
+
 import {
   getClientFullName,
   getEmployeeFullName,
@@ -306,7 +307,12 @@ export const BoardPage: React.FC = () => {
 
   return (
     <Box className={styles.page}>
-      <BackgroundRefreshIndicator isRefreshing={isBackgroundFetching} />
+      {isBackgroundFetching && (
+        <Box className={styles.refreshIndicator}>
+          <Loader size="xs" />
+          <Text size="xs" c="dimmed">Обновление...</Text>
+        </Box>
+      )}
 
       <Box className={styles.toolbar}>
         <Box className={styles.toolbarMain}>

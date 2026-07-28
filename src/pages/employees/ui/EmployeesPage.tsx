@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Avatar,
   Box,
   Group,
   Text,
@@ -23,7 +24,7 @@ import {
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { PersonAvatar } from '@/shared/ui/PersonAvatar';
+
 import {
   formatPrice,
   getEmployeeFullName,
@@ -54,11 +55,9 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
     >
       <Group justify="space-between" align="flex-start" mb="md">
         <Group gap={12}>
-          <PersonAvatar
-            seed={employee.id}
-            initials={getEmployeeInitials(employee)}
-            size="lg"
-          />
+          <Avatar radius="md" size="lg" color="sage">
+            {getEmployeeInitials(employee)}
+          </Avatar>
           <Box>
             <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
             <Text size="sm" c="dimmed">{specializationName ?? employee.phone ?? '—'}</Text>

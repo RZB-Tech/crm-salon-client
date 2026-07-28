@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Center, Loader } from '@mantine/core';
-import { AppLayout } from '@/shared/ui/layout';
+import { AppLayout } from '@/shared/ui/AppLayout';
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
 import { AUTH_ENABLED } from '@/shared/config/env';
 
