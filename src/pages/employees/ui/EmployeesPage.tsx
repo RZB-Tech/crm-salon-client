@@ -15,7 +15,7 @@ import {
   ActionIcon,
   Menu,
 } from '@mantine/core';
-import { Plus, DotsThree, Trash, ArrowRight } from '@phosphor-icons/react';
+import { PlusIcon, DotsThreeIcon, TrashIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import {
   useCreateEmployee,
   useDeleteEmployee,
@@ -73,14 +73,14 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
                 size="sm"
                 onClick={(e) => e.stopPropagation()}
               >
-                <DotsThree size={16} weight="bold" />
+                <DotsThreeIcon size={16} weight="bold" />
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Item leftSection={<ArrowRight size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
+              <Menu.Item leftSection={<ArrowRightIcon size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
                 Открыть профиль
               </Menu.Item>
-              <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
+              <Menu.Item leftSection={<TrashIcon size={14} />} color="red" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
                 Удалить
               </Menu.Item>
             </Menu.Dropdown>
@@ -155,7 +155,7 @@ export const EmployeesPage: React.FC = () => {
           <Text size="xl" fw={700}>Сотрудники</Text>
           <Text size="sm" c="dimmed" mt={2}>{list.length} в системе</Text>
         </Box>
-        <Button leftSection={<Plus size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
+        <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
       </Box>
 
       {list.length === 0 ? (

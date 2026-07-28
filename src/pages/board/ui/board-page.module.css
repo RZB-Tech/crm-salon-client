@@ -63,6 +63,26 @@
   gap: 8px;
 }
 
+/* шедулера стили бля */
+
+.scheduleContainer {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.scheduleRoot {
+  border: none !important;
+  border-radius: 0 !important;
+  --resources-day-view-resource-label-width: 300px;
+}
+
+.scheduleResourceLabel {
+  justify-content: flex-start !important;
+  padding: 0 12px !important;
+}
+
 .refreshIndicator {
   position: fixed;
   top: 72px;

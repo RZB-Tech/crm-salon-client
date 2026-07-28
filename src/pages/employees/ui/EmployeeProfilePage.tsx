@@ -16,7 +16,7 @@ import {
   Tooltip,
   Box,
 } from '@mantine/core';
-import { ArrowLeft, PencilSimple, Trash, Phone, Cake, DotsThree, LockKey, Copy, Check } from '@phosphor-icons/react';
+import { ArrowLeftIcon, PencilSimpleIcon, TrashIcon, PhoneIcon, CakeIcon, DotsThreeIcon, LockKeyIcon, CopyIcon, CheckIcon } from '@phosphor-icons/react';
 import {
   useEmployee,
   useUpdateEmployee,
@@ -98,7 +98,7 @@ export const EmployeeProfilePage: React.FC = () => {
   if (isError || !employee) {
     return (
       <Box className={styles.page}>
-        <Button variant="subtle" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
+        <Button variant="subtle" leftSection={<ArrowLeftIcon size={16} />} onClick={() => navigate('/employees')} w="fit-content">
           К сотрудникам
         </Button>
         <Alert color="red" title="Сотрудник не найден">
@@ -111,7 +111,7 @@ export const EmployeeProfilePage: React.FC = () => {
   return (
     <Box className={styles.page}>
       <Box className={styles.pageTop}>
-        <Button variant="subtle" color="gray" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
+        <Button variant="subtle" color="gray" leftSection={<ArrowLeftIcon size={16} />} onClick={() => navigate('/employees')} w="fit-content">
           К сотрудникам
         </Button>
 
@@ -131,11 +131,11 @@ export const EmployeeProfilePage: React.FC = () => {
               </Group>
               <Box className={styles.contactRow}>
                 <Group gap={5}>
-                  <Phone size={14} color="var(--mantine-color-gray-5)" />
+                  <PhoneIcon size={14} color="var(--mantine-color-gray-5)" />
                   <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
                 </Group>
                 <Group gap={5}>
-                  <Cake size={14} color="var(--mantine-color-gray-5)" />
+                  <CakeIcon size={14} color="var(--mantine-color-gray-5)" />
                   <Text size="sm" c="dimmed">{employee.birth_date}</Text>
                 </Group>
               </Box>
@@ -143,18 +143,18 @@ export const EmployeeProfilePage: React.FC = () => {
           </Box>
 
           <Group gap="sm">
-            <Button variant="light" leftSection={<PencilSimple size={16} />} onClick={() => setEditOpen(true)}>
+            <Button variant="light" leftSection={<PencilSimpleIcon size={16} />} onClick={() => setEditOpen(true)}>
               Редактировать
             </Button>
             <Menu shadow="md" width={200} position="bottom-end" radius="md">
               <Menu.Target>
                 <ActionIcon variant="light" color="gray" size="lg" aria-label="Ещё действия">
-                  <DotsThree size={18} weight="bold" />
+                  <DotsThreeIcon size={18} weight="bold" />
                 </ActionIcon>
               </Menu.Target>
               <Menu.Dropdown>
                 <Menu.Item
-                  leftSection={<LockKey size={14} />}
+                  leftSection={<LockKeyIcon size={14} />}
                   onClick={handleResetPassword}
                   disabled={resetPassword.isPending}
                 >
@@ -162,7 +162,7 @@ export const EmployeeProfilePage: React.FC = () => {
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
-                  leftSection={<Trash size={14} />}
+                  leftSection={<TrashIcon size={14} />}
                   color="red"
                   onClick={() => setDeleteOpen(true)}
                 >
@@ -193,7 +193,7 @@ export const EmployeeProfilePage: React.FC = () => {
                       onClick={copy}
                       size="sm"
                     >
-                      {copied ? <Check size={14} /> : <Copy size={14} />}
+                      {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                     </ActionIcon>
                   </Tooltip>
                 )}

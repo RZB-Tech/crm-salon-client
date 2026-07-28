@@ -1,6 +1,7 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import { Alert, Avatar, Box, Text } from '@mantine/core';
+import { useElementSize } from '@mantine/hooks';
 import { ResourcesDayView, type ScheduleEventData } from '@mantine/schedule';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeInitials } from '@/shared/lib/format';
@@ -8,6 +9,11 @@ import type { AppointmentFormValues } from '../lib/appointmentForm';
 import styles from './board-page.module.css';
 
 const padTime = (v: number) => v.toString().padStart(2, '0');
+
+const RESOURCE_LABEL_WIDTH = 300;
+const START_HOUR = 8;
+const END_HOUR = 24;
+const SLOT_COUNT = END_HOUR - START_HOUR;
 
 interface BoardAppointment {
   id: number;
@@ -44,6 +50,14 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
   onEventClick,
   onSlotCreate,
 }) => {
+  const { ref: containerRef, width: containerWidth } = useElementSize();
+
+  const slotWidth = React.useMemo(() => {
+    if (containerWidth <= 0) return '80px';
+    const available = containerWidth - RESOURCE_LABEL_WIDTH;
+    return `${Math.floor(available / SLOT_COUNT)}px`;
+  }, [containerWidth]);
+
   const resources = React.useMemo(
     () =>
       filteredEmployees.map((emp) => ({
@@ -129,49 +143,57 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
   }
 
   return (
-    <ResourcesDayView
-      date={scheduleDateStr}
-      onDateChange={handleScheduleDateChange}
-      resources={resources}
-      events={scheduleEvents}
-      startTime="09:00:00"
-      endTime="21:00:00"
-      locale="ru"
-      withCurrentTimeIndicator
-      withDragSlotSelect
-      onTimeSlotClick={handleTimeSlotClick}
-      onSlotDragEnd={handleSlotDragEnd}
-      onEventClick={handleEventClick}
-      startScrollTime="09:00:00"
-      renderResourceLabel={(resource) => (
-        <Box className={styles.resourceLabel}>
-          <Avatar size="sm" radius="md" color="sage">
-            {getEmployeeInitials(
-              filteredEmployees.find((e) => e.id === resource.id) ?? {
-                firstname: String(resource.label).charAt(0),
-                lastname: '',
-              },
-            )}
-          </Avatar>
-          <Box>
-            <Text size="sm" fw={500} lineClamp={1}>
-              {resource.label}
-            </Text>
-            <Text size="xs" c="dimmed">
-              Сотрудник
-            </Text>
+    <Box ref={containerRef} className={styles.scheduleContainer}>
+      <ResourcesDayView
+        date={scheduleDateStr}
+        onDateChange={handleScheduleDateChange}
+        resources={resources}
+        events={scheduleEvents}
+        startTime="08:00:00"
+        endTime="24:00:00"
+        locale="ru"
+        withCurrentTimeIndicator
+        withDragSlotSelect
+        withHeader={false}
+        slotWidth={slotWidth}
+        onTimeSlotClick={handleTimeSlotClick}
+        onSlotDragEnd={handleSlotDragEnd}
+        onEventClick={handleEventClick}
+        startScrollTime="09:00:00"
+        classNames={{
+          resourcesDayViewRoot: styles.scheduleRoot,
+          resourcesDayViewResourceLabel: styles.scheduleResourceLabel,
+        }}
+        renderResourceLabel={(resource) => (
+          <Box className={styles.resourceLabel}>
+            <Avatar size="sm" radius="md" color="sage">
+              {getEmployeeInitials(
+                filteredEmployees.find((e) => e.id === resource.id) ?? {
+                  firstname: String(resource.label).charAt(0),
+                  lastname: '',
+                },
+              )}
+            </Avatar>
+            <Box>
+              <Text size="sm" fw={500} lineClamp={1}>
+                {resource.label}
+              </Text>
+              <Text size="xs" c="dimmed">
+                Сотрудник
+              </Text>
+            </Box>
           </Box>
-        </Box>
-      )}
-      labels={{
-        today: 'Сегодня',
-        day: 'День',
-        week: 'Неделя',
-        month: 'Месяц',
-        resources: 'Сотрудники',
-        previous: 'Назад',
-        next: 'Вперёд',
-      }}
-    />
+        )}
+        labels={{
+          today: 'Сегодня',
+          day: 'День',
+          week: 'Неделя',
+          month: 'Месяц',
+          resources: 'Сотрудники',
+          previous: 'Назад',
+          next: 'Вперёд',
+        }}
+      />
+    </Box>
   );
 };
