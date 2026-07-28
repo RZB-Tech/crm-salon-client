@@ -1,5 +1,5 @@
 import React from 'react';
-import { Group, Button, MultiSelect, Text, Badge, Skeleton } from '@mantine/core';
+import { Box, Group, Button, MultiSelect, Text, Badge, Skeleton } from '@mantine/core';
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useUpdateEmployee } from '@/shared/api/hooks/useEmployees';
 import type { Employee } from '@/shared/api/types';
@@ -50,13 +50,13 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
   }
 
   return (
-    <div>
-      <div className={styles.toolbar}>
+    <Box>
+      <Box className={styles.toolbar}>
         <Text fw={600}>Услуги и специализация</Text>
         <Button size="sm" onClick={handleSave} loading={updateEmployee.isPending} disabled={!isDirty}>
           Сохранить
         </Button>
-      </div>
+      </Box>
 
       <MultiSelect
         label="Назначенные услуги"
@@ -78,6 +78,6 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
           ))}
         </Group>
       )}
-    </div>
+    </Box>
   );
 };

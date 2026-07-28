@@ -1,7 +1,7 @@
 import React from 'react';
-import { Stack, Tooltip } from '@mantine/core';
+import { Box, Stack, Text, Tooltip } from '@mantine/core';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Scissors, UserList, SquaresFour, Users, Package, CurrencyCircleDollar, Bell, GearSix } from '@phosphor-icons/react';
+import { ScissorsIcon, UserListIcon, SquaresFourIcon, UsersIcon, PackageIcon, CurrencyCircleDollarIcon, BellIcon, GearSixIcon } from '@phosphor-icons/react';
 import styles from './sidebar.module.css';
 
 interface SidebarProps {
@@ -15,14 +15,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/board', label: 'Рабочий стол', Icon: SquaresFour },
-  { path: '/clients', label: 'Клиенты', Icon: Users },
-  { path: '/services', label: 'Услуги', Icon: Scissors },
-  { path: '/employees', label: 'Сотрудники', Icon: UserList },
-  { path: '/materials', label: 'Склад', Icon: Package },
-  { path: '/finance', label: 'Финансы', Icon: CurrencyCircleDollar },
-  { path: '/notifications', label: 'Уведомления', Icon: Bell },
-  { path: '/settings', label: 'Настройки', Icon: GearSix },
+  { path: '/board', label: 'Рабочий стол', Icon: SquaresFourIcon },
+  { path: '/clients', label: 'Клиенты', Icon: UsersIcon },
+  { path: '/services', label: 'Услуги', Icon: ScissorsIcon },
+  { path: '/employees', label: 'Сотрудники', Icon: UserListIcon },
+  { path: '/materials', label: 'Склад', Icon: PackageIcon },
+  { path: '/finance', label: 'Финансы', Icon: CurrencyCircleDollarIcon },
+  { path: '/notifications', label: 'Уведомления', Icon: BellIcon },
+  { path: '/settings', label: 'Настройки', Icon: GearSixIcon },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
@@ -43,10 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           .filter(Boolean)
           .join(' ')}
       >
-        <span className={styles.icon}>
+        <Box component="span" className={styles.icon}>
           <item.Icon size={20} weight={isActive ? 'fill' : 'regular'} />
-        </span>
-        {!collapsed && <span className={styles.label}>{item.label}</span>}
+        </Box>
+        {!collapsed && <Text span className={styles.label}>{item.label}</Text>}
       </NavLink>
     );
 

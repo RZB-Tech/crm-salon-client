@@ -1,5 +1,6 @@
 import React from 'react';
-import { Skeleton, Stack } from '@mantine/core';
+import { Box, Skeleton, Stack } from '@mantine/core';
+import styles from './page-skeleton.module.css';
 
 interface PageSkeletonProps {
   variant?: 'table' | 'cards' | 'board';
@@ -17,26 +18,20 @@ export const PageSkeleton: React.FC<PageSkeletonProps> = ({ variant = 'table' })
 
   if (variant === 'cards') {
     return (
-      <div style={{ padding: '24px' }}>
+      <Box p="xl">
         <Skeleton height={48} mb="lg" />
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '16px',
-          }}
-        >
+        <Box className={styles.cardsGrid}>
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} height={180} radius="lg" />
           ))}
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   }
 
   // table variant
   return (
-    <div style={{ padding: '24px' }}>
+    <Box p="xl">
       <Skeleton height={48} mb="lg" />
       <Skeleton height={56} mb="sm" />
       <Stack gap="sm">
@@ -44,6 +39,6 @@ export const PageSkeleton: React.FC<PageSkeletonProps> = ({ variant = 'table' })
           <Skeleton key={i} height={48} radius="md" />
         ))}
       </Stack>
-    </div>
+    </Box>
   );
 };

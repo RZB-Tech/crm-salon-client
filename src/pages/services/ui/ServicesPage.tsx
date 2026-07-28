@@ -315,7 +315,7 @@ export const ServicesPage: React.FC = () => {
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
               size="sm"
-              style={{ flex: 1, maxWidth: 360 }}
+              className={styles.searchInput}
             />
           </Group>
 

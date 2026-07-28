@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, ScrollArea, Table, Text } from '@mantine/core';
+import { Box, Card, ScrollArea, Stack, Table, Text } from '@mantine/core';
 import { Table as TableIcon } from '@phosphor-icons/react';
 import styles from './data-table.module.css';
 
@@ -72,14 +72,14 @@ export const DataTable: React.FC<DataTableProps> = ({
             {isEmpty ? (
               <Table.Tr>
                 <Table.Td colSpan={colSpan}>
-                  <div className={styles.empty}>
-                    <div className={styles.emptyIcon}>
+                  <Stack align="center" gap="xs" className={styles.empty}>
+                    <Box className={styles.emptyIcon}>
                       <TableIcon size={24} />
-                    </div>
+                    </Box>
                     <Text size="sm" c="dimmed">
                       {emptyMessage}
                     </Text>
-                  </div>
+                  </Stack>
                 </Table.Td>
               </Table.Tr>
             ) : (

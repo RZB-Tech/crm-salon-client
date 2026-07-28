@@ -1,5 +1,6 @@
 import React from 'react';
 import { Avatar, type MantineSize } from '@mantine/core';
+import styles from './person-avatar.module.css';
 
 interface PersonAvatarProps {
   seed?: number;
@@ -29,19 +30,23 @@ export const PersonAvatar: React.FC<PersonAvatarProps> = ({
 }) => {
   const mantineSize = SIZE_MAP[size] ?? 'md';
 
+  const cls = [
+    styles.avatar,
+    onClick ? styles.clickable : '',
+    muted ? styles.muted : '',
+    selected ? styles.selected : '',
+    className ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <Avatar
       radius='md'
       size={mantineSize}
       color='sage'
-      className={className}
+      className={cls}
       onClick={onClick}
-      style={{
-        cursor: onClick ? 'pointer' : undefined,
-        opacity: muted ? 0.5 : 1,
-        outline: selected ? '2px solid var(--mantine-color-sage-5)' : undefined,
-        outlineOffset: selected ? '2px' : undefined,
-      }}
     >
       {initials}
     </Avatar>

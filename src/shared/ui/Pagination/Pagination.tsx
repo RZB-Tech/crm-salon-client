@@ -1,5 +1,6 @@
 import React from 'react';
 import { Group, Pagination as MantinePagination, Select, Text } from '@mantine/core';
+import styles from './pagination.module.css';
 
 interface PaginationProps {
   page: number;
@@ -29,11 +30,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       justify='space-between'
       py='sm'
       px='md'
-      style={{
-        borderTop: '1px solid var(--mantine-color-gray-2)',
-        background: 'var(--mantine-color-white)',
-        borderRadius: '0 0 var(--mantine-radius-lg) var(--mantine-radius-lg)',
-      }}
+      className={styles.root}
     >
       <Group gap='sm'>
         {onPageSizeChange && (

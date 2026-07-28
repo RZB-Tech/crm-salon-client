@@ -3,8 +3,10 @@ import {
   ActionIcon,
   Avatar,
   Badge,
+  Box,
   Button,
   Group,
+  Image,
   Indicator,
   Menu,
   Modal,
@@ -24,6 +26,7 @@ import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDeliv
 import { formatDateTime } from '@/shared/lib/format';
 import { AUTH_ENABLED } from '@/shared/config/env';
 import LogoSvg from '@/shared/assets/logo.svg?url';
+import MiniLogoSvg from '@/shared/assets/miniLogo.svg?url';
 import styles from './header.module.css';
 import { PersonAvatar } from '@/shared/ui';
 
@@ -31,9 +34,6 @@ interface HeaderProps {
   collapsed: boolean;
   onToggle: () => void;
 }
-
-const SIDEBAR_WIDTH = 280;
-const SIDEBAR_COLLAPSED_WIDTH = 72;
 
 export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   const { connected } = useNotificationsWs();
@@ -80,17 +80,18 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
 
   return (
     <header className={styles.header}>
-      <div
-        className={styles.left}
-        style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH }}
+      <Box
+        className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`}
       >
-        <img
-          src={LogoSvg}
+        <Image
+          src={collapsed ? MiniLogoSvg : LogoSvg}
           alt="Logo"
           className={styles.logoIcon}
-          style={{ height: collapsed ? 28 : 57 }}
+          h={collapsed ? 28 : 57}
+          w="auto"
+          fit="contain"
         />
-      </div>
+      </Box>
 
       <ActionIcon
         variant="subtle"
@@ -140,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
                   </Text>
                 ) : (
                   recent.map((item) => (
-                    <div key={item.id} className={styles.notificationItem}>
+                    <Box key={item.id} className={styles.notificationItem}>
                       <Text size="sm" fw={500} lineClamp={1}>
                         {item.title ?? 'Уведомление'}
                       </Text>
@@ -150,7 +151,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
                       <Text size="xs" c="dimmed" mt={4}>
                         {formatDateTime(item.scheduled_at)}
                       </Text>
-                    </div>
+                    </Box>
                   ))
                 )}
               </ScrollArea.Autosize>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionIcon, Text } from '@mantine/core';
+import { ActionIcon, Box, Text, UnstyledButton } from '@mantine/core';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { isSameDay, toDateInput } from '@/shared/lib/format';
 import styles from './board-mini-calendar.module.css';
@@ -73,8 +73,8 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
   }, []);
 
   return (
-    <div className={styles.calendar}>
-      <div className={styles.calendarHeader}>
+    <Box className={styles.calendar}>
+      <Box className={styles.calendarHeader}>
         <ActionIcon variant='subtle' color='gray' size='sm' onClick={handlePrevMonth}>
           <CaretLeft size={16} />
         </ActionIcon>
@@ -84,20 +84,20 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
         <ActionIcon variant='subtle' color='gray' size='sm' onClick={handleNextMonth}>
           <CaretRight size={16} />
         </ActionIcon>
-      </div>
+      </Box>
 
-      <div className={styles.weekdays}>
+      <Box className={styles.weekdays}>
         {WEEKDAY_LABELS.map((label) => (
-          <span key={label} className={styles.weekday}>
+          <Text span key={label} className={styles.weekday}>
             {label}
-          </span>
+          </Text>
         ))}
-      </div>
+      </Box>
 
-      <div className={styles.days}>
+      <Box className={styles.days}>
         {cells.map((cell, index) => {
           if (!cell) {
-            return <span key={`empty-${index}`} className={styles.dayEmpty} />;
+            return <Box component="span" key={`empty-${index}`} className={styles.dayEmpty} />;
           }
 
           const dateKey = toDateInput(cell);
@@ -106,9 +106,8 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
           const hasAppointments = markedDates?.has(dateKey);
 
           return (
-            <button
+            <UnstyledButton
               key={dateKey}
-              type='button'
               className={[
                 styles.day,
                 isSelected ? styles.day_selected : '',
@@ -120,10 +119,10 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
               onClick={() => onDateChange(cell)}
             >
               {cell.getDate()}
-            </button>
+            </UnstyledButton>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

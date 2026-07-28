@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Box,
   Group,
   Text,
   Badge,
@@ -58,10 +59,10 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
             initials={getEmployeeInitials(employee)}
             size="lg"
           />
-          <div>
+          <Box>
             <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
             <Text size="sm" c="dimmed">{specializationName ?? employee.phone ?? '—'}</Text>
-          </div>
+          </Box>
         </Group>
         <Group gap={6}>
           <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">{employee.active ? 'Активен' : 'Неактивен'}</Badge>
@@ -135,28 +136,28 @@ export const EmployeesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className={styles.page}>
+      <Box className={styles.page}>
         <Skeleton height={48} mb="md" />
         <SimpleGrid cols={2} spacing="md">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={280} radius="lg" />)}</SimpleGrid>
-      </div>
+      </Box>
     );
   }
 
   if (isError) {
-    return <div className={styles.page}><Alert color="red" title="Не удалось загрузить сотрудников">Проверьте доступность API</Alert></div>;
+    return <Box className={styles.page}><Alert color="red" title="Не удалось загрузить сотрудников">Проверьте доступность API</Alert></Box>;
   }
 
   const list = employees ?? [];
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <div>
+    <Box className={styles.page}>
+      <Box className={styles.pageHeader}>
+        <Box>
           <Text size="xl" fw={700}>Сотрудники</Text>
           <Text size="sm" c="dimmed" mt={2}>{list.length} в системе</Text>
-        </div>
+        </Box>
         <Button leftSection={<Plus size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
-      </div>
+      </Box>
 
       {list.length === 0 ? (
         <Text c="dimmed">Сотрудники не найдены</Text>
@@ -190,6 +191,6 @@ export const EmployeesPage: React.FC = () => {
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}
       />
-    </div>
+    </Box>
   );
 };

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Loader } from '@mantine/core';
+import { Box, Loader } from '@mantine/core';
+import styles from './background-refresh-indicator.module.css';
 
 interface BackgroundRefreshIndicatorProps {
   isRefreshing: boolean;
@@ -15,25 +16,9 @@ export const BackgroundRefreshIndicator: React.FC<BackgroundRefreshIndicatorProp
   if (!isRefreshing) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 72,
-        right: 16,
-        zIndex: 100,
-        background: 'var(--mantine-color-white)',
-        padding: '8px 12px',
-        borderRadius: '8px',
-        boxShadow: 'var(--mantine-shadow-sm)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontSize: '12px',
-        color: 'var(--mantine-color-dimmed)',
-      }}
-    >
+    <Box className={styles.indicator}>
       <Loader size="xs" />
       Обновление...
-    </div>
+    </Box>
   );
 };

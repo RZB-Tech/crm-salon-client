@@ -1,0 +1,5 @@
+.root {
+  border-top: 1px solid var(--mantine-color-gray-2);
+  background: var(--mantine-color-white);
+  border-radius: 0 0 var(--mantine-radius-lg) var(--mantine-radius-lg);
+}

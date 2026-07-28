@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Box, Button, Card, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useLogin } from '@/shared/api/hooks/useAuth';
+import styles from './login-page.module.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,24 +18,15 @@ export const LoginPage: React.FC = () => {
   }, [login, password, loginMutation, navigate]);
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--mantine-color-gray-0)',
-        padding: 24,
-      }}
-    >
+    <Box className={styles.wrapper}>
       <Card padding="xl" radius="lg" shadow="sm" w={400}>
         <Stack gap="md">
-          <div>
+          <Box>
             <Title order={3}>Salon CRM</Title>
             <Text size="sm" c="dimmed" mt={4}>
               Войдите в систему
             </Text>
-          </div>
+          </Box>
           <TextInput
             label="Логин"
             required
@@ -56,6 +48,6 @@ export const LoginPage: React.FC = () => {
           </Button>
         </Stack>
       </Card>
-    </div>
+    </Box>
   );
 };

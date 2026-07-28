@@ -1,0 +1,16 @@
+.avatar {
+  transition: opacity 0.15s;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.muted {
+  opacity: 0.5;
+}
+
+.selected {
+  outline: 2px solid var(--mantine-color-sage-5);
+  outline-offset: 2px;
+}

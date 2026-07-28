@@ -13,6 +13,7 @@ import {
   Menu,
   CopyButton,
   Tooltip,
+  Box,
 } from '@mantine/core';
 import { ArrowLeft, PencilSimple, Trash, Phone, Cake, DotsThree, LockKey, Copy, Check } from '@phosphor-icons/react';
 import {
@@ -86,41 +87,41 @@ export const EmployeeProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className={styles.page}>
+      <Box className={styles.page}>
         <Skeleton height={120} radius="lg" />
         <Skeleton height={400} radius="lg" />
-      </div>
+      </Box>
     );
   }
 
   if (isError || !employee) {
     return (
-      <div className={styles.page}>
+      <Box className={styles.page}>
         <Button variant="subtle" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
           К сотрудникам
         </Button>
         <Alert color="red" title="Сотрудник не найден">
           Проверьте доступность API или вернитесь к списку.
         </Alert>
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.pageTop}>
+    <Box className={styles.page}>
+      <Box className={styles.pageTop}>
         <Button variant="subtle" color="gray" leftSection={<ArrowLeft size={16} />} onClick={() => navigate('/employees')} w="fit-content">
           К сотрудникам
         </Button>
 
         <Card padding="lg" radius="lg" shadow="xs" className={styles.headerCard}>
-          <div className={styles.headerLeft}>
+          <Box className={styles.headerLeft}>
             <PersonAvatar
               seed={employee.id}
               initials={getEmployeeInitials(employee)}
               size="profile"
             />
-            <div>
+            <Box>
               <Group gap={10}>
                 <Text fw={700} size="xl">
                   {getEmployeeFullName(employee)}
@@ -129,7 +130,7 @@ export const EmployeeProfilePage: React.FC = () => {
                   {employee.active ? 'Активен' : 'Неактивен'}
                 </Badge>
               </Group>
-              <div className={styles.contactRow}>
+              <Box className={styles.contactRow}>
                 <Group gap={5}>
                   <Phone size={14} color="var(--mantine-color-gray-5)" />
                   <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
@@ -138,9 +139,9 @@ export const EmployeeProfilePage: React.FC = () => {
                   <Cake size={14} color="var(--mantine-color-gray-5)" />
                   <Text size="sm" c="dimmed">{employee.birth_date}</Text>
                 </Group>
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
 
           <Group gap="sm">
             <Button variant="light" leftSection={<PencilSimple size={16} />} onClick={() => setEditOpen(true)}>
@@ -204,9 +205,9 @@ export const EmployeeProfilePage: React.FC = () => {
             </Text>
           </Alert>
         )}
-      </div>
+      </Box>
 
-      <div className={styles.pageBody}>
+      <Box className={styles.pageBody}>
         <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>
           <Tabs.List>
             <Tabs.Tab value="overview">Обзор</Tabs.Tab>
@@ -236,7 +237,7 @@ export const EmployeeProfilePage: React.FC = () => {
             <AuditLogsPanel tableName="employees" recordId={employee.id} />
           </Tabs.Panel>
         </Tabs>
-      </div>
+      </Box>
 
       <EmployeeFormModal
         opened={editOpen}
@@ -254,6 +255,6 @@ export const EmployeeProfilePage: React.FC = () => {
         onConfirm={handleDelete}
         onClose={() => setDeleteOpen(false)}
       />
-    </div>
+    </Box>
   );
 };

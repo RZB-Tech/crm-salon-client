@@ -33,6 +33,7 @@ import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import styles from './materials-page.module.css';
 
 const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({
   value,
@@ -205,7 +206,7 @@ export const MaterialsPage: React.FC = () => {
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
             size="sm"
-            style={{ width: 280 }}
+            className={styles.searchInput}
           />
           <Button leftSection={<Plus size={16} />} onClick={openCreate}>
             Добавить материал

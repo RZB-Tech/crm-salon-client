@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Text, TextInput } from '@mantine/core';
+import { Box, Button, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlass } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import { BoardMiniCalendar } from './BoardMiniCalendar';
@@ -45,9 +45,9 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.clock}>{clockLabel}</div>
+      <Box className={styles.clock}>{clockLabel}</Box>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <Text size='sm' fw={600} tt='capitalize' lineClamp={2}>
           {dateLabel}
         </Text>
@@ -56,13 +56,13 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
             Сегодня
           </Button>
         )}
-      </div>
+      </Box>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <BoardMiniCalendar date={date} markedDates={markedDates} onDateChange={onDateChange} />
-      </div>
+      </Box>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
           Выручка за день
         </Text>
@@ -72,9 +72,9 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
         <Text size='xs' c='dimmed' mt={4}>
           {appointmentsCount} {appointmentsCount === 1 ? 'запись' : 'записей'}
         </Text>
-      </div>
+      </Box>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
           Клиент
         </Text>
@@ -87,7 +87,7 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
         <Text size='xs' c='dimmed' mt={6}>
           Скоро: быстрый поиск и запись
         </Text>
-      </div>
+      </Box>
     </aside>
   );
 };

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Box,
   Group,
   Button,
   Table,
@@ -86,15 +87,15 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   }, [payrollType, amount, notes, employeeId, editing, createPayroll, updatePayroll]);
 
   return (
-    <div>
-      <div className={styles.toolbar}>
+    <Box>
+      <Box className={styles.toolbar}>
         <Text fw={600}>
           Выплаты {payrolls && payrolls.length > 0 ? `· итого ${formatPrice(total)}` : ''}
         </Text>
         <Button size="sm" leftSection={<Plus size={15} />} onClick={openCreate}>
           Добавить выплату
         </Button>
-      </div>
+      </Box>
 
       {isLoading ? (
         <Skeleton height={160} radius="md" />
@@ -186,6 +187,6 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
         onConfirm={() => deleteTarget && deletePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
         onClose={() => setDeleteTarget(null)}
       />
-    </div>
+    </Box>
   );
 };

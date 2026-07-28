@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Text, SimpleGrid, Stack, Group, Badge } from '@mantine/core';
+import { Box, Card, Text, SimpleGrid, Stack, Group, Badge } from '@mantine/core';
 import type { Employee } from '@/shared/api/types';
 import { formatPrice } from '@/shared/lib/format';
 import styles from '../employee-profile.module.css';
@@ -14,10 +14,10 @@ interface InfoItemProps {
 }
 
 const InfoItem: React.FC<InfoItemProps> = ({ label, value }) => (
-  <div className={styles.salaryItem}>
+  <Box className={styles.salaryItem}>
     <Text size="xs" c="dimmed">{label}</Text>
     <Text size="sm" fw={600}>{value || '—'}</Text>
-  </div>
+  </Box>
 );
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
@@ -50,11 +50,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ employee }) => {
 
       <Card padding="lg" radius="lg" shadow="xs">
         <Text fw={600} mb="md">Условия оплаты</Text>
-        <div className={styles.salaryGrid}>
+        <Box className={styles.salaryGrid}>
           {salaryItems.map((item) => (
             <InfoItem key={item.label} label={item.label} value={item.value} />
           ))}
-        </div>
+        </Box>
       </Card>
     </Stack>
   );

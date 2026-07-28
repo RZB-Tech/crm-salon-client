@@ -39,3 +39,7 @@
     min-height: 56px;
   }
 }
+
+.dayName {
+  min-width: 30px;
+}

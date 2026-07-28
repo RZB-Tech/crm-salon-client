@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge, Button, Group, Modal, Stack, Text, Textarea } from '@mantine/core';
-import { Bell } from '@phosphor-icons/react';
+import { Badge, Box, Button, Group, Modal, Stack, Text, Textarea } from '@mantine/core';
+import { BellIcon } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
 import styles from './salon-notification-alert-modal.module.css';
@@ -48,9 +48,9 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
     >
       {notification && (
         <Stack gap="md" className={styles.modalContent}>
-          <div className={styles.iconWrap}>
-            <Bell size={36} weight="fill" />
-          </div>
+          <Box className={styles.iconWrap}>
+            <BellIcon size={36} weight="fill" />
+          </Box>
 
           <Badge size="sm" variant="light" mx="auto">
             {NOTIFICATION_TYPE_LABELS[notification.type] ?? notification.type}

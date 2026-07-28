@@ -12,6 +12,15 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
+      dedupe: ['react', 'react-dom', '@mantine/core', '@mantine/hooks'],
+    },
+    optimizeDeps: {
+      include: [
+        '@mantine/core',
+        '@mantine/hooks',
+        '@mantine/dates',
+        '@mantine/schedule',
+      ],
     },
     server: {
       proxy: {

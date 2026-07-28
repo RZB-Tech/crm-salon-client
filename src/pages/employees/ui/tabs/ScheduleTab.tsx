@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Box,
   Group,
   Button,
   Table,
@@ -200,8 +201,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   return (
     <Stack gap="lg">
       {/* Недельный график */}
-      <div>
-        <div className={styles.toolbar}>
+      <Box>
+        <Box className={styles.toolbar}>
           <Text fw={600}>Недельный график</Text>
           {hasSchedule ? (
             <Button size="xs" variant="light" leftSection={<PencilSimple size={14} />} onClick={openScheduleForm}>
@@ -212,13 +213,13 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
               Добавить
             </Button>
           )}
-        </div>
+        </Box>
         {hasSchedule ? (
           <SimpleGrid cols={{ base: 4, xs: 7 }} spacing="xs">
             {ALL_DAYS.map((dayNum) => {
               const schedule = dayScheduleMap.get(dayNum);
               return (
-                <div
+                <Box
                   key={dayNum}
                   className={`${scheduleStyles.dayCard} ${schedule ? scheduleStyles.dayCardActive : scheduleStyles.dayCardInactive}`}
                 >
@@ -232,23 +233,23 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
                   ) : (
                     <Text size="xs" c="dimmed">Вых.</Text>
                   )}
-                </div>
+                </Box>
               );
             })}
           </SimpleGrid>
         ) : (
           <Text size="sm" c="dimmed">График не задан</Text>
         )}
-      </div>
+      </Box>
 
       {/* Отсутствия */}
-      <div>
-        <div className={styles.toolbar}>
+      <Box>
+        <Box className={styles.toolbar}>
           <Text fw={600}>Отсутствия</Text>
           <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={() => { setEditingAbsence(null); setAbsenceFormOpen(true); }}>
             Добавить
           </Button>
-        </div>
+        </Box>
         <DataTable
           compact
           stickyHeader={false}
@@ -279,7 +280,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
             </DataTableRow>
           ))}
         </DataTable>
-      </div>
+      </Box>
 
       {/* Модалка графика */}
       <Modal
@@ -311,7 +312,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
           <Stack gap="xs" mb="lg">
             {dayEntries.map((entry) => (
               <Group key={entry.day} grow align="center">
-                <Text size="sm" fw={500} style={{ minWidth: 30 }}>
+                <Text size="sm" fw={500} className={scheduleStyles.dayName}>
                   {DAY_OF_WEEK_LABELS[entry.day]}
                 </Text>
                 <TextInput

@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Badge,
+  Box,
   Button,
   Card,
   Group,
@@ -144,14 +145,14 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
 
   if (isLoading) {
     return (
-      <div className={styles.tab}>
+      <Box className={styles.tab}>
         <SimpleGrid cols={{ base: 1, sm: 3 }} mb="md">
           <Skeleton height={88} radius="md" />
           <Skeleton height={88} radius="md" />
           <Skeleton height={88} radius="md" />
         </SimpleGrid>
         <Skeleton height={360} radius="md" />
-      </div>
+      </Box>
     );
   }
 
@@ -164,7 +165,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
   }
 
   return (
-    <div className={styles.tab}>
+    <Box className={styles.tab}>
       <SimpleGrid cols={{ base: 1, sm: 3 }} mb="md">
         <Card padding="md" radius="lg" shadow="xs" className={styles.summaryCard}>
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
@@ -422,6 +423,6 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
         }
         onClose={() => setCancelTarget(null)}
       />
-    </div>
+    </Box>
   );
 };

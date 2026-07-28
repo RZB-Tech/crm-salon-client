@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
+import { Badge, Box, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlass, Users } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
@@ -108,7 +108,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
           </Button>
         </Group>
 
-        <div className={styles.employeeFilterList}>
+        <Box className={styles.employeeFilterList}>
           {filteredEmployees.length === 0 ? (
             <Text size='sm' c='dimmed' className={styles.employeeFilterEmpty}>
               Ничего не найдено
@@ -118,7 +118,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
               const checked = selectedIds.has(employee.id);
               const name = getEmployeeFullName(employee);
               return (
-                <div
+                <Box
                   key={employee.id}
                   className={styles.employeeFilterRow}
                   onClick={() => handleToggle(employee.id)}
@@ -146,11 +146,11 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
                   <Text size='sm' lineClamp={1} className={styles.employeeFilterName}>
                     {name}
                   </Text>
-                </div>
+                </Box>
               );
             })
           )}
-        </div>
+        </Box>
       </Popover.Dropdown>
     </Popover>
   );

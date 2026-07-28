@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Skeleton, Badge, Table } from '@mantine/core';
+import { Box, Text, Skeleton, Badge, Table } from '@mantine/core';
 import { useEmployeePayrolls } from '@/shared/api/hooks/useEmployees';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatPrice, PAYROLL_TYPE_LABELS } from '@/shared/lib/format';
@@ -43,7 +43,7 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
   }
 
   return (
-    <div>
+    <Box>
       <Text fw={600} mb="md">
         Финансовый отчёт · итого {formatPrice(total)}
       </Text>
@@ -79,18 +79,18 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
       <Text size="sm" fw={600} mb="sm" mt="xl">
         По типам
       </Text>
-      <div className={styles.salaryGrid}>
+      <Box className={styles.salaryGrid}>
         {byType.map(([type, amount]) => (
-          <div key={type} className={styles.salaryItem}>
+          <Box key={type} className={styles.salaryItem}>
             <Text size="xs" c="dimmed">
               {PAYROLL_TYPE_LABELS[type as keyof typeof PAYROLL_TYPE_LABELS] ?? type}
             </Text>
             <Text size="sm" fw={600}>
               {formatPrice(amount)}
             </Text>
-          </div>
+          </Box>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };

@@ -47,6 +47,7 @@ import {
   SEX_LABELS,
   SEX_OPTIONS
 } from '@/shared/lib/format';
+import styles from './clients-page.module.css';
 
 interface ClientFormState {
   firstname: string;
@@ -222,7 +223,7 @@ export const ClientsPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
             size="sm"
-            style={{ width: 260 }}
+            className={styles.searchInput}
           />
           <Button leftSection={<Plus size={16} />} onClick={openCreate}>
             Добавить клиента

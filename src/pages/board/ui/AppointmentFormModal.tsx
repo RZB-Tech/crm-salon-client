@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ActionIcon,
   Badge,
+  Box,
   Button,
   Group,
   Modal,
@@ -166,9 +167,9 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
         )}
       </Group>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <Stack gap="sm">
-          <div>
+          <Box>
             {!quickClientOpen ? (
               <Group align="flex-end" gap="xs">
                 <Select
@@ -178,7 +179,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                   data={clientOptions}
                   value={values.clientId}
                   onChange={(value) => onChange({ ...values, clientId: value })}
-                  style={{ flex: 1 }}
+                  className={styles.clientSelect}
                 />
                 <Button
                   variant="light"
@@ -252,7 +253,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                 {selectedClient.phone}
               </Text>
             )}
-          </div>
+          </Box>
 
           <Group grow align="flex-start">
             <TextInput
@@ -291,10 +292,10 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
             onChange={handleEmployeeChange}
           />
         </Stack>
-      </div>
+      </Box>
 
-      <div className={styles.section}>
-        <div className={styles.servicesHeader}>
+      <Box className={styles.section}>
+        <Group className={styles.servicesHeader} justify="space-between">
           <Text className={styles.sectionTitle} mb={0}>
             Услуги
           </Text>
@@ -307,7 +308,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
           >
             Добавить
           </Button>
-        </div>
+        </Group>
 
         <Table verticalSpacing="xs" withTableBorder withColumnBorders>
           <Table.Thead>
@@ -368,14 +369,14 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
           </Table.Tbody>
         </Table>
 
-        <div className={styles.totalRow}>
+        <Box className={styles.totalRow}>
           <Text size="sm" fw={600}>
             Итого: {formatPrice(total)}
           </Text>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className={styles.section}>
+      <Box className={styles.section}>
         <Text className={styles.sectionTitle}>Комментарий</Text>
         <Textarea
           placeholder="Заметки к записи"
@@ -383,15 +384,15 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
           value={values.notes}
           onChange={(event) => onChange({ ...values, notes: event.currentTarget.value })}
         />
-      </div>
+      </Box>
 
       {mode === 'edit' && appointment && (
         <>
-          <div className={styles.section}>
+          <Box className={styles.section}>
             <Text className={styles.sectionTitle}>Оплата</Text>
             <PayAppointmentPanel appointment={appointment} />
-          </div>
-          <div className={styles.section}>
+          </Box>
+          <Box className={styles.section}>
             <Text className={styles.sectionTitle}>История изменений</Text>
             <Text size="xs" c="dimmed" mb="xs">
               Запись
@@ -416,15 +417,15 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
                 ))}
               </React.Fragment>
             ))}
-          </div>
+          </Box>
         </>
       )}
 
-      <div className={styles.footer}>
+      <Group className={styles.footer} justify="space-between">
         <Button variant="subtle" color="gray" onClick={onClose}>
           Отмена
         </Button>
-        <div className={styles.footerActions}>
+        <Group className={styles.footerActions} gap="sm">
           {mode === 'edit' && onCancel && !cancelled && (
             <Button variant="light" color="orange" onClick={onCancel} loading={loading}>
               Отменить запись
@@ -440,8 +441,8 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
               {mode === 'edit' ? 'Сохранить' : 'Создать'}
             </Button>
           )}
-        </div>
-      </div>
+        </Group>
+      </Group>
     </Modal>
   );
 };
