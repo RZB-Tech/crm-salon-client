@@ -3,9 +3,11 @@ import {
   Badge,
   Button,
   Checkbox,
+  Collapse,
   Group,
   Modal,
   Paper,
+  ScrollArea,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -13,8 +15,10 @@ import {
   Text,
   TextInput,
   Textarea,
+  UnstyledButton,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { CaretDownIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { DataTable, DataTableRow } from '@/shared/ui';
@@ -37,6 +41,7 @@ export const RolesTab: React.FC = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [editingRole, setEditingRole] = React.useState<Role | null>(null);
   const [form, setForm] = React.useState<RoleForm>(INITIAL_FORM);
+  const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
 
   const permissionsByResource = React.useMemo(() => {
     if (!permissions) return {};
@@ -47,6 +52,11 @@ export const RolesTab: React.FC = () => {
     }, {});
   }, [permissions]);
 
+  const allPermissionCodes = React.useMemo(
+    () => (permissions ?? []).map((p) => p.code),
+    [permissions],
+  );
+
   const handleOpen = React.useCallback((role?: Role) => {
     if (role) {
       setEditingRole(role);
@@ -55,6 +65,8 @@ export const RolesTab: React.FC = () => {
       setEditingRole(null);
       setForm(INITIAL_FORM);
     }
+    // По умолчанию все группы свёрнуты
+    setExpandedResources(new Set());
     open();
   }, [open]);
 
@@ -66,6 +78,44 @@ export const RolesTab: React.FC = () => {
         : [...prev.permissions, code],
     }));
   }, []);
+
+  const handleToggleResource = React.useCallback((_resource: string, codes: number[]) => {
+    setForm((prev) => {
+      const allSelected = codes.every((c) => prev.permissions.includes(c));
+      if (allSelected) {
+        // Снять все в группе
+        const codesSet = new Set(codes);
+        return { ...prev, permissions: prev.permissions.filter((c) => !codesSet.has(c)) };
+      }
+      // Выбрать все в группе
+      const merged = new Set([...prev.permissions, ...codes]);
+      return { ...prev, permissions: [...merged] };
+    });
+  }, []);
+
+  const handleSelectAll = React.useCallback(() => {
+    setForm((prev) => {
+      const allSelected = allPermissionCodes.length > 0 && allPermissionCodes.every((c) => prev.permissions.includes(c));
+      return { ...prev, permissions: allSelected ? [] : [...allPermissionCodes] };
+    });
+  }, [allPermissionCodes]);
+
+  const handleToggleExpanded = React.useCallback((resource: string) => {
+    setExpandedResources((prev) => {
+      const next = new Set(prev);
+      if (next.has(resource)) next.delete(resource);
+      else next.add(resource);
+      return next;
+    });
+  }, []);
+
+  const handleExpandAll = React.useCallback(() => {
+    setExpandedResources((prev) => {
+      const allResources = Object.keys(permissionsByResource);
+      if (prev.size === allResources.length) return new Set();
+      return new Set(allResources);
+    });
+  }, [permissionsByResource]);
 
   const handleSave = React.useCallback(() => {
     if (editingRole) {
@@ -82,6 +132,8 @@ export const RolesTab: React.FC = () => {
       createRole.mutate(payload, { onSuccess: close });
     }
   }, [editingRole, form, createRole, updateRole, close]);
+
+  const isAllSelected = allPermissionCodes.length > 0 && allPermissionCodes.every((c) => form.permissions.includes(c));
 
   const columns = React.useMemo(
     () => [
@@ -137,30 +189,77 @@ export const RolesTab: React.FC = () => {
             minRows={2}
           />
 
-          <Text fw={500} size="sm" mt="sm">
-            Разрешения
-          </Text>
+          <Group justify="space-between" mt="sm">
+            <Group gap="xs">
+              <Text fw={500} size="sm">Разрешения</Text>
+              <Badge size="sm" variant="light" color={isAllSelected ? 'green' : 'gray'}>
+                {form.permissions.length} / {allPermissionCodes.length}
+              </Badge>
+            </Group>
+            <Group gap="xs">
+              <Button variant="subtle" size="xs" onClick={handleExpandAll}>
+                {expandedResources.size === Object.keys(permissionsByResource).length ? 'Свернуть все' : 'Развернуть все'}
+              </Button>
+              <Button
+                variant="light"
+                size="xs"
+                color={isAllSelected ? 'red' : 'green'}
+                onClick={handleSelectAll}
+              >
+                {isAllSelected ? 'Снять все' : 'Выбрать все'}
+              </Button>
+            </Group>
+          </Group>
 
-          <Stack gap="xs">
-            {Object.entries(permissionsByResource).map(([resource, perms]) => (
-              <Paper key={resource} p="sm" withBorder>
-                <Text size="xs" fw={600} c="dimmed" mb="xs" tt="uppercase">
-                  {resource}
-                </Text>
-                <SimpleGrid cols={2} spacing="xs" verticalSpacing={4}>
-                  {perms.map((p) => (
-                    <Checkbox
-                      key={p.code}
-                      label={p.name}
-                      size="xs"
-                      checked={form.permissions.includes(p.code)}
-                      onChange={() => handleTogglePermission(p.code)}
-                    />
-                  ))}
-                </SimpleGrid>
-              </Paper>
-            ))}
-          </Stack>
+          <ScrollArea.Autosize mah={400} type="auto">
+            <Stack gap="xs">
+              {Object.entries(permissionsByResource).map(([resource, perms]) => {
+                const codes = perms.map((p) => p.code);
+                const selectedInGroup = codes.filter((c) => form.permissions.includes(c)).length;
+                const allInGroupSelected = selectedInGroup === codes.length;
+                const partialInGroup = selectedInGroup > 0 && !allInGroupSelected;
+                const isExpanded = expandedResources.has(resource);
+
+                return (
+                  <Paper key={resource} p="xs" withBorder>
+                    <Group justify="space-between" wrap="nowrap">
+                      <UnstyledButton onClick={() => handleToggleExpanded(resource)} style={{ flex: 1 }}>
+                        <Group gap="xs">
+                          {isExpanded ? <CaretDownIcon size={14} /> : <CaretRightIcon size={14} />}
+                          <Text size="xs" fw={600} tt="uppercase">
+                            {resource}
+                          </Text>
+                          <Badge size="xs" variant="light" color={allInGroupSelected ? 'green' : partialInGroup ? 'yellow' : 'gray'}>
+                            {selectedInGroup}/{codes.length}
+                          </Badge>
+                        </Group>
+                      </UnstyledButton>
+                      <Checkbox
+                        size="xs"
+                        checked={allInGroupSelected}
+                        indeterminate={partialInGroup}
+                        onChange={() => handleToggleResource(resource, codes)}
+                        aria-label={`Выбрать все в ${resource}`}
+                      />
+                    </Group>
+                    <Collapse expanded={isExpanded}>
+                      <SimpleGrid cols={2} spacing="xs" verticalSpacing={4} mt="xs">
+                        {perms.map((p) => (
+                          <Checkbox
+                            key={p.code}
+                            label={p.name}
+                            size="xs"
+                            checked={form.permissions.includes(p.code)}
+                            onChange={() => handleTogglePermission(p.code)}
+                          />
+                        ))}
+                      </SimpleGrid>
+                    </Collapse>
+                  </Paper>
+                );
+              })}
+            </Stack>
+          </ScrollArea.Autosize>
 
           <Group justify="flex-end" mt="md">
             <Button

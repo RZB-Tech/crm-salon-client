@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionIcon, Alert, Button, Group, Menu, Skeleton, Table, Text, TextInput } from '@mantine/core';
-import { DotsThree, MagnifyingGlass, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { DotsThree, MagnifyingGlassIcon, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import { useDeleteMaterial, useMaterials } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
 import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
@@ -52,7 +52,7 @@ export const MaterialsPage: React.FC = () => {
       subtitle={`${materials?.length ?? 0} материалов`}
       actions={
         <Group gap="sm">
-          <TextInput placeholder="Поиск по названию или артикулу..." leftSection={<MagnifyingGlass size={15} />} value={search} onChange={(e) => setSearch(e.currentTarget.value)} size="sm" className={styles.searchInput} />
+          <TextInput placeholder="Поиск по названию или артикулу..." leftSection={<MagnifyingGlassIcon size={15} />} value={search} onChange={(e) => setSearch(e.currentTarget.value)} size="sm" className={styles.searchInput} />
           <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить материал</Button>
         </Group>
       }

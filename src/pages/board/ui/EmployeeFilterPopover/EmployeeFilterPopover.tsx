@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Badge, Box, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
-import { MagnifyingGlass, Users } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon, Users } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 
@@ -94,7 +94,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
         <TextInput
           className={styles.employeeFilterSearch}
           placeholder='Поиск сотрудника'
-          leftSection={<MagnifyingGlass size={16} />}
+          leftSection={<MagnifyingGlassIcon size={16} />}
           value={search}
           onChange={(event) => setSearch(event.currentTarget.value)}
         />

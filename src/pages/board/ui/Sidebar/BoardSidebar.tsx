@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Text, TextInput } from '@mantine/core';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import styles from './board-sidebar.module.css';
 import { BoardMiniCalendar } from './BoardMiniCalendar';
@@ -80,7 +80,7 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
         </Text>
         <TextInput
           placeholder='Поиск клиента'
-          leftSection={<MagnifyingGlass size={16} />}
+          leftSection={<MagnifyingGlassIcon size={16} />}
           size='sm'
           disabled
         />

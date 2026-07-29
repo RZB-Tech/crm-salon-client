@@ -3,35 +3,62 @@ import {
   ActionIcon,
   Alert,
   Badge,
+  Box,
   Button,
   FileButton,
   Group,
   Menu,
+  Pagination as MantinePagination,
+  SegmentedControl,
+  Select,
   Skeleton,
+  Stack,
   Table,
-  Tabs,
   Text,
   TextInput,
 } from '@mantine/core';
-import { Archive, DotsThree, MagnifyingGlass, PencilSimple, Plus, Sparkle, Trash, UploadSimple } from '@phosphor-icons/react';
 import {
-  useArchiveServiceCategory,
+  DotsThreeVertical,
+  DownloadSimple,
+  MagnifyingGlassIcon,
+  PencilSimple,
+  Plus,
+  Trash,
+} from '@phosphor-icons/react';
+import {
   useDeleteService,
-  useDeleteServiceCategory,
   useImportServices,
   useServiceCategories,
   useServices,
 } from '@/shared/api/hooks/useServices';
 import type { Service, ServiceCategory } from '@/shared/api/types';
-import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
+import { ConfirmModal } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { ServiceFormModal } from './ServiceFormModal';
 import { CategoryFormModal } from './CategoryFormModal';
 import styles from './services-page.module.css';
 
+const PAGE_SIZE_OPTIONS = [
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '50', label: '50' },
+  { value: '100', label: '100' },
+];
+
+const formatDuration = (minutes: number): string => {
+  if (minutes <= 0) return '—';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins} мин`;
+  if (mins === 0) {
+    return hours === 1 ? '1 час' : `${hours} часа`;
+  }
+  const hourLabel = hours === 1 ? '1 час' : `${hours} часа`;
+  return `${hourLabel} ${mins} минут`;
+};
+
 export const ServicesPage: React.FC = () => {
-  const [mainTab, setMainTab] = React.useState<string>('services');
   const [activeCategory, setActiveCategory] = React.useState('all');
   const [search, setSearch] = React.useState('');
 
@@ -39,16 +66,14 @@ export const ServicesPage: React.FC = () => {
   const [editingService, setEditingService] = React.useState<Service | null>(null);
   const [deleteServiceTarget, setDeleteServiceTarget] = React.useState<Service | null>(null);
 
+  // Keep category modal for potential usage from other places
   const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
-  const [editingCategory, setEditingCategory] = React.useState<ServiceCategory | null>(null);
-  const [deleteCategoryTarget, setDeleteCategoryTarget] = React.useState<ServiceCategory | null>(null);
+  const [editingCategory] = React.useState<ServiceCategory | null>(null);
 
   const { data: services, isLoading: servicesLoading, isError: servicesError } = useServices();
   const { data: categories, isLoading: categoriesLoading, isError: categoriesError } = useServiceCategories();
 
   const deleteService = useDeleteService();
-  const deleteCategory = useDeleteServiceCategory();
-  const archiveCategory = useArchiveServiceCategory();
   const importServices = useImportServices();
   const resetImportRef = React.useRef<() => void>(null);
 
@@ -61,32 +86,46 @@ export const ServicesPage: React.FC = () => {
     return map;
   }, [categories]);
 
+  const segmentData = React.useMemo(() => {
+    const items = [{ value: 'all', label: 'Все' }];
+    for (const c of categories ?? []) {
+      items.push({ value: String(c.id), label: c.name });
+    }
+    return items;
+  }, [categories]);
+
   const filtered = React.useMemo(
     () =>
       (services ?? []).filter((service) => {
-        const matchCategory = activeCategory === 'all' || String(service.category_id) === activeCategory;
-        const matchSearch = !search || service.name.toLowerCase().includes(search.toLowerCase());
+        const matchCategory =
+          activeCategory === 'all' || String(service.category_id) === activeCategory;
+        const matchSearch =
+          !search || service.name.toLowerCase().includes(search.toLowerCase());
         return matchCategory && matchSearch;
       }),
     [services, activeCategory, search],
   );
 
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(filtered);
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
+    usePagination(filtered, { defaultPageSize: 20 });
 
-  React.useEffect(() => { resetPage(); }, [search, activeCategory, resetPage]);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, total);
 
-  const categoryServiceCount = React.useMemo(() => {
-    const map = new Map<number, number>();
-    for (const s of services ?? []) {
-      if (s.category_id != null) map.set(s.category_id, (map.get(s.category_id) ?? 0) + 1);
-    }
-    return map;
-  }, [services]);
+  React.useEffect(() => {
+    resetPage();
+  }, [search, activeCategory, resetPage]);
 
-  const openServiceCreate = React.useCallback(() => { setEditingService(null); setServiceFormOpen(true); }, []);
-  const openServiceEdit = React.useCallback((s: Service) => { setEditingService(s); setServiceFormOpen(true); }, []);
-  const openCategoryCreate = React.useCallback(() => { setEditingCategory(null); setCategoryFormOpen(true); }, []);
-  const openCategoryEdit = React.useCallback((c: ServiceCategory) => { setEditingCategory(c); setCategoryFormOpen(true); }, []);
+  const openServiceCreate = React.useCallback(() => {
+    setEditingService(null);
+    setServiceFormOpen(true);
+  }, []);
+
+  const openServiceEdit = React.useCallback((s: Service) => {
+    setEditingService(s);
+    setServiceFormOpen(true);
+  }, []);
 
   const handleImportFile = React.useCallback(
     (file: File | null) => {
@@ -99,129 +138,237 @@ export const ServicesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ListPage title="Услуги">
-        <Skeleton height={48} mb="md" />
-        <Skeleton height={400} radius="md" />
-      </ListPage>
+      <Box className={styles.page}>
+        <Box className={styles.toolbar}>
+          <Skeleton height={32} width={400} radius="sm" />
+          <Skeleton height={32} width={240} radius="md" />
+        </Box>
+        <Stack gap="xs" p="md">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} height={48} radius="sm" />
+          ))}
+        </Stack>
+      </Box>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Услуги">
-        <Alert color="red" title="Не удалось загрузить данные">Проверьте доступность API</Alert>
-      </ListPage>
+      <Box className={styles.page}>
+        <Box p="xl">
+          <Alert color="red" title="Не удалось загрузить данные">
+            Проверьте доступность API
+          </Alert>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <ListPage
-      title="Услуги"
-      subtitle={`${services?.length ?? 0} услуг · ${categories?.length ?? 0} категорий`}
-      actions={
-        <Group>
-          {mainTab === 'services' && (
-            <FileButton onChange={handleImportFile} accept=".xlsx,.xls" resetRef={resetImportRef}>
-              {(props) => (
-                <Button {...props} variant="light" leftSection={<UploadSimple size={16} />} loading={importServices.isPending}>
-                  Импорт Excel
-                </Button>
-              )}
-            </FileButton>
-          )}
-          <Button leftSection={<Plus size={16} />} onClick={mainTab === 'services' ? openServiceCreate : openCategoryCreate}>
-            {mainTab === 'services' ? 'Добавить услугу' : 'Добавить категорию'}
+    <Box className={styles.page}>
+      <Box className={styles.toolbar}>
+        <SegmentedControl
+          value={activeCategory}
+          onChange={setActiveCategory}
+          data={segmentData}
+          size="xs"
+          radius="sm"
+          color="sage.6"
+          styles={{
+            root: { background: '#f9f6f3' },
+          }}
+        />
+
+        <Group gap={8}>
+          <TextInput
+            placeholder="Поиск услуги"
+            leftSection={<MagnifyingGlassIcon size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            size="sm"
+            className={styles.searchInput}
+          />
+          <FileButton
+            onChange={handleImportFile}
+            accept=".xlsx,.xls"
+            resetRef={resetImportRef}
+          >
+            {(props) => (
+              <Button
+                {...props}
+                variant="light"
+                color="sage"
+                rightSection={<DownloadSimple size={16} />}
+                size="sm"
+                loading={importServices.isPending}
+              >
+                Импорт Excel
+              </Button>
+            )}
+          </FileButton>
+          <Button
+            color="sage.6"
+            rightSection={<Plus size={16} />}
+            onClick={openServiceCreate}
+            size="sm"
+          >
+            Добавить услугу
           </Button>
         </Group>
-      }
-    >
-      <Tabs value={mainTab} onChange={(v) => setMainTab(v ?? 'services')} variant="pills" radius="md" mb="md">
-        <Tabs.List>
-          <Tabs.Tab value="services">Услуги ({services?.length ?? 0})</Tabs.Tab>
-          <Tabs.Tab value="categories">Категории ({categories?.length ?? 0})</Tabs.Tab>
-        </Tabs.List>
-      </Tabs>
+      </Box>
 
-      {mainTab === 'services' ? (
-        <>
-          <Group gap="md" className={styles.filtersRow} mb="md">
-            <Tabs value={activeCategory} onChange={(v) => setActiveCategory(v ?? 'all')} variant="pills" radius="md">
-              <Tabs.List>
-                <Tabs.Tab value="all" fw={500} leftSection={<Sparkle size={14} />}>Все</Tabs.Tab>
-                {(categories ?? []).map((c) => (
-                  <Tabs.Tab key={c.id} value={String(c.id)} fw={500}>{c.name}</Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs>
-            <TextInput placeholder="Поиск услуги..." leftSection={<MagnifyingGlass size={15} />} value={search} onChange={(e) => setSearch(e.currentTarget.value)} size="sm" className={styles.searchInput} />
+      <Box className={styles.tableWrapper}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={styles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={styles.headCell}>Услуга</Table.Th>
+              <Table.Th className={styles.headCell} w={275}>
+                Длительность
+              </Table.Th>
+              <Table.Th className={styles.headCell} w={380}>
+                Категория
+              </Table.Th>
+              <Table.Th className={styles.headCell} w={310}>
+                Цена
+              </Table.Th>
+              <Table.Th className={styles.headCell} w={48} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={5}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Услуги не найдены
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((service) => {
+                const catLabel =
+                  service.category_id != null
+                    ? (categoryMap.get(service.category_id)?.name ?? null)
+                    : null;
+                return (
+                  <Table.Tr key={service.id} className={styles.row}>
+                    <Table.Td className={styles.bodyCell}>
+                      <Text size="sm" fw={400} c="#484848">
+                        {service.name}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={styles.bodyCell}>
+                      <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                        {formatDuration(service.estimated_time)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={styles.bodyCell}>
+                      {catLabel ? (
+                        <Badge
+                          size="sm"
+                          radius="xl"
+                          className={styles.categoryBadge}
+                        >
+                          {catLabel}
+                        </Badge>
+                      ) : (
+                        <Text size="sm" c="dimmed">
+                          —
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td className={styles.bodyCell}>
+                      <Text size="sm" fw={600} c="#484848">
+                        {service.price > 0 ? formatPrice(service.price) : '—'}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={styles.bodyCell}>
+                      <Menu shadow="sm" width={160} radius="md">
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" color="gray" size="sm">
+                            <DotsThreeVertical size={20} weight="bold" />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            leftSection={<PencilSimple size={14} />}
+                            onClick={() => openServiceEdit(service)}
+                          >
+                            Редактировать
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<Trash size={14} />}
+                            color="red"
+                            onClick={() => setDeleteServiceTarget(service)}
+                          >
+                            Удалить
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
+
+      <Box className={styles.pagination}>
+        <Box className={styles.paginationMeta}>
+          <Group gap={8}>
+            <Text size="sm" fw={500} c="#484848">
+              Показать:
+            </Text>
+            <Select
+              size="xs"
+              w={64}
+              data={PAGE_SIZE_OPTIONS}
+              value={String(pageSize)}
+              onChange={(value) => {
+                if (value) setPageSize(Number(value));
+              }}
+              allowDeselect={false}
+            />
           </Group>
+          <Text size="sm" c="#484848">
+            {from}–{to} из {total}
+          </Text>
+        </Box>
 
-          <DataTable
-            columns={[
-              { key: 'name', label: 'Услуга' },
-              { key: 'category', label: 'Категория' },
-              { key: 'duration', label: 'Длительность' },
-              { key: 'price', label: 'Цена', align: 'right' },
-              { key: 'actions', label: '', width: 48 },
-            ]}
-            isEmpty={filtered.length === 0}
-            emptyMessage="Услуги не найдены"
-          >
-            {paginatedItems.map((service) => {
-              const catLabel = service.category_id != null ? (categoryMap.get(service.category_id)?.name ?? '—') : '—';
-              return (
-                <DataTableRow key={service.id}>
-                  <Table.Td><Text size="sm" fw={600}>{service.name}</Text></Table.Td>
-                  <Table.Td>
-                    {catLabel !== '—' ? <Badge size="sm" variant="light" color="gray">{catLabel}</Badge> : <Text size="sm" c="dimmed">—</Text>}
-                  </Table.Td>
-                  <Table.Td><Text size="sm" c="dimmed">{service.estimated_time > 0 ? `${service.estimated_time} мин` : '—'}</Text></Table.Td>
-                  <Table.Td ta="right"><Text size="sm" fw={700}>{service.price > 0 ? formatPrice(service.price) : '—'}</Text></Table.Td>
-                  <Table.Td>
-                    <Menu shadow="sm" width={160} radius="md">
-                      <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
-                      <Menu.Dropdown>
-                        <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openServiceEdit(service)}>Редактировать</Menu.Item>
-                        <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteServiceTarget(service)}>Удалить</Menu.Item>
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Table.Td>
-                </DataTableRow>
-              );
-            })}
-          </DataTable>
-          <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
-        </>
-      ) : (
-        <DataTable
-          columns={[{ key: 'name', label: 'Категория' }, { key: 'count', label: 'Услуг' }, { key: 'actions', label: '', width: 48 }]}
-          isEmpty={(categories ?? []).length === 0}
-          emptyMessage="Категории не найдены"
-        >
-          {(categories ?? []).map((category) => (
-            <DataTableRow key={category.id}>
-              <Table.Td><Text size="sm" fw={600}>{category.name}</Text></Table.Td>
-              <Table.Td><Text size="sm" c="dimmed">{categoryServiceCount.get(category.id) ?? 0}</Text></Table.Td>
-              <Table.Td>
-                <Menu shadow="sm" width={160} radius="md">
-                  <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openCategoryEdit(category)}>Редактировать</Menu.Item>
-                    <Menu.Item leftSection={<Archive size={14} />} onClick={() => archiveCategory.mutate(category.id)}>Архивировать</Menu.Item>
-                    <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteCategoryTarget(category)}>Удалить</Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </Table.Td>
-            </DataTableRow>
-          ))}
-        </DataTable>
-      )}
+        <MantinePagination
+          value={page}
+          onChange={setPage}
+          total={totalPages}
+          size="lg"
+          radius="sm"
+        />
+      </Box>
 
-      <ServiceFormModal opened={serviceFormOpen} service={editingService} categories={categories ?? []} onClose={() => setServiceFormOpen(false)} />
-      <CategoryFormModal opened={categoryFormOpen} category={editingCategory} onClose={() => setCategoryFormOpen(false)} />
+      <ServiceFormModal
+        opened={serviceFormOpen}
+        service={editingService}
+        categories={categories ?? []}
+        onClose={() => setServiceFormOpen(false)}
+      />
+      <CategoryFormModal
+        opened={categoryFormOpen}
+        category={editingCategory}
+        onClose={() => setCategoryFormOpen(false)}
+      />
 
-      <ConfirmModal opened={Boolean(deleteServiceTarget)} title="Удалить услугу" message={`Удалить «${deleteServiceTarget?.name ?? ''}»?`} loading={deleteService.isPending} onConfirm={() => deleteServiceTarget && deleteService.mutate(deleteServiceTarget.id, { onSuccess: () => setDeleteServiceTarget(null) })} onClose={() => setDeleteServiceTarget(null)} />
-      <ConfirmModal opened={Boolean(deleteCategoryTarget)} title="Удалить категорию" message={`Удалить «${deleteCategoryTarget?.name ?? ''}»?`} loading={deleteCategory.isPending} onConfirm={() => deleteCategoryTarget && deleteCategory.mutate(deleteCategoryTarget.id, { onSuccess: () => setDeleteCategoryTarget(null) })} onClose={() => setDeleteCategoryTarget(null)} />
-    </ListPage>
+      <ConfirmModal
+        opened={Boolean(deleteServiceTarget)}
+        title="Удалить услугу"
+        message={`Удалить «${deleteServiceTarget?.name ?? ''}»?`}
+        loading={deleteService.isPending}
+        onConfirm={() =>
+          deleteServiceTarget &&
+          deleteService.mutate(deleteServiceTarget.id, {
+            onSuccess: () => setDeleteServiceTarget(null),
+          })
+        }
+        onClose={() => setDeleteServiceTarget(null)}
+      />
+    </Box>
   );
 };
