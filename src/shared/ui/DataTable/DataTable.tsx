@@ -105,5 +105,3 @@ export const DataTableRow: React.FC<DataTableRowProps> = ({ children, muted = fa
     {children}
   </Table.Tr>
 );
-
-export { styles as dataTableStyles };

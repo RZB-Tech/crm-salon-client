@@ -1,9 +1,9 @@
 import React from 'react';
-import { ActionIcon, Alert, Badge, Button, Group, Modal, Skeleton, Table, Tabs, Text, Textarea, Tooltip } from '@mantine/core';
+import { ActionIcon, Alert, Badge, Box, Button, Group, Modal, Skeleton, Table, Tabs, Text, Textarea, Tooltip } from '@mantine/core';
 import { CheckIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
 import { useCancelNotification, useNotifications, useReadNotification } from '@/shared/api/hooks/useNotifications';
 import { DataTable, DataTableRow, ListPage } from '@/shared/ui';
-import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
+import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
 import { NotificationFormModal } from './NotificationFormModal';
@@ -45,7 +45,7 @@ export const NotificationsPage: React.FC = () => {
       subtitle={`${items.length} уведомлений${pendingCount > 0 ? ` · ${pendingCount} новых` : ''}`}
       actions={
         <Group gap="sm">
-          <Badge variant="light" color={connected ? 'green' : 'gray'} leftSection={<span className={`${styles.statusDot} ${connected ? styles.statusDot_online : styles.statusDot_offline}`} />}>
+          <Badge variant="light" color={connected ? 'green' : 'gray'} leftSection={<Box component="span" className={`${styles.statusDot} ${connected ? styles.statusDot_online : styles.statusDot_offline}`} />}>
             {connected ? 'Поток подключён' : 'Поток отключён'}
           </Badge>
           <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Создать</Button>

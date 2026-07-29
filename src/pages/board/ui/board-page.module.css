@@ -74,7 +74,8 @@
 
 .scheduleRoot {
   border: none !important;
-  border-radius: 0 !important;
+  border-bottom: solid 1px var(--mantine-color-gray-2) !important;
+  border-radius: 0 !important; 
   --resources-day-view-resource-label-width: 300px;
 }
 

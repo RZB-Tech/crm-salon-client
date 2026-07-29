@@ -4,6 +4,7 @@ import {
   Alert,
   Badge,
   Button,
+  FileButton,
   Group,
   Menu,
   Skeleton,
@@ -49,7 +50,7 @@ export const ServicesPage: React.FC = () => {
   const deleteCategory = useDeleteServiceCategory();
   const archiveCategory = useArchiveServiceCategory();
   const importServices = useImportServices();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const resetImportRef = React.useRef<() => void>(null);
 
   const isLoading = servicesLoading || categoriesLoading;
   const isError = servicesError || categoriesError;
@@ -87,13 +88,11 @@ export const ServicesPage: React.FC = () => {
   const openCategoryCreate = React.useCallback(() => { setEditingCategory(null); setCategoryFormOpen(true); }, []);
   const openCategoryEdit = React.useCallback((c: ServiceCategory) => { setEditingCategory(c); setCategoryFormOpen(true); }, []);
 
-  const handleImportClick = React.useCallback(() => { fileInputRef.current?.click(); }, []);
   const handleImportFile = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
+    (file: File | null) => {
       if (!file) return;
       importServices.mutate(file);
-      event.target.value = '';
+      resetImportRef.current?.();
     },
     [importServices],
   );
@@ -122,12 +121,13 @@ export const ServicesPage: React.FC = () => {
       actions={
         <Group>
           {mainTab === 'services' && (
-            <>
-              <input ref={fileInputRef} type="file" accept=".xlsx,.xls" hidden onChange={handleImportFile} />
-              <Button variant="light" leftSection={<UploadSimple size={16} />} onClick={handleImportClick} loading={importServices.isPending}>
-                Импорт Excel
-              </Button>
-            </>
+            <FileButton onChange={handleImportFile} accept=".xlsx,.xls" resetRef={resetImportRef}>
+              {(props) => (
+                <Button {...props} variant="light" leftSection={<UploadSimple size={16} />} loading={importServices.isPending}>
+                  Импорт Excel
+                </Button>
+              )}
+            </FileButton>
           )}
           <Button leftSection={<Plus size={16} />} onClick={mainTab === 'services' ? openServiceCreate : openCategoryCreate}>
             {mainTab === 'services' ? 'Добавить услугу' : 'Добавить категорию'}

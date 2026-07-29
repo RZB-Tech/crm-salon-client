@@ -4,6 +4,7 @@ import { apiFetchAllPost, authStorage, API_BASE_URL } from '@/shared/api/client'
 import { queryKeys } from '@/shared/api/query-keys';
 import type { SalonNotification, SalonNotificationWsPayload } from '@/shared/api/types';
 import { useReadNotification } from '@/shared/api/hooks/useNotifications';
+import { NotificationsWsContext } from '@/shared/lib/notifications/NotificationsWsContext';
 import { SalonNotificationAlertModal } from '@/shared/lib/notifications/SalonNotificationAlertModal';
 import {
   getNotificationDelayMs,
@@ -14,19 +15,6 @@ import {
   playNotificationSound,
   unlockNotificationAudio,
 } from '@/shared/lib/notifications/playNotificationSound';
-
-interface NotificationsWsContextValue {
-  connected: boolean;
-  liveNotifications: SalonNotificationWsPayload[];
-}
-
-const NotificationsWsContext = React.createContext<NotificationsWsContextValue>({
-  connected: false,
-  liveNotifications: [],
-});
-
-export const useNotificationsWs = (): NotificationsWsContextValue =>
-  React.useContext(NotificationsWsContext);
 
 const RECONNECT_DELAY_MS = 5000;
 const POLL_INTERVAL_MS = 10_000;

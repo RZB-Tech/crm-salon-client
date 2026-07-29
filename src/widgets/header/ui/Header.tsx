@@ -21,7 +21,7 @@ import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
 import { authStorage } from '@/shared/api/client';
-import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsProvider';
+import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime } from '@/shared/lib/format';
 import { AUTH_ENABLED } from '@/shared/config/env';
