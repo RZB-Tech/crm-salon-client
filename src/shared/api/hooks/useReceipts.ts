@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetchAllPost, apiPost } from '@/shared/api/client';
+import { apiFetchAllPost, apiPost, apiRequest } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Receipt, ReceiptCreatePayload } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
@@ -8,6 +8,13 @@ export const useReceipts = () =>
   useQuery({
     queryKey: queryKeys.receipts.all,
     queryFn: () => apiFetchAllPost<Receipt>('/api/v1/receipts'),
+  });
+
+export const useReceipt = (id: number) =>
+  useQuery({
+    queryKey: queryKeys.receipts.detail(id),
+    queryFn: () => apiRequest<Receipt>(`/api/v1/receipts/${id}`),
+    enabled: id > 0,
   });
 
 export const useCreateReceipt = () => {

@@ -563,3 +563,131 @@ export interface TransactionCreatePayload {
   amount: number;
   notes?: string | null;
 }
+
+// ─── Staff / Roles / Permissions (Admin) ───────────────────────────────────
+
+export type StaffType = 'administrator' | 'employee';
+
+export interface Permission {
+  code: number;
+  resource: string;
+  name: string;
+}
+
+export interface Role extends BaseEntity {
+  name: string;
+  description: string | null;
+  permissions: number[];
+}
+
+export interface RoleCreatePayload {
+  name: string;
+  description?: string | null;
+  permissions?: number[];
+}
+
+export interface RoleUpdatePayload {
+  id: number;
+  name?: string;
+  description?: string | null;
+  permissions?: number[] | null;
+  archived?: boolean;
+}
+
+export interface Staff extends BaseEntity {
+  login: string;
+  employee_id: number | null;
+  active: boolean;
+  firstname: string;
+  lastname: string | null;
+  middlename: string | null;
+  permissions: number[];
+  roles: Role[];
+}
+
+export interface StaffCreatePayload {
+  firstname?: string | null;
+  lastname?: string | null;
+  middlename?: string | null;
+  login: string;
+  password?: string | null;
+  staff_type?: StaffType;
+  permissions?: number[] | null;
+  roles?: number[] | null;
+  employee_id?: number | null;
+  active?: boolean;
+}
+
+export interface StaffCreateResponse extends Staff {
+  password: string;
+}
+
+export interface StaffRolesAssignPayload {
+  id: number;
+  role_ids: number[];
+}
+
+export interface StaffPermissionsUpdatePayload {
+  id: number;
+  permissions: number[];
+}
+
+export interface MeResponse extends BaseEntity {
+  login: string;
+  employee: Employee | null;
+  firstname: string | null;
+  lastname: string | null;
+  middlename: string | null;
+  active: boolean;
+  staff_type: StaffType;
+}
+
+// ─── Client Finance Report ─────────────────────────────────────────────────
+
+export interface ClientFinanceReportPayload {
+  clientID: number;
+  start_date?: string | null;
+  end_date?: string | null;
+}
+
+export interface FinanceReportMonth {
+  income: number;
+  net: number;
+  transactions: Transaction[];
+}
+
+export interface ClientFinanceReport {
+  items: Record<string, FinanceReportMonth>;
+  total: number;
+}
+
+// ─── Appointment Update ────────────────────────────────────────────────────
+
+export interface AppointmentUpdatePayload {
+  id: number;
+  client_id?: number;
+  start_time_est?: string;
+  end_time_est?: string;
+  notes?: string | null;
+}
+
+// ─── Appointment Services (granular) ───────────────────────────────────────
+
+export interface AppointmentServiceUpdatePayload {
+  id: number;
+  service_id?: number | null;
+  material_id?: number | null;
+  quantity?: number;
+  price?: number;
+  price_changed_reason?: string | null;
+  notes?: string | null;
+}
+
+// ─── Receipt Payment ───────────────────────────────────────────────────────
+
+export interface ReceiptPaymentPayload {
+  receipt_id: number;
+  amount: number;
+  method: PaymentMethod;
+  add_change_to_deposit?: boolean;
+}

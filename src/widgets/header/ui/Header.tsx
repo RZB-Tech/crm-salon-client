@@ -20,6 +20,7 @@ import { BellIcon, KeyIcon, ListIcon, SignOutIcon, UserIcon } from '@phosphor-ic
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
+import { useMe } from '@/shared/api/hooks/useMe';
 import { authStorage } from '@/shared/api/client';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
@@ -37,8 +38,19 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   const { connected } = useNotificationsWs();
   const { data: notifications } = useNotifications();
+  const { data: me } = useMe();
   const logout = useLogout();
   const changePassword = useChangePassword();
+
+  const meInitials = React.useMemo(() => {
+    if (!me) return 'A';
+    return [me.firstname?.[0], me.lastname?.[0]].filter(Boolean).join('').toUpperCase() || me.login[0]?.toUpperCase() || 'A';
+  }, [me]);
+
+  const meDisplayName = React.useMemo(() => {
+    if (!me) return '';
+    return [me.firstname, me.lastname].filter(Boolean).join(' ') || me.login;
+  }, [me]);
   const recent = React.useMemo(
     () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').slice(0, 5),
     [notifications],
@@ -165,11 +177,11 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
           <Menu shadow="md" width={200} position="bottom-end" radius="md">
             <Menu.Target>
               <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Профиль">
-                <Avatar radius="md" size="md" color="sage">A</Avatar>
+                <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              <Menu.Label>Аккаунт</Menu.Label>
+              <Menu.Label>{meDisplayName || 'Аккаунт'}</Menu.Label>
               <Menu.Item leftSection={<UserIcon size={14} />} disabled>
                 Профиль
               </Menu.Item>

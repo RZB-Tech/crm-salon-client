@@ -1,6 +1,7 @@
 import React from 'react';
-import { Badge, Modal, Skeleton, Table, Tabs, Text } from '@mantine/core';
+import { Badge, Modal, Skeleton, Stack, Table, Tabs, Text } from '@mantine/core';
 import { useClientAppointments } from '@/shared/api/hooks/useClients';
+import { useClientFinanceReport } from '@/shared/api/hooks/useClientFinanceReport';
 import type { Client } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { DataTable, DataTableRow } from '@/shared/ui';
@@ -15,6 +16,9 @@ interface ClientDetailModalProps {
 export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }) => {
   const [tab, setTab] = React.useState<string>('appointments');
   const { data: appointments, isLoading } = useClientAppointments(client?.id ?? 0);
+  const { data: financeReport, isLoading: financeLoading } = useClientFinanceReport({
+    clientID: client?.id ?? 0,
+  });
 
   useResetOnOpen(client, () => setTab('appointments'));
 
@@ -23,6 +27,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
       <Tabs value={tab} onChange={(v) => setTab(v ?? 'appointments')}>
         <Tabs.List mb="md">
           <Tabs.Tab value="appointments">Записи</Tabs.Tab>
+          <Tabs.Tab value="finance">Финансы</Tabs.Tab>
           <Tabs.Tab value="audit">История изменений</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="appointments">
@@ -53,6 +58,41 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
                 </DataTableRow>
               ))}
             </DataTable>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel value="finance">
+          {financeLoading ? (
+            <Skeleton height={120} />
+          ) : financeReport && Object.keys(financeReport.items).length > 0 ? (
+            <Stack gap="sm">
+              <Text size="sm" fw={600}>
+                Итого: {formatPrice(financeReport.total)}
+              </Text>
+              <DataTable
+                compact
+                stickyHeader={false}
+                maxHeight={320}
+                columns={[
+                  { key: 'month', label: 'Месяц' },
+                  { key: 'income', label: 'Доход' },
+                  { key: 'net', label: 'Нетто' },
+                  { key: 'transactions', label: 'Операций' },
+                ]}
+                isEmpty={false}
+                emptyMessage=""
+              >
+                {Object.entries(financeReport.items).map(([month, data]) => (
+                  <DataTableRow key={month}>
+                    <Table.Td><Text size="xs">{month}</Text></Table.Td>
+                    <Table.Td><Text size="xs" c="green">{formatPrice(data.income)}</Text></Table.Td>
+                    <Table.Td><Text size="xs" fw={600}>{formatPrice(data.net)}</Text></Table.Td>
+                    <Table.Td><Badge size="xs" variant="light">{data.transactions.length}</Badge></Table.Td>
+                  </DataTableRow>
+                ))}
+              </DataTable>
+            </Stack>
+          ) : (
+            <Text size="sm" c="dimmed">Финансовых данных нет</Text>
           )}
         </Tabs.Panel>
         <Tabs.Panel value="audit">

@@ -7,7 +7,12 @@ import {
   apiRequest,
 } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
-import type { Appointment, AppointmentCreatePayload } from '@/shared/api/types';
+import type {
+  Appointment,
+  AppointmentCreatePayload,
+  AppointmentUpdatePayload,
+  Receipt,
+} from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useAppointments = () =>
@@ -76,3 +81,27 @@ export const useDeleteAppointment = () => {
     },
   });
 };
+
+export const useUpdateAppointment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: AppointmentUpdatePayload) =>
+      apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', payload),
+    onSuccess: (_, payload) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
+      addNotification.success({ message: 'Запись обновлена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось обновить запись' });
+    },
+  });
+};
+
+export const useAppointmentReceipts = (appointmentId: number) =>
+  useQuery({
+    queryKey: [...queryKeys.appointments.detail(appointmentId), 'receipts'] as const,
+    queryFn: () => apiRequest<Receipt[]>(`/api/v1/appointments/${appointmentId}/receipts`),
+    enabled: appointmentId > 0,
+  });
