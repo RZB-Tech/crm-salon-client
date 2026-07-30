@@ -7,9 +7,11 @@ import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsCo
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
 import { NotificationFormModal } from './NotificationFormModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './notifications-page.module.css';
 
 export const NotificationsPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const [formOpen, setFormOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<string>('all');
   const [readTarget, setReadTarget] = React.useState<number | null>(null);
@@ -48,7 +50,7 @@ export const NotificationsPage: React.FC = () => {
           <Badge variant="light" color={connected ? 'green' : 'gray'} leftSection={<Box component="span" className={`${styles.statusDot} ${connected ? styles.statusDot_online : styles.statusDot_offline}`} />}>
             {connected ? 'Поток подключён' : 'Поток отключён'}
           </Badge>
-          <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Создать</Button>
+          {hasPermission(PermissionCode.NOTIFICATION_CREATE) && <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Создать</Button>}
         </Group>
       }
     >

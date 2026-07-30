@@ -52,24 +52,37 @@
   cursor: pointer;
   position: relative;
   transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .day:hover {
   background: var(--mantine-color-gray-1);
 }
 
-.day_today:not(.day_selected) {
-  color: var(--mantine-color-sage-7);
+.day.day_today:not(.day_selected) {
+  background: var(--mantine-color-sage-2);
+  color: var(--mantine-color-sage-8);
   font-weight: 700;
 }
 
-.day_selected {
+.day.day_today:not(.day_selected):hover {
+  background: var(--mantine-color-sage-3);
+}
+
+.day.day_today.day_selected {
+  outline: 2px solid var(--mantine-color-sage-3);
+  outline-offset: 1px;
+}
+
+.day.day_selected {
   background: var(--mantine-color-sage-6);
   color: var(--mantine-color-white);
   font-weight: 700;
 }
 
-.day_selected:hover {
+.day.day_selected:hover {
   background: var(--mantine-color-sage-7);
 }
 

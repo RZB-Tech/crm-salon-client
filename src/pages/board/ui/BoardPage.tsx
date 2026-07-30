@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Box, Button, Loader, Skeleton, Stack, Text } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
 import { AppointmentFormModal } from './AppointmentForm';
@@ -22,6 +23,7 @@ const BoardSkeleton: React.FC = () => (
 
 export const BoardPage: React.FC = () => {
   const board = useBoardData();
+  const { hasPermission } = useAccess();
   const form = useBoardForm({
     date: board.date,
     createAppointment: board.createAppointment,
@@ -72,14 +74,16 @@ export const BoardPage: React.FC = () => {
               embedded
             />
           )}
-          <Button
-            leftSection={<Plus size={16} />}
-            size="sm"
-            onClick={() => form.openCreateForm()}
-            disabled={board.employeeOptions.length === 0}
-          >
-            Новая запись
-          </Button>
+          {hasPermission(PermissionCode.APPOINTMENT_CREATE) && (
+            <Button
+              leftSection={<Plus size={16} />}
+              size="sm"
+              onClick={() => form.openCreateForm()}
+              disabled={board.employeeOptions.length === 0}
+            >
+              Новая запись
+            </Button>
+          )}
         </Box>
       </Box>
 

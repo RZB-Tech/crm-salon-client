@@ -30,6 +30,7 @@ const toSalonNotification = (payload: SalonNotificationWsPayload): SalonNotifica
   delivered_at: payload.delivered_at ?? new Date().toISOString(),
   created_at: payload.scheduled_at,
   updated_at: payload.scheduled_at,
+  archived: false,
 });
 
 export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

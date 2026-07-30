@@ -8,10 +8,10 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useSpecializations = () =>
+export const useSpecializations = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.specializations.all,
-    queryFn: () => apiFetchAllPost<Specialization>('/api/v1/specializations'),
+    queryKey: [...queryKeys.specializations.all, { archived }],
+    queryFn: () => apiFetchAllPost<Specialization>('/api/v1/specializations', { archived }),
   });
 
 export const useSpecialization = (id: number) =>
@@ -60,6 +60,20 @@ export const useArchiveSpecialization = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({ message: 'Специализация архивирована' });
+    },
+  });
+};
+
+export const useRestoreSpecialization = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Specialization, { id: number; archived: boolean }>('/api/v1/specializations', { id, archived: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      addNotification.success({ message: 'Специализация восстановлена' });
     },
   });
 };

@@ -21,7 +21,7 @@ import { addNotification } from '@/shared/lib/notifications';
 export const useServices = (archived = false) =>
   useQuery({
     queryKey: [...queryKeys.services.all, { archived }],
-    queryFn: () => apiFetchAllPost<Service>('/api/v1/services', archived ? { archived: true } : undefined),
+    queryFn: () => apiFetchAllPost<Service>('/api/v1/services', { archived }),
   });
 
 export const useService = (id: number) =>
@@ -31,10 +31,10 @@ export const useService = (id: number) =>
     enabled: id > 0,
   });
 
-export const useServiceCategories = () =>
+export const useServiceCategories = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.serviceCategories.all,
-    queryFn: () => apiFetchAllPost<ServiceCategory>('/api/v1/service-categories'),
+    queryKey: [...queryKeys.serviceCategories.all, { archived }],
+    queryFn: () => apiFetchAllPost<ServiceCategory>('/api/v1/service-categories', { archived }),
   });
 
 export const useServiceCategory = (id: number) =>
@@ -149,6 +149,23 @@ export const useArchiveServiceCategory = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
       addNotification.success({ message: 'Категория архивирована' });
+    },
+  });
+};
+
+export const useRestoreServiceCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<ServiceCategory, { id: number; archived: boolean }>(
+        '/api/v1/service-categories',
+        { id, archived: false },
+      ),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
+      addNotification.success({ message: 'Категория восстановлена' });
     },
   });
 };

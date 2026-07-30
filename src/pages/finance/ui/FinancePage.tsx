@@ -10,8 +10,10 @@ import { TransactionsTab } from './tabs/TransactionsTab';
 import { PayoutsTab } from './tabs/PayoutsTab';
 import { ReceiptFormModal } from './ReceiptFormModal';
 import { PaymentFormModal } from './PaymentFormModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 
 export const FinancePage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('receipts');
   const [receiptFormOpen, setReceiptFormOpen] = React.useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = React.useState(false);
@@ -54,12 +56,16 @@ export const FinancePage: React.FC = () => {
       actions={
         tab !== 'transactions' && tab !== 'payouts' ? (
           <Group>
-            <Button variant="light" onClick={() => openPaymentForm()}>
-              Провести оплату
-            </Button>
-            <Button leftSection={<PlusIcon size={16} />} onClick={() => setReceiptFormOpen(true)}>
-              Новый чек
-            </Button>
+            {hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT) && (
+              <Button variant="light" onClick={() => openPaymentForm()}>
+                Провести оплату
+              </Button>
+            )}
+            {hasPermission(PermissionCode.RECEIPT_CREATE) && (
+              <Button leftSection={<PlusIcon size={16} />} onClick={() => setReceiptFormOpen(true)}>
+                Новый чек
+              </Button>
+            )}
           </Group>
         ) : undefined
       }

@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Center, Loader } from '@mantine/core';
 import { AppLayout } from '@/shared/ui/AppLayout';
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
+import { PermissionGuard } from '@/app/router/PermissionGuard';
+import { SmartRedirect } from '@/app/router/SmartRedirect';
+import { PermissionCode } from '@/shared/lib/permissions';
 import { AUTH_ENABLED } from '@/shared/config/env';
 
 // Критичные страницы загружаем сразу
@@ -53,13 +56,19 @@ export const AppRouter: React.FC = () => (
     />
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/board" replace />} />
-        <Route path="/board" element={<BoardPage />} />
+        <Route index element={<SmartRedirect />} />
+        <Route path="/board" element={
+          <PermissionGuard permissions={[PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE]}>
+            <BoardPage />
+          </PermissionGuard>
+        } />
         <Route
           path="/clients"
           element={
             <Suspense fallback={<PageLoader />}>
-              <ClientsPage />
+              <PermissionGuard permissions={[PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE]}>
+                <ClientsPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -67,7 +76,9 @@ export const AppRouter: React.FC = () => (
           path="/services"
           element={
             <Suspense fallback={<PageLoader />}>
-              <ServicesPage />
+              <PermissionGuard permissions={[PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE]}>
+                <ServicesPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -75,7 +86,9 @@ export const AppRouter: React.FC = () => (
           path="/employees"
           element={
             <Suspense fallback={<PageLoader />}>
-              <EmployeesPage />
+              <PermissionGuard permissions={[PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE]}>
+                <EmployeesPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -83,7 +96,9 @@ export const AppRouter: React.FC = () => (
           path="/employees/:id"
           element={
             <Suspense fallback={<PageLoader />}>
-              <EmployeeProfilePage />
+              <PermissionGuard permissions={[PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE]}>
+                <EmployeeProfilePage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -91,7 +106,9 @@ export const AppRouter: React.FC = () => (
           path="/materials"
           element={
             <Suspense fallback={<PageLoader />}>
-              <MaterialsPage />
+              <PermissionGuard permissions={[PermissionCode.MATERIAL_READ, PermissionCode.MATERIAL_MANAGE]}>
+                <MaterialsPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -99,7 +116,9 @@ export const AppRouter: React.FC = () => (
           path="/finance"
           element={
             <Suspense fallback={<PageLoader />}>
-              <FinancePage />
+              <PermissionGuard permissions={[PermissionCode.RECEIPT_READ, PermissionCode.RECEIPT_MANAGE, PermissionCode.PAYROLL_READ, PermissionCode.PAYROLL_MANAGE, PermissionCode.TRANSACTION_READ, PermissionCode.TRANSACTION_MANAGE]}>
+                <FinancePage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -107,7 +126,9 @@ export const AppRouter: React.FC = () => (
           path="/notifications"
           element={
             <Suspense fallback={<PageLoader />}>
-              <NotificationsPage />
+              <PermissionGuard permissions={[PermissionCode.NOTIFICATION_READ, PermissionCode.NOTIFICATION_MANAGE]}>
+                <NotificationsPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -115,7 +136,9 @@ export const AppRouter: React.FC = () => (
           path="/settings"
           element={
             <Suspense fallback={<PageLoader />}>
-              <SettingsPage />
+              <PermissionGuard permissions={[PermissionCode.TENANT_PREFERENCES_READ, PermissionCode.TENANT_MANAGE]}>
+                <SettingsPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
@@ -123,11 +146,13 @@ export const AppRouter: React.FC = () => (
           path="/admin"
           element={
             <Suspense fallback={<PageLoader />}>
-              <AdminPage />
+              <PermissionGuard adminOnly>
+                <AdminPage />
+              </PermissionGuard>
             </Suspense>
           }
         />
-        <Route path="*" element={<Navigate to="/board" replace />} />
+        <Route path="*" element={<SmartRedirect />} />
       </Route>
     </Route>
   </Routes>

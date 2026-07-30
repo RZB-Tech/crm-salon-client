@@ -1,24 +1,28 @@
 import React from 'react';
-import { ActionIcon, Alert, Button, Group, Menu, Skeleton, Table, Text, TextInput } from '@mantine/core';
-import { Archive, DotsThree, MagnifyingGlassIcon, PencilSimple, Plus } from '@phosphor-icons/react';
-import { useArchiveMaterial, useMaterials } from '@/shared/api/hooks/useMaterials';
+import { ActionIcon, Alert, Button, Group, Menu, Skeleton, Table, Text, TextInput, Tooltip } from '@mantine/core';
+import { Archive, ArrowCounterClockwise, DotsThree, MagnifyingGlassIcon, PencilSimple, Plus } from '@phosphor-icons/react';
+import { useArchiveMaterial, useMaterials, useRestoreMaterial } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
 import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './materials-page.module.css';
 
 export const MaterialsPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const [search, setSearch] = React.useState('');
+  const [showArchived, setShowArchived] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Material | null>(null);
   const [quantityTarget, setQuantityTarget] = React.useState<Material | null>(null);
   const [archiveTarget, setArchiveTarget] = React.useState<Material | null>(null);
 
-  const { data: materials, isLoading, isError } = useMaterials();
+  const { data: materials, isLoading, isError } = useMaterials(showArchived);
   const archiveMaterial = useArchiveMaterial();
+  const restoreMaterial = useRestoreMaterial();
 
   const filtered = React.useMemo(
     () =>
@@ -49,11 +53,24 @@ export const MaterialsPage: React.FC = () => {
   return (
     <ListPage
       title="Склад"
-      subtitle={`${materials?.length ?? 0} материалов`}
+      subtitle={`${materials?.length ?? 0} ${showArchived ? 'в архиве' : 'материалов'}`}
       actions={
         <Group gap="sm">
+          <Tooltip label={showArchived ? 'Показать активные' : 'Показать архив'}>
+            <ActionIcon
+              variant={showArchived ? 'filled' : 'subtle'}
+              color={showArchived ? 'orange' : 'gray'}
+              size="lg"
+              onClick={() => setShowArchived((v) => !v)}
+              aria-label="Переключить архив"
+            >
+              <Archive size={20} />
+            </ActionIcon>
+          </Tooltip>
           <TextInput placeholder="Поиск по названию или артикулу..." leftSection={<MagnifyingGlassIcon size={15} />} value={search} onChange={(e) => setSearch(e.currentTarget.value)} size="sm" className={styles.searchInput} />
-          <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить материал</Button>
+          {!showArchived && hasPermission(PermissionCode.MATERIAL_CREATE) && (
+            <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить материал</Button>
+          )}
         </Group>
       }
     >
@@ -78,9 +95,15 @@ export const MaterialsPage: React.FC = () => {
               <Menu shadow="sm" width={180} radius="md">
                 <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
                 <Menu.Dropdown>
-                  <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(material)}>Редактировать</Menu.Item>
-                  <Menu.Item onClick={() => setQuantityTarget(material)}>Изменить количество</Menu.Item>
-                  <Menu.Item leftSection={<Archive size={14} />} color="orange" onClick={() => setArchiveTarget(material)}>Архивировать</Menu.Item>
+                  {showArchived ? (
+                    hasPermission(PermissionCode.MATERIAL_MANAGE) && <Menu.Item leftSection={<ArrowCounterClockwise size={14} />} onClick={() => restoreMaterial.mutate(material.id)}>Восстановить</Menu.Item>
+                  ) : (
+                    <>
+                      {hasPermission(PermissionCode.MATERIAL_UPDATE) && <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(material)}>Редактировать</Menu.Item>}
+                      {hasPermission(PermissionCode.MATERIAL_UPDATE_QUANTITY) && <Menu.Item onClick={() => setQuantityTarget(material)}>Изменить количество</Menu.Item>}
+                      {hasPermission(PermissionCode.MATERIAL_MANAGE) && <Menu.Item leftSection={<Archive size={14} />} color="orange" onClick={() => setArchiveTarget(material)}>Архивировать</Menu.Item>}
+                    </>
+                  )}
                 </Menu.Dropdown>
               </Menu>
             </Table.Td>

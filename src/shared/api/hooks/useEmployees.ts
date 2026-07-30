@@ -17,10 +17,10 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useEmployees = () =>
+export const useEmployees = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.employees.all,
-    queryFn: () => apiFetchAllPost<Employee>('/api/v1/employees'),
+    queryKey: [...queryKeys.employees.all, { archived }],
+    queryFn: () => apiFetchAllPost<Employee>('/api/v1/employees', { archived }),
   });
 
 export const useEmployee = (id: number) =>
@@ -114,6 +114,21 @@ export const useArchiveEmployee = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       addNotification.success({ message: 'Сотрудник архивирован' });
+    },
+  });
+};
+
+export const useRestoreEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Employee, { id: number; archived: boolean }>('/api/v1/employees', { id, archived: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
+      addNotification.success({ message: 'Сотрудник восстановлен' });
     },
   });
 };

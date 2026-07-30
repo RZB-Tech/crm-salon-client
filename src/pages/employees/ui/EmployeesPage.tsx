@@ -14,12 +14,14 @@ import {
   Button,
   ActionIcon,
   Menu,
+  Tooltip,
 } from '@mantine/core';
-import { PlusIcon, DotsThreeIcon, ArchiveIcon, ArrowRightIcon } from '@phosphor-icons/react';
+import { PlusIcon, DotsThreeIcon, ArchiveIcon, ArrowRightIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import {
   useCreateEmployee,
   useArchiveEmployee,
   useEmployees,
+  useRestoreEmployee,
 } from '@/shared/api/hooks/useEmployees';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
@@ -31,16 +33,20 @@ import {
   getEmployeeInitials,
 } from '@/shared/lib/format';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './employees-page.module.css';
 
 interface EmployeeCardProps {
   employee: Employee;
   specializationName: string | null;
+  showArchived: boolean;
+  canManage: boolean;
   onOpen: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
+  onRestore: (employee: Employee) => void;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationName, onOpen, onDelete }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationName, showArchived, canManage, onOpen, onDelete, onRestore }) => {
   const servicesCount = employee.services?.length ?? 0;
 
   return (
@@ -80,9 +86,19 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
               <Menu.Item leftSection={<ArrowRightIcon size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
                 Открыть профиль
               </Menu.Item>
-              <Menu.Item leftSection={<ArchiveIcon size={14} />} color="orange" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
-                Архивировать
-              </Menu.Item>
+              {showArchived ? (
+                canManage && (
+                  <Menu.Item leftSection={<ArrowCounterClockwiseIcon size={14} />} onClick={(e) => { e.stopPropagation(); onRestore(employee); }}>
+                    Восстановить
+                  </Menu.Item>
+                )
+              ) : (
+                canManage && (
+                  <Menu.Item leftSection={<ArchiveIcon size={14} />} color="orange" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
+                    Архивировать
+                  </Menu.Item>
+                )
+              )}
             </Menu.Dropdown>
           </Menu>
         </Group>
@@ -101,14 +117,17 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
 };
 
 export const EmployeesPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = React.useState(false);
   const [archiveTarget, setArchiveTarget] = React.useState<Employee | null>(null);
+  const [showArchived, setShowArchived] = React.useState(false);
 
-  const { data: employees, isLoading, isError } = useEmployees();
+  const { data: employees, isLoading, isError } = useEmployees(showArchived);
   const { data: specializations } = useSpecializations();
   const createEmployee = useCreateEmployee();
   const archiveEmployee = useArchiveEmployee();
+  const restoreEmployee = useRestoreEmployee();
 
   const specializationMap = React.useMemo(() => {
     const map = new Map<number, string>();
@@ -153,9 +172,24 @@ export const EmployeesPage: React.FC = () => {
       <Box className={styles.pageHeader}>
         <Box>
           <Text size="xl" fw={700}>Сотрудники</Text>
-          <Text size="sm" c="dimmed" mt={2}>{list.length} в системе</Text>
+          <Text size="sm" c="dimmed" mt={2}>{list.length} {showArchived ? 'в архиве' : 'в системе'}</Text>
         </Box>
-        <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
+        <Group gap={8}>
+          <Tooltip label={showArchived ? 'Показать активных' : 'Показать архив'}>
+            <ActionIcon
+              variant={showArchived ? 'filled' : 'subtle'}
+              color={showArchived ? 'orange' : 'gray'}
+              size="lg"
+              onClick={() => setShowArchived((v) => !v)}
+              aria-label="Переключить архив"
+            >
+              <ArchiveIcon size={20} />
+            </ActionIcon>
+          </Tooltip>
+          {!showArchived && hasPermission(PermissionCode.EMPLOYEE_CREATE) && (
+            <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
+          )}
+        </Group>
       </Box>
 
       {list.length === 0 ? (
@@ -167,8 +201,11 @@ export const EmployeesPage: React.FC = () => {
               key={employee.id}
               employee={employee}
               specializationName={employee.specialization_id != null ? specializationMap.get(employee.specialization_id) ?? null : null}
+              showArchived={showArchived}
+              canManage={hasPermission(PermissionCode.EMPLOYEE_MANAGE)}
               onOpen={openProfile}
               onDelete={setArchiveTarget}
+              onRestore={(e) => restoreEmployee.mutate(e.id)}
             />
           ))}
         </SimpleGrid>

@@ -40,6 +40,7 @@ import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { ServiceFormModal } from './ServiceFormModal';
 import { CategoryFormModal } from './CategoryFormModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './services-page.module.css';
 
 const PAGE_SIZE_OPTIONS = [
@@ -62,6 +63,7 @@ const formatDuration = (minutes: number): string => {
 };
 
 export const ServicesPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const [activeCategory, setActiveCategory] = React.useState('all');
   const [search, setSearch] = React.useState('');
   const [showArchived, setShowArchived] = React.useState(false);
@@ -219,32 +221,36 @@ export const ServicesPage: React.FC = () => {
           />
           {!showArchived && (
             <>
-              <FileButton
-                onChange={handleImportFile}
-                accept=".xlsx,.xls"
-                resetRef={resetImportRef}
-              >
-                {(props) => (
-                  <Button
-                    {...props}
-                    variant="light"
-                    color="sage"
-                    rightSection={<DownloadSimpleIcon size={16} />}
-                    size="sm"
-                    loading={importServices.isPending}
-                  >
-                    Импорт Excel
-                  </Button>
-                )}
-              </FileButton>
-              <Button
-                color="sage.6"
-                rightSection={<PlusIcon size={16} />}
-                onClick={openServiceCreate}
-                size="sm"
-              >
-                Добавить услугу
-              </Button>
+              {hasPermission(PermissionCode.SERVICE_IMPORT) && (
+                <FileButton
+                  onChange={handleImportFile}
+                  accept=".xlsx,.xls"
+                  resetRef={resetImportRef}
+                >
+                  {(props) => (
+                    <Button
+                      {...props}
+                      variant="light"
+                      color="sage"
+                      rightSection={<DownloadSimpleIcon size={16} />}
+                      size="sm"
+                      loading={importServices.isPending}
+                    >
+                      Импорт Excel
+                    </Button>
+                  )}
+                </FileButton>
+              )}
+              {hasPermission(PermissionCode.SERVICE_CREATE) && (
+                <Button
+                  color="sage.6"
+                  rightSection={<PlusIcon size={16} />}
+                  onClick={openServiceCreate}
+                  size="sm"
+                >
+                  Добавить услугу
+                </Button>
+              )}
             </>
           )}
         </Group>
@@ -323,27 +329,33 @@ export const ServicesPage: React.FC = () => {
                         </Menu.Target>
                         <Menu.Dropdown>
                           {showArchived ? (
-                            <Menu.Item
-                              leftSection={<ArrowCounterClockwiseIcon size={14} />}
-                              onClick={() => restoreService.mutate(service.id)}
-                            >
-                              Восстановить
-                            </Menu.Item>
+                            hasPermission(PermissionCode.SERVICE_MANAGE) && (
+                              <Menu.Item
+                                leftSection={<ArrowCounterClockwiseIcon size={14} />}
+                                onClick={() => restoreService.mutate(service.id)}
+                              >
+                                Восстановить
+                              </Menu.Item>
+                            )
                           ) : (
                             <>
-                              <Menu.Item
-                                leftSection={<PencilSimpleIcon size={14} />}
-                                onClick={() => openServiceEdit(service)}
-                              >
-                                Редактировать
-                              </Menu.Item>
-                              <Menu.Item
-                                leftSection={<ArchiveIcon size={14} />}
-                                color="orange"
-                                onClick={() => setArchiveServiceTarget(service)}
-                              >
-                                Архивировать
-                              </Menu.Item>
+                              {hasPermission(PermissionCode.SERVICE_UPDATE) && (
+                                <Menu.Item
+                                  leftSection={<PencilSimpleIcon size={14} />}
+                                  onClick={() => openServiceEdit(service)}
+                                >
+                                  Редактировать
+                                </Menu.Item>
+                              )}
+                              {hasPermission(PermissionCode.SERVICE_MANAGE) && (
+                                <Menu.Item
+                                  leftSection={<ArchiveIcon size={14} />}
+                                  color="orange"
+                                  onClick={() => setArchiveServiceTarget(service)}
+                                >
+                                  Архивировать
+                                </Menu.Item>
+                              )}
                             </>
                           )}
                         </Menu.Dropdown>

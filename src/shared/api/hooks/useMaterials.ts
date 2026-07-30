@@ -14,10 +14,10 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useMaterials = () =>
+export const useMaterials = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.materials.all,
-    queryFn: () => apiFetchAllPost<Material>('/api/v1/materials'),
+    queryKey: [...queryKeys.materials.all, { archived }],
+    queryFn: () => apiFetchAllPost<Material>('/api/v1/materials', { archived }),
   });
 
 export const useMaterial = (id: number) =>
@@ -77,6 +77,19 @@ export const useArchiveMaterial = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       addNotification.success({ message: 'Материал архивирован' });
+    },
+  });
+};
+
+export const useRestoreMaterial = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Material, { id: number; archived: boolean }>('/api/v1/materials', { id, archived: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
+      addNotification.success({ message: 'Материал восстановлен' });
     },
   });
 };

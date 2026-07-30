@@ -4,6 +4,7 @@ import type { LoginPayload, StaffLoginResponse } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
 export interface ChangePasswordPayload {
+  id?: number;
   old_password: string;
   new_password: string;
 }

@@ -38,6 +38,7 @@ import {
 } from '@/shared/lib/format';
 import { ClientFormModal } from './ClientFormModal';
 import { DepositModal } from './DepositModal';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { ClientDetailModal } from './ClientDetailModal';
 import styles from './clients-page.module.css';
 
@@ -49,6 +50,7 @@ const PAGE_SIZE_OPTIONS = [
 ];
 
 export const ClientsPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const [search, setSearch] = React.useState('');
   const [showArchived, setShowArchived] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
@@ -143,7 +145,7 @@ export const ClientsPage: React.FC = () => {
             className={styles.searchInput}
           />
         </Group>
-        {!showArchived && (
+        {!showArchived && hasPermission(PermissionCode.CLIENT_CREATE) && (
           <Button
             color="sage.7"
             rightSection={<PlusIcon size={16} />}
@@ -227,12 +229,14 @@ export const ClientsPage: React.FC = () => {
                       </Menu.Target>
                       <Menu.Dropdown>
                         {showArchived ? (
-                          <Menu.Item
-                            leftSection={<ArrowCounterClockwiseIcon size={14} />}
-                            onClick={() => restoreClient.mutate(client.id)}
-                          >
-                            Восстановить
-                          </Menu.Item>
+                          hasPermission(PermissionCode.CLIENT_MANAGE) && (
+                            <Menu.Item
+                              leftSection={<ArrowCounterClockwiseIcon size={14} />}
+                              onClick={() => restoreClient.mutate(client.id)}
+                            >
+                              Восстановить
+                            </Menu.Item>
+                          )
                         ) : (
                           <>
                             <Menu.Item
@@ -241,22 +245,28 @@ export const ClientsPage: React.FC = () => {
                             >
                               Записи и история
                             </Menu.Item>
-                            <Menu.Item
-                              leftSection={<PencilSimpleIcon size={14} />}
-                              onClick={() => openEdit(client)}
-                            >
-                              Редактировать
-                            </Menu.Item>
-                            <Menu.Item onClick={() => setDepositTarget(client)}>
-                              Депозит
-                            </Menu.Item>
-                            <Menu.Item
-                              leftSection={<ArchiveIcon size={14} />}
-                              color="orange"
-                              onClick={() => setArchiveTarget(client)}
-                            >
-                              Архивировать
-                            </Menu.Item>
+                            {hasPermission(PermissionCode.CLIENT_UPDATE) && (
+                              <Menu.Item
+                                leftSection={<PencilSimpleIcon size={14} />}
+                                onClick={() => openEdit(client)}
+                              >
+                                Редактировать
+                              </Menu.Item>
+                            )}
+                            {hasPermission(PermissionCode.CLIENT_UPDATE_DEPOSIT) && (
+                              <Menu.Item onClick={() => setDepositTarget(client)}>
+                                Депозит
+                              </Menu.Item>
+                            )}
+                            {hasPermission(PermissionCode.CLIENT_MANAGE) && (
+                              <Menu.Item
+                                leftSection={<ArchiveIcon size={14} />}
+                                color="orange"
+                                onClick={() => setArchiveTarget(client)}
+                              >
+                                Архивировать
+                              </Menu.Item>
+                            )}
                           </>
                         )}
                       </Menu.Dropdown>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetchAllPost, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
+import { apiFetchAllPost, apiPatch, apiPost } from '@/shared/api/client';
 import type { Role, RoleCreatePayload, RoleUpdatePayload } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
@@ -9,13 +9,6 @@ export const useRoles = () =>
   useQuery({
     queryKey: QUERY_KEY,
     queryFn: () => apiFetchAllPost<Role>('/api/v1/roles'),
-  });
-
-export const useRole = (id: number) =>
-  useQuery({
-    queryKey: [...QUERY_KEY, id] as const,
-    queryFn: () => apiRequest<Role>(`/api/v1/roles/${id}`),
-    enabled: id > 0,
   });
 
 export const useCreateRole = () => {

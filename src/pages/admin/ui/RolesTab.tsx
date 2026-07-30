@@ -5,20 +5,23 @@ import {
   Checkbox,
   Collapse,
   Group,
+  Menu,
   Modal,
   Paper,
   ScrollArea,
   SimpleGrid,
   Skeleton,
   Stack,
+  Switch,
   Table,
   Text,
   TextInput,
   Textarea,
   UnstyledButton,
+  ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { CaretDownIcon, CaretRightIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, CaretRightIcon, DotsThreeVerticalIcon } from '@phosphor-icons/react';
 import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { DataTable, DataTableRow } from '@/shared/ui';
@@ -42,6 +45,7 @@ export const RolesTab: React.FC = () => {
   const [editingRole, setEditingRole] = React.useState<Role | null>(null);
   const [form, setForm] = React.useState<RoleForm>(INITIAL_FORM);
   const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = React.useState(false);
 
   const permissionsByResource = React.useMemo(() => {
     if (!permissions) return {};
@@ -57,6 +61,11 @@ export const RolesTab: React.FC = () => {
     [permissions],
   );
 
+  const filteredRoles = React.useMemo(
+    () => (roles ?? []).filter((r) => showArchived || !r.archived),
+    [roles, showArchived],
+  );
+
   const handleOpen = React.useCallback((role?: Role) => {
     if (role) {
       setEditingRole(role);
@@ -65,7 +74,6 @@ export const RolesTab: React.FC = () => {
       setEditingRole(null);
       setForm(INITIAL_FORM);
     }
-    // По умолчанию все группы свёрнуты
     setExpandedResources(new Set());
     open();
   }, [open]);
@@ -83,13 +91,10 @@ export const RolesTab: React.FC = () => {
     setForm((prev) => {
       const allSelected = codes.every((c) => prev.permissions.includes(c));
       if (allSelected) {
-        // Снять все в группе
         const codesSet = new Set(codes);
         return { ...prev, permissions: prev.permissions.filter((c) => !codesSet.has(c)) };
       }
-      // Выбрать все в группе
-      const merged = new Set([...prev.permissions, ...codes]);
-      return { ...prev, permissions: [...merged] };
+      return { ...prev, permissions: [...new Set([...prev.permissions, ...codes])] };
     });
   }, []);
 
@@ -133,6 +138,10 @@ export const RolesTab: React.FC = () => {
     }
   }, [editingRole, form, createRole, updateRole, close]);
 
+  const handleToggleArchive = React.useCallback((role: Role) => {
+    updateRole.mutate({ id: role.id, archived: !role.archived });
+  }, [updateRole]);
+
   const isAllSelected = allPermissionCodes.length > 0 && allPermissionCodes.every((c) => form.permissions.includes(c));
 
   const columns = React.useMemo(
@@ -140,6 +149,7 @@ export const RolesTab: React.FC = () => {
       { key: 'name', label: 'Название' },
       { key: 'description', label: 'Описание' },
       { key: 'permissions_count', label: 'Разрешений' },
+      { key: 'status', label: 'Статус' },
       { key: 'actions', label: '' },
     ],
     [],
@@ -149,20 +159,50 @@ export const RolesTab: React.FC = () => {
 
   return (
     <Stack gap="md">
-      <Group justify="flex-end">
+      <Group justify="space-between">
+        <Switch
+          label="Показать архивные"
+          checked={showArchived}
+          onChange={(e) => setShowArchived(e.currentTarget.checked)}
+          size="sm"
+        />
         <Button onClick={() => handleOpen()}>Создать роль</Button>
       </Group>
 
-      <DataTable columns={columns} isEmpty={(roles ?? []).length === 0} emptyMessage="Нет ролей">
-        {(roles ?? []).map((r) => (
+      <DataTable columns={columns} isEmpty={filteredRoles.length === 0} emptyMessage="Нет ролей">
+        {filteredRoles.map((r) => (
           <DataTableRow key={r.id}>
-            <Table.Td><Text size="sm">{r.name}</Text></Table.Td>
-            <Table.Td><Text size="sm" c="dimmed">{r.description || '—'}</Text></Table.Td>
+            <Table.Td>
+              <Text size="sm" c={r.archived ? 'dimmed' : undefined}>{r.name}</Text>
+            </Table.Td>
+            <Table.Td>
+              <Text size="sm" c="dimmed">{r.description || '—'}</Text>
+            </Table.Td>
             <Table.Td><Badge variant="light">{r.permissions.length}</Badge></Table.Td>
             <Table.Td>
-              <Button variant="subtle" size="xs" onClick={() => handleOpen(r)}>
-                Редактировать
-              </Button>
+              {r.archived ? (
+                <Badge color="gray" variant="light" size="sm">Архив</Badge>
+              ) : (
+                <Badge color="green" variant="light" size="sm">Активна</Badge>
+              )}
+            </Table.Td>
+            <Table.Td>
+              <Menu position="bottom-end" withinPortal>
+                <Menu.Target>
+                  <ActionIcon variant="subtle" size="sm">
+                    <DotsThreeVerticalIcon size={16} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item onClick={() => handleOpen(r)}>Редактировать</Menu.Item>
+                  <Menu.Item
+                    color={r.archived ? 'green' : 'orange'}
+                    onClick={() => handleToggleArchive(r)}
+                  >
+                    {r.archived ? 'Восстановить' : 'Архивировать'}
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             </Table.Td>
           </DataTableRow>
         ))}
@@ -226,9 +266,7 @@ export const RolesTab: React.FC = () => {
                       <UnstyledButton onClick={() => handleToggleExpanded(resource)} style={{ flex: 1 }}>
                         <Group gap="xs">
                           {isExpanded ? <CaretDownIcon size={14} /> : <CaretRightIcon size={14} />}
-                          <Text size="xs" fw={600} tt="uppercase">
-                            {resource}
-                          </Text>
+                          <Text size="xs" fw={600} tt="uppercase">{resource}</Text>
                           <Badge size="xs" variant="light" color={allInGroupSelected ? 'green' : partialInGroup ? 'yellow' : 'gray'}>
                             {selectedInGroup}/{codes.length}
                           </Badge>

@@ -96,11 +96,15 @@ interface DataTableRowProps {
   children: React.ReactNode;
   muted?: boolean;
   className?: string;
+  onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
-export const DataTableRow: React.FC<DataTableRowProps> = ({ children, muted = false, className }) => (
+export const DataTableRow: React.FC<DataTableRowProps> = ({ children, muted = false, className, onClick, style }) => (
   <Table.Tr
     className={[styles.row, muted ? styles.rowMuted : '', className].filter(Boolean).join(' ')}
+    onClick={onClick}
+    style={style}
   >
     {children}
   </Table.Tr>

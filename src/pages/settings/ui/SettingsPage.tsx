@@ -19,9 +19,11 @@ import {
 } from '@/shared/api/hooks/useTenantPreferences';
 import { ListPage } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { SpecializationsSection } from './SpecializationsSection';
 
 export const SettingsPage: React.FC = () => {
+  const { hasPermission } = useAccess();
   const { data: prefs, isLoading, isError } = useTenantPreferences();
   const updatePrefs = useUpdateTenantPreferences();
 
@@ -98,11 +100,13 @@ export const SettingsPage: React.FC = () => {
               setForm({ ...form, enable_telegram_booking: e.currentTarget.checked })
             }
           />
-          <Group justify="flex-end">
-            <Button onClick={handleSave} loading={updatePrefs.isPending}>
-              Сохранить настройки
-            </Button>
-          </Group>
+          {hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE) && (
+            <Group justify="flex-end">
+              <Button onClick={handleSave} loading={updatePrefs.isPending}>
+                Сохранить настройки
+              </Button>
+            </Group>
+          )}
         </Stack>
       </Card>
 

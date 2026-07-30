@@ -34,6 +34,7 @@ import { ScheduleTab } from './tabs/ScheduleTab';
 import { PaymentsTab } from './tabs/PaymentsTab';
 import { FinanceTab } from './tabs/FinanceTab';
 import { ServicesTab } from './tabs/ServicesTab';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './employee-profile.module.css';
 
 const TAB_VALUES = ['overview', 'schedule', 'payments', 'finance', 'services', 'audit'] as const;
@@ -45,6 +46,7 @@ const isTabValue = (value: string | null): value is TabValue =>
 export const EmployeeProfilePage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { hasPermission } = useAccess();
   const [searchParams, setSearchParams] = useSearchParams();
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -143,33 +145,37 @@ export const EmployeeProfilePage: React.FC = () => {
           </Box>
 
           <Group gap="sm">
-            <Button variant="light" leftSection={<PencilSimpleIcon size={16} />} onClick={() => setEditOpen(true)}>
-              Редактировать
-            </Button>
-            <Menu shadow="md" width={200} position="bottom-end" radius="md">
-              <Menu.Target>
-                <ActionIcon variant="light" color="gray" size="lg" aria-label="Ещё действия">
-                  <DotsThreeIcon size={18} weight="bold" />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<LockKeyIcon size={14} />}
-                  onClick={handleResetPassword}
-                  disabled={resetPassword.isPending}
-                >
-                  Сбросить пароль
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  leftSection={<TrashIcon size={14} />}
-                  color="red"
-                  onClick={() => setDeleteOpen(true)}
-                >
-                  Удалить
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+            {hasPermission(PermissionCode.EMPLOYEE_UPDATE) && (
+              <Button variant="light" leftSection={<PencilSimpleIcon size={16} />} onClick={() => setEditOpen(true)}>
+                Редактировать
+              </Button>
+            )}
+            {hasPermission(PermissionCode.EMPLOYEE_MANAGE) && (
+              <Menu shadow="md" width={200} position="bottom-end" radius="md">
+                <Menu.Target>
+                  <ActionIcon variant="light" color="gray" size="lg" aria-label="Ещё действия">
+                    <DotsThreeIcon size={18} weight="bold" />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<LockKeyIcon size={14} />}
+                    onClick={handleResetPassword}
+                    disabled={resetPassword.isPending}
+                  >
+                    Сбросить пароль
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<TrashIcon size={14} />}
+                    color="red"
+                    onClick={() => setDeleteOpen(true)}
+                  >
+                    Удалить
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
           </Group>
         </Card>
 

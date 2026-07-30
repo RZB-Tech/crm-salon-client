@@ -19,7 +19,7 @@ import { addNotification } from '@/shared/lib/notifications';
 export const useClients = (archived = false) =>
   useQuery({
     queryKey: [...queryKeys.clients.all, { archived }],
-    queryFn: () => apiFetchAllPost<Client>('/api/v1/clients', archived ? { archived: true } : undefined),
+    queryFn: () => apiFetchAllPost<Client>('/api/v1/clients', { archived }),
     staleTime: 2 * 60 * 1000,
   });
 
