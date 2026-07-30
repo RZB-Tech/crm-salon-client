@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiPatch,
   apiPost,
@@ -67,17 +66,18 @@ export const useCancelAppointment = () => {
   });
 };
 
-export const useDeleteAppointment = () => {
+export const useArchiveAppointment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/appointments/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Appointment, { id: number; archived: boolean }>('/api/v1/appointments', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      addNotification.success({ message: 'Запись удалена' });
+      addNotification.success({ message: 'Запись архивирована' });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось удалить запись' });
+      addNotification.error({ message: error.message || 'Не удалось архивировать запись' });
     },
   });
 };

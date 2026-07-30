@@ -3,7 +3,7 @@ import { useEmployees, useAssignedEmployeesByDate } from '@/shared/api/hooks/use
 import {
   useAppointments,
   useCreateAppointment,
-  useDeleteAppointment,
+  useArchiveAppointment,
   useCancelAppointment,
 } from '@/shared/api/hooks/useAppointments';
 import { useClients } from '@/shared/api/hooks/useClients';
@@ -43,7 +43,7 @@ export const useBoardData = () => {
   const { data: services } = useServices();
 
   const createAppointment = useCreateAppointment();
-  const deleteAppointment = useDeleteAppointment();
+  const archiveAppointment = useArchiveAppointment();
   const cancelAppointment = useCancelAppointment();
 
   const boardEmployees = React.useMemo(() => assignedEmployees ?? [], [assignedEmployees]);
@@ -110,7 +110,7 @@ export const useBoardData = () => {
     allEmployees: allEmployees ?? [],
     services: services ?? [],
     createAppointment,
-    deleteAppointment,
+    archiveAppointment,
     cancelAppointment,
     goToday,
     isInitialLoading,

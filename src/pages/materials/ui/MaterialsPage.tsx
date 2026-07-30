@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActionIcon, Alert, Button, Group, Menu, Skeleton, Table, Text, TextInput } from '@mantine/core';
-import { DotsThree, MagnifyingGlassIcon, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
-import { useDeleteMaterial, useMaterials } from '@/shared/api/hooks/useMaterials';
+import { Archive, DotsThree, MagnifyingGlassIcon, PencilSimple, Plus } from '@phosphor-icons/react';
+import { useArchiveMaterial, useMaterials } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
 import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
@@ -15,10 +15,10 @@ export const MaterialsPage: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Material | null>(null);
   const [quantityTarget, setQuantityTarget] = React.useState<Material | null>(null);
-  const [deleteTarget, setDeleteTarget] = React.useState<Material | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Material | null>(null);
 
   const { data: materials, isLoading, isError } = useMaterials();
-  const deleteMaterial = useDeleteMaterial();
+  const archiveMaterial = useArchiveMaterial();
 
   const filtered = React.useMemo(
     () =>
@@ -80,7 +80,7 @@ export const MaterialsPage: React.FC = () => {
                 <Menu.Dropdown>
                   <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(material)}>Редактировать</Menu.Item>
                   <Menu.Item onClick={() => setQuantityTarget(material)}>Изменить количество</Menu.Item>
-                  <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(material)}>Удалить</Menu.Item>
+                  <Menu.Item leftSection={<Archive size={14} />} color="orange" onClick={() => setArchiveTarget(material)}>Архивировать</Menu.Item>
                 </Menu.Dropdown>
               </Menu>
             </Table.Td>
@@ -92,7 +92,7 @@ export const MaterialsPage: React.FC = () => {
 
       <MaterialFormModal opened={formOpen} material={editing} onClose={() => setFormOpen(false)} />
       <QuantityModal material={quantityTarget} onClose={() => setQuantityTarget(null)} />
-      <ConfirmModal opened={Boolean(deleteTarget)} title="Удалить материал" message={`Удалить «${deleteTarget?.name ?? ''}»?`} loading={deleteMaterial.isPending} onConfirm={() => deleteTarget && deleteMaterial.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })} onClose={() => setDeleteTarget(null)} />
+      <ConfirmModal opened={Boolean(archiveTarget)} title="Архивировать материал" message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал будет скрыт из списка.`} loading={archiveMaterial.isPending} onConfirm={() => archiveTarget && archiveMaterial.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) })} onClose={() => setArchiveTarget(null)} />
     </ListPage>
   );
 };

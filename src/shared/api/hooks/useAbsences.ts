@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllGet,
   apiPatch,
   apiPost,
@@ -53,17 +52,18 @@ export const useUpdateAbsence = () => {
   });
 };
 
-export const useDeleteAbsence = () => {
+export const useArchiveAbsence = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/absences/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Absence, { id: number; archived: boolean }>('/api/v1/absences', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.absences.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: ['assigned-employees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      addNotification.success({ message: 'Отсутствие удалено' });
+      addNotification.success({ message: 'Отсутствие архивировано' });
     },
   });
 };

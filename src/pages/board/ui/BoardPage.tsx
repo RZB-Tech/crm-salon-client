@@ -25,7 +25,7 @@ export const BoardPage: React.FC = () => {
   const form = useBoardForm({
     date: board.date,
     createAppointment: board.createAppointment,
-    deleteAppointment: board.deleteAppointment,
+    archiveAppointment: board.archiveAppointment,
     cancelAppointment: board.cancelAppointment,
   });
 
@@ -129,9 +129,9 @@ export const BoardPage: React.FC = () => {
 
       <ConfirmModal
         opened={form.deleteConfirmOpen}
-        title="Удалить запись"
-        message="Удалить эту запись?"
-        loading={board.deleteAppointment.isPending}
+        title="Архивировать запись"
+        message="Архивировать эту запись? Она будет скрыта из расписания."
+        loading={board.archiveAppointment.isPending}
         onConfirm={form.handleDelete}
         onClose={() => form.setDeleteConfirmOpen(false)}
       />

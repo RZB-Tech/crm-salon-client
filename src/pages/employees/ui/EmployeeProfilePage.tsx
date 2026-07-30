@@ -20,7 +20,7 @@ import { ArrowLeftIcon, PencilSimpleIcon, TrashIcon, PhoneIcon, CakeIcon, DotsTh
 import {
   useEmployee,
   useUpdateEmployee,
-  useDeleteEmployee,
+  useArchiveEmployee,
 } from '@/shared/api/hooks/useEmployees';
 import { useResetPassword } from '@/shared/api/hooks/useAuth';
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
@@ -52,7 +52,7 @@ export const EmployeeProfilePage: React.FC = () => {
   const employeeId = Number(id);
   const { data: employee, isLoading, isError } = useEmployee(employeeId);
   const updateEmployee = useUpdateEmployee();
-  const deleteEmployee = useDeleteEmployee();
+  const archiveEmployee = useArchiveEmployee();
   const resetPassword = useResetPassword();
 
   const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
@@ -75,8 +75,8 @@ export const EmployeeProfilePage: React.FC = () => {
   );
 
   const handleDelete = React.useCallback(() => {
-    deleteEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
-  }, [deleteEmployee, employeeId, navigate]);
+    archiveEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
+  }, [archiveEmployee, employeeId, navigate]);
 
   const handleResetPassword = React.useCallback(() => {
     resetPassword.mutate(employeeId, {
@@ -248,9 +248,9 @@ export const EmployeeProfilePage: React.FC = () => {
 
       <ConfirmModal
         opened={deleteOpen}
-        title="Удалить сотрудника"
-        message={`Удалить ${getEmployeeFullName(employee)}?`}
-        loading={deleteEmployee.isPending}
+        title="Архивировать сотрудника"
+        message={`Архивировать ${getEmployeeFullName(employee)}? Сотрудник будет скрыт из списка.`}
+        loading={archiveEmployee.isPending}
         onConfirm={handleDelete}
         onClose={() => setDeleteOpen(false)}
       />

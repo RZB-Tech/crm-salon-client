@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiGetPaginated,
   apiPatch,
@@ -17,11 +16,11 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useClients = () =>
+export const useClients = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.clients.all,
-    queryFn: () => apiFetchAllPost<Client>('/api/v1/clients'),
-    staleTime: 2 * 60 * 1000, // 2 минуты
+    queryKey: [...queryKeys.clients.all, { archived }],
+    queryFn: () => apiFetchAllPost<Client>('/api/v1/clients', archived ? { archived: true } : undefined),
+    staleTime: 2 * 60 * 1000,
   });
 
 export const useClient = (id: number) =>
@@ -85,14 +84,28 @@ export const useUpdateClientDeposit = () => {
   });
 };
 
-export const useDeleteClient = () => {
+export const useArchiveClient = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/clients/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      addNotification.success({ message: 'Клиент удалён' });
+      addNotification.success({ message: 'Клиент архивирован' });
+    },
+  });
+};
+
+export const useRestoreClient = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', { id, archived: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      addNotification.success({ message: 'Клиент восстановлен' });
     },
   });
 };

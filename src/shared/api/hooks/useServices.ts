@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiPatch,
   apiPost,
@@ -19,10 +18,10 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useServices = () =>
+export const useServices = (archived = false) =>
   useQuery({
-    queryKey: queryKeys.services.all,
-    queryFn: () => apiFetchAllPost<Service>('/api/v1/services'),
+    queryKey: [...queryKeys.services.all, { archived }],
+    queryFn: () => apiFetchAllPost<Service>('/api/v1/services', archived ? { archived: true } : undefined),
   });
 
 export const useService = (id: number) =>
@@ -74,15 +73,30 @@ export const useUpdateService = () => {
   });
 };
 
-export const useDeleteService = () => {
+export const useArchiveService = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/services/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Service, { id: number; archived: boolean }>('/api/v1/services', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Услуга удалена' });
+      addNotification.success({ message: 'Услуга архивирована' });
+    },
+  });
+};
+
+export const useRestoreService = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Service, { id: number; archived: boolean }>('/api/v1/services', { id, archived: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      addNotification.success({ message: 'Услуга восстановлена' });
     },
   });
 };
@@ -122,30 +136,34 @@ export const useUpdateServiceCategory = () => {
   });
 };
 
-export const useDeleteServiceCategory = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/service-categories/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
-      addNotification.success({ message: 'Категория удалена' });
-    },
-  });
-};
-
 export const useArchiveServiceCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: number) =>
-      apiPost<ServiceCategory, Record<string, never>>(
-        `/api/v1/service-categories/${id}/archive`,
-        {},
+      apiPatch<ServiceCategory, { id: number; archived: boolean }>(
+        '/api/v1/service-categories',
+        { id, archived: true },
       ),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
+      addNotification.success({ message: 'Категория архивирована' });
+    },
+  });
+};
+
+export const useDeleteServiceCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<ServiceCategory, { id: number; archived: boolean }>(
+        '/api/v1/service-categories',
+        { id, archived: true },
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       addNotification.success({ message: 'Категория архивирована' });
     },
   });

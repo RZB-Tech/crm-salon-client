@@ -15,10 +15,10 @@ import {
   ActionIcon,
   Menu,
 } from '@mantine/core';
-import { PlusIcon, DotsThreeIcon, TrashIcon, ArrowRightIcon } from '@phosphor-icons/react';
+import { PlusIcon, DotsThreeIcon, ArchiveIcon, ArrowRightIcon } from '@phosphor-icons/react';
 import {
   useCreateEmployee,
-  useDeleteEmployee,
+  useArchiveEmployee,
   useEmployees,
 } from '@/shared/api/hooks/useEmployees';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
@@ -80,8 +80,8 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
               <Menu.Item leftSection={<ArrowRightIcon size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
                 Открыть профиль
               </Menu.Item>
-              <Menu.Item leftSection={<TrashIcon size={14} />} color="red" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
-                Удалить
+              <Menu.Item leftSection={<ArchiveIcon size={14} />} color="orange" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
+                Архивировать
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
@@ -103,12 +103,12 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = React.useState(false);
-  const [deleteTarget, setDeleteTarget] = React.useState<Employee | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Employee | null>(null);
 
   const { data: employees, isLoading, isError } = useEmployees();
   const { data: specializations } = useSpecializations();
   const createEmployee = useCreateEmployee();
-  const deleteEmployee = useDeleteEmployee();
+  const archiveEmployee = useArchiveEmployee();
 
   const specializationMap = React.useMemo(() => {
     const map = new Map<number, string>();
@@ -128,10 +128,10 @@ export const EmployeesPage: React.FC = () => {
     [createEmployee],
   );
 
-  const handleDelete = React.useCallback(() => {
-    if (!deleteTarget) return;
-    deleteEmployee.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) });
-  }, [deleteTarget, deleteEmployee]);
+  const handleArchive = React.useCallback(() => {
+    if (!archiveTarget) return;
+    archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) });
+  }, [archiveTarget, archiveEmployee]);
 
   if (isLoading) {
     return (
@@ -168,7 +168,7 @@ export const EmployeesPage: React.FC = () => {
               employee={employee}
               specializationName={employee.specialization_id != null ? specializationMap.get(employee.specialization_id) ?? null : null}
               onOpen={openProfile}
-              onDelete={setDeleteTarget}
+              onDelete={setArchiveTarget}
             />
           ))}
         </SimpleGrid>
@@ -183,12 +183,12 @@ export const EmployeesPage: React.FC = () => {
       />
 
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title="Удалить сотрудника"
-        message={`Удалить ${deleteTarget ? getEmployeeFullName(deleteTarget) : ''}?`}
-        loading={deleteEmployee.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setDeleteTarget(null)}
+        opened={Boolean(archiveTarget)}
+        title="Архивировать сотрудника"
+        message={`Архивировать ${archiveTarget ? getEmployeeFullName(archiveTarget) : ''}? Сотрудник будет скрыт из списка.`}
+        loading={archiveEmployee.isPending}
+        onConfirm={handleArchive}
+        onClose={() => setArchiveTarget(null)}
       />
     </Box>
   );

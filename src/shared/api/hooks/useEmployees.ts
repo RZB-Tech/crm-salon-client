@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiGetPaginated,
   apiPatch,
@@ -104,16 +103,17 @@ export const useUpdateEmployee = () => {
   });
 };
 
-export const useDeleteEmployee = () => {
+export const useArchiveEmployee = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/employees/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Employee, { id: number; archived: boolean }>('/api/v1/employees', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
-      addNotification.success({ message: 'Сотрудник удалён' });
+      addNotification.success({ message: 'Сотрудник архивирован' });
     },
   });
 };

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiDelete, apiFetchAllPost, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
+import { apiFetchAllPost, apiPatch, apiPost, apiRequest } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Specialization,
@@ -50,15 +50,16 @@ export const useUpdateSpecialization = () => {
   });
 };
 
-export const useDeleteSpecialization = () => {
+export const useArchiveSpecialization = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/specializations/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Specialization, { id: number; archived: boolean }>('/api/v1/specializations', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Специализация удалена' });
+      addNotification.success({ message: 'Специализация архивирована' });
     },
   });
 };

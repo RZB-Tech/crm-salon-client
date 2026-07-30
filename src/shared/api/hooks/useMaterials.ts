@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiPatch,
   apiPost,
@@ -69,14 +68,15 @@ export const useUpdateMaterialQuantity = () => {
   });
 };
 
-export const useDeleteMaterial = () => {
+export const useArchiveMaterial = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/materials/${id}`),
+    mutationFn: (id: number) =>
+      apiPatch<Material, { id: number; archived: boolean }>('/api/v1/materials', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
-      addNotification.success({ message: 'Материал удалён' });
+      addNotification.success({ message: 'Материал архивирован' });
     },
   });
 };

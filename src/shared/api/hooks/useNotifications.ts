@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  apiDelete,
   apiFetchAllPost,
   apiPost,
   apiRequest,
@@ -42,18 +41,6 @@ export const useCreateNotification = () => {
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       addNotification.success({ message: 'Уведомление создано' });
-    },
-  });
-};
-
-export const useDeleteNotification = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: number) => apiDelete(`/api/v1/notifications/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      addNotification.success({ message: 'Уведомление удалено' });
     },
   });
 };

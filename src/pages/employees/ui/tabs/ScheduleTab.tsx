@@ -25,7 +25,7 @@ import {
 } from '@/shared/api/hooks/useWorkSchedules';
 import {
   useCreateAbsence,
-  useDeleteAbsence,
+  useArchiveAbsence,
   useUpdateAbsence,
 } from '@/shared/api/hooks/useAbsences';
 import type {
@@ -78,7 +78,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   const deleteSchedule = useDeleteWorkSchedule();
   const createAbsence = useCreateAbsence();
   const updateAbsence = useUpdateAbsence();
-  const deleteAbsence = useDeleteAbsence();
+  const archiveAbsence = useArchiveAbsence();
 
   const schedules: WorkScheduleDay[] = data?.work_schedules ?? [];
   const absences = data?.absences ?? [];
@@ -365,7 +365,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
         </Group>
       </Modal>
 
-      <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Удалить отсутствие" message="Удалить это отсутствие?" loading={deleteAbsence.isPending} onConfirm={() => deleteAbsenceTarget && deleteAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTarget(null) })} onClose={() => setDeleteAbsenceTarget(null)} />
+      <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Архивировать отсутствие" message="Архивировать это отсутствие?" loading={archiveAbsence.isPending} onConfirm={() => deleteAbsenceTarget && archiveAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTarget(null) })} onClose={() => setDeleteAbsenceTarget(null)} />
     </Stack>
   );
 };

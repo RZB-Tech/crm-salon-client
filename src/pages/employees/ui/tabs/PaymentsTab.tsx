@@ -18,7 +18,7 @@ import { Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
 import { useEmployeePayrolls } from '@/shared/api/hooks/useEmployees';
 import {
   useCreatePayroll,
-  useDeletePayroll,
+  useArchivePayroll,
   useUpdatePayroll,
 } from '@/shared/api/hooks/usePayrolls';
 import type { Payroll, PayrollCreatePayload, PayrollType, PayrollUpdatePayload } from '@/shared/api/types';
@@ -42,7 +42,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   const { data: payrolls, isLoading } = useEmployeePayrolls(employeeId);
   const createPayroll = useCreatePayroll();
   const updatePayroll = useUpdatePayroll();
-  const deletePayroll = useDeletePayroll();
+  const archivePayroll = useArchivePayroll();
 
   const total = React.useMemo(
     () => (payrolls ?? []).reduce((sum, p) => sum + p.amount, 0),
@@ -181,10 +181,10 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
 
       <ConfirmModal
         opened={Boolean(deleteTarget)}
-        title="Удалить выплату"
-        message="Удалить эту выплату?"
-        loading={deletePayroll.isPending}
-        onConfirm={() => deleteTarget && deletePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
+        title="Архивировать выплату"
+        message="Архивировать эту выплату? Запись будет скрыта."
+        loading={archivePayroll.isPending}
+        onConfirm={() => deleteTarget && archivePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
         onClose={() => setDeleteTarget(null)}
       />
     </Box>

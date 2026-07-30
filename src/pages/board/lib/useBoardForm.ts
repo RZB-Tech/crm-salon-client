@@ -11,14 +11,14 @@ import {
 interface UseBoardFormOptions {
   date: Date;
   createAppointment: { mutate: (payload: ReturnType<typeof formValuesToPayload>, opts?: { onSuccess?: () => void }) => void; isPending: boolean };
-  deleteAppointment: { mutate: (id: number, opts?: { onSuccess?: () => void }) => void; isPending: boolean };
+  archiveAppointment: { mutate: (id: number, opts?: { onSuccess?: () => void }) => void; isPending: boolean };
   cancelAppointment: { mutate: (id: number, opts?: { onSuccess?: () => void }) => void; isPending: boolean };
 }
 
 export const useBoardForm = ({
   date,
   createAppointment,
-  deleteAppointment,
+  archiveAppointment,
   cancelAppointment,
 }: UseBoardFormOptions) => {
   const [formOpen, setFormOpen] = React.useState(false);
@@ -70,19 +70,19 @@ export const useBoardForm = ({
     const afterSave = () => closeForm();
 
     if (editingId) {
-      deleteAppointment.mutate(editingId, {
+      archiveAppointment.mutate(editingId, {
         onSuccess: () => createAppointment.mutate(payload, { onSuccess: afterSave }),
       });
       return;
     }
 
     createAppointment.mutate(payload, { onSuccess: afterSave });
-  }, [formValues, editingId, deleteAppointment, createAppointment, closeForm]);
+  }, [formValues, editingId, archiveAppointment, createAppointment, closeForm]);
 
   const handleDelete = React.useCallback(() => {
     if (!editingId) return;
-    deleteAppointment.mutate(editingId, { onSuccess: () => closeForm() });
-  }, [editingId, deleteAppointment, closeForm]);
+    archiveAppointment.mutate(editingId, { onSuccess: () => closeForm() });
+  }, [editingId, archiveAppointment, closeForm]);
 
   const handleCancel = React.useCallback(() => {
     if (!editingId) return;
@@ -90,7 +90,7 @@ export const useBoardForm = ({
   }, [editingId, cancelAppointment, closeForm]);
 
   const isSaving =
-    createAppointment.isPending || deleteAppointment.isPending || cancelAppointment.isPending;
+    createAppointment.isPending || archiveAppointment.isPending || cancelAppointment.isPending;
   const formLoading = isSaving || (formMode === 'edit' && editingLoading && !editingAppointment);
 
   return {

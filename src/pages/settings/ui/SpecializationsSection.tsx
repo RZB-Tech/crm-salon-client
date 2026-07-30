@@ -13,7 +13,7 @@ import {
 import { DotsThree, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
 import {
   useCreateSpecialization,
-  useDeleteSpecialization,
+  useArchiveSpecialization,
   useSpecializations,
   useUpdateSpecialization,
 } from '@/shared/api/hooks/useSpecializations';
@@ -24,7 +24,7 @@ export const SpecializationsSection: React.FC = () => {
   const { data: specializations } = useSpecializations();
   const createSpec = useCreateSpecialization();
   const updateSpec = useUpdateSpecialization();
-  const deleteSpec = useDeleteSpecialization();
+  const archiveSpec = useArchiveSpecialization();
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Specialization | null>(null);
@@ -136,12 +136,12 @@ export const SpecializationsSection: React.FC = () => {
 
       <ConfirmModal
         opened={Boolean(deleteTarget)}
-        title="Удалить специализацию"
-        message={`Удалить «${deleteTarget?.name ?? ''}»?`}
-        loading={deleteSpec.isPending}
+        title="Архивировать специализацию"
+        message={`Архивировать «${deleteTarget?.name ?? ''}»?`}
+        loading={archiveSpec.isPending}
         onConfirm={() =>
           deleteTarget &&
-          deleteSpec.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+          archiveSpec.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
         }
         onClose={() => setDeleteTarget(null)}
       />

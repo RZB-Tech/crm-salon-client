@@ -16,18 +16,21 @@ import {
   Table,
   Text,
   TextInput,
+  Tooltip,
 } from '@mantine/core';
 import {
-  DotsThreeVertical,
-  DownloadSimple,
+  ArchiveIcon,
+  ArrowCounterClockwiseIcon,
+  DotsThreeVerticalIcon,
+  DownloadSimpleIcon,
   MagnifyingGlassIcon,
-  PencilSimple,
-  Plus,
-  Trash,
+  PencilSimpleIcon,
+  PlusIcon,
 } from '@phosphor-icons/react';
 import {
-  useDeleteService,
+  useArchiveService,
   useImportServices,
+  useRestoreService,
   useServiceCategories,
   useServices,
 } from '@/shared/api/hooks/useServices';
@@ -61,19 +64,21 @@ const formatDuration = (minutes: number): string => {
 export const ServicesPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = React.useState('all');
   const [search, setSearch] = React.useState('');
+  const [showArchived, setShowArchived] = React.useState(false);
 
   const [serviceFormOpen, setServiceFormOpen] = React.useState(false);
   const [editingService, setEditingService] = React.useState<Service | null>(null);
-  const [deleteServiceTarget, setDeleteServiceTarget] = React.useState<Service | null>(null);
+  const [archiveServiceTarget, setArchiveServiceTarget] = React.useState<Service | null>(null);
 
   // Keep category modal for potential usage from other places
   const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
   const [editingCategory] = React.useState<ServiceCategory | null>(null);
 
-  const { data: services, isLoading: servicesLoading, isError: servicesError } = useServices();
+  const { data: services, isLoading: servicesLoading, isError: servicesError } = useServices(showArchived);
   const { data: categories, isLoading: categoriesLoading, isError: categoriesError } = useServiceCategories();
 
-  const deleteService = useDeleteService();
+  const archiveService = useArchiveService();
+  const restoreService = useRestoreService();
   const importServices = useImportServices();
   const resetImportRef = React.useRef<() => void>(null);
 
@@ -167,17 +172,41 @@ export const ServicesPage: React.FC = () => {
   return (
     <Box className={styles.page}>
       <Box className={styles.toolbar}>
-        <SegmentedControl
-          value={activeCategory}
-          onChange={setActiveCategory}
-          data={segmentData}
-          size="xs"
-          radius="sm"
-          color="sage.6"
-          styles={{
-            root: { background: '#f9f6f3' },
-          }}
-        />
+        <Group gap={8}>
+          <SegmentedControl
+            value={activeCategory}
+            onChange={setActiveCategory}
+            data={segmentData}
+            size="xs"
+            radius="sm"
+            color="sage.6"
+            styles={{
+              root: { background: '#f9f6f3' },
+            }}
+          />
+          <Tooltip label="Добавить категорию" position="right">
+            <ActionIcon
+              variant="subtle"
+              color="sage"
+              size="sm"
+              onClick={() => setCategoryFormOpen(true)}
+              aria-label="Добавить категорию"
+            >
+              <PlusIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={showArchived ? 'Показать активные' : 'Показать архив'} position="right">
+            <ActionIcon
+              variant={showArchived ? 'filled' : 'subtle'}
+              color={showArchived ? 'orange' : 'gray'}
+              size="sm"
+              onClick={() => setShowArchived((v) => !v)}
+              aria-label="Переключить архив"
+            >
+              <ArchiveIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
 
         <Group gap={8}>
           <TextInput
@@ -188,32 +217,36 @@ export const ServicesPage: React.FC = () => {
             size="sm"
             className={styles.searchInput}
           />
-          <FileButton
-            onChange={handleImportFile}
-            accept=".xlsx,.xls"
-            resetRef={resetImportRef}
-          >
-            {(props) => (
-              <Button
-                {...props}
-                variant="light"
-                color="sage"
-                rightSection={<DownloadSimple size={16} />}
-                size="sm"
-                loading={importServices.isPending}
+          {!showArchived && (
+            <>
+              <FileButton
+                onChange={handleImportFile}
+                accept=".xlsx,.xls"
+                resetRef={resetImportRef}
               >
-                Импорт Excel
+                {(props) => (
+                  <Button
+                    {...props}
+                    variant="light"
+                    color="sage"
+                    rightSection={<DownloadSimpleIcon size={16} />}
+                    size="sm"
+                    loading={importServices.isPending}
+                  >
+                    Импорт Excel
+                  </Button>
+                )}
+              </FileButton>
+              <Button
+                color="sage.6"
+                rightSection={<PlusIcon size={16} />}
+                onClick={openServiceCreate}
+                size="sm"
+              >
+                Добавить услугу
               </Button>
-            )}
-          </FileButton>
-          <Button
-            color="sage.6"
-            rightSection={<Plus size={16} />}
-            onClick={openServiceCreate}
-            size="sm"
-          >
-            Добавить услугу
-          </Button>
+            </>
+          )}
         </Group>
       </Box>
 
@@ -285,23 +318,34 @@ export const ServicesPage: React.FC = () => {
                       <Menu shadow="sm" width={160} radius="md">
                         <Menu.Target>
                           <ActionIcon variant="subtle" color="gray" size="sm">
-                            <DotsThreeVertical size={20} weight="bold" />
+                            <DotsThreeVerticalIcon size={20} weight="bold" />
                           </ActionIcon>
                         </Menu.Target>
                         <Menu.Dropdown>
-                          <Menu.Item
-                            leftSection={<PencilSimple size={14} />}
-                            onClick={() => openServiceEdit(service)}
-                          >
-                            Редактировать
-                          </Menu.Item>
-                          <Menu.Item
-                            leftSection={<Trash size={14} />}
-                            color="red"
-                            onClick={() => setDeleteServiceTarget(service)}
-                          >
-                            Удалить
-                          </Menu.Item>
+                          {showArchived ? (
+                            <Menu.Item
+                              leftSection={<ArrowCounterClockwiseIcon size={14} />}
+                              onClick={() => restoreService.mutate(service.id)}
+                            >
+                              Восстановить
+                            </Menu.Item>
+                          ) : (
+                            <>
+                              <Menu.Item
+                                leftSection={<PencilSimpleIcon size={14} />}
+                                onClick={() => openServiceEdit(service)}
+                              >
+                                Редактировать
+                              </Menu.Item>
+                              <Menu.Item
+                                leftSection={<ArchiveIcon size={14} />}
+                                color="orange"
+                                onClick={() => setArchiveServiceTarget(service)}
+                              >
+                                Архивировать
+                              </Menu.Item>
+                            </>
+                          )}
                         </Menu.Dropdown>
                       </Menu>
                     </Table.Td>
@@ -357,17 +401,17 @@ export const ServicesPage: React.FC = () => {
       />
 
       <ConfirmModal
-        opened={Boolean(deleteServiceTarget)}
-        title="Удалить услугу"
-        message={`Удалить «${deleteServiceTarget?.name ?? ''}»?`}
-        loading={deleteService.isPending}
+        opened={Boolean(archiveServiceTarget)}
+        title="Архивировать услугу"
+        message={`Архивировать «${archiveServiceTarget?.name ?? ''}»? Услуга будет скрыта из списка.`}
+        loading={archiveService.isPending}
         onConfirm={() =>
-          deleteServiceTarget &&
-          deleteService.mutate(deleteServiceTarget.id, {
-            onSuccess: () => setDeleteServiceTarget(null),
+          archiveServiceTarget &&
+          archiveService.mutate(archiveServiceTarget.id, {
+            onSuccess: () => setArchiveServiceTarget(null),
           })
         }
-        onClose={() => setDeleteServiceTarget(null)}
+        onClose={() => setArchiveServiceTarget(null)}
       />
     </Box>
   );

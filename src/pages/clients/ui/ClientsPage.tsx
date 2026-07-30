@@ -8,6 +8,7 @@ import {
   Group,
   Menu,
   Pagination as MantinePagination,
+  SegmentedControl,
   Select,
   Skeleton,
   Stack,
@@ -16,14 +17,15 @@ import {
   TextInput,
 } from '@mantine/core';
 import {
+  ArchiveIcon,
+  ArrowCounterClockwiseIcon,
   CalendarBlankIcon,
   DotsThreeVerticalIcon,
   MagnifyingGlassIcon,
   PencilSimpleIcon,
   PlusIcon,
-  TrashIcon,
 } from '@phosphor-icons/react';
-import { useClients, useDeleteClient } from '@/shared/api/hooks/useClients';
+import { useClients, useArchiveClient, useRestoreClient } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
@@ -48,14 +50,16 @@ const PAGE_SIZE_OPTIONS = [
 
 export const ClientsPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
+  const [showArchived, setShowArchived] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Client | null>(null);
   const [depositTarget, setDepositTarget] = React.useState<Client | null>(null);
-  const [deleteTarget, setDeleteTarget] = React.useState<Client | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Client | null>(null);
   const [detailTarget, setDetailTarget] = React.useState<Client | null>(null);
 
-  const { data: clients, isLoading, isError } = useClients();
-  const deleteClient = useDeleteClient();
+  const { data: clients, isLoading, isError } = useClients(showArchived);
+  const archiveClient = useArchiveClient();
+  const restoreClient = useRestoreClient();
 
   const filtered = React.useMemo(
     () =>
@@ -119,22 +123,36 @@ export const ClientsPage: React.FC = () => {
   return (
     <Box className={styles.page}>
       <Box className={styles.toolbar}>
-        <TextInput
-          placeholder="Поиск по имени, телефону..."
-          leftSection={<MagnifyingGlassIcon size={16} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          size="sm"
-          className={styles.searchInput}
-        />
-        <Button
-          color="sage.7"
-          rightSection={<PlusIcon size={16} />}
-          onClick={openCreate}
-          size="sm"
-        >
-          Добавить клиента
-        </Button>
+        <Group gap={8}>
+          <SegmentedControl
+            value={showArchived ? 'archived' : 'active'}
+            onChange={(v) => setShowArchived(v === 'archived')}
+            data={[
+              { value: 'active', label: 'Активные' },
+              { value: 'archived', label: 'Архив' },
+            ]}
+            size="xs"
+            radius="sm"
+          />
+          <TextInput
+            placeholder="Поиск по имени, телефону..."
+            leftSection={<MagnifyingGlassIcon size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            size="sm"
+            className={styles.searchInput}
+          />
+        </Group>
+        {!showArchived && (
+          <Button
+            color="sage.7"
+            rightSection={<PlusIcon size={16} />}
+            onClick={openCreate}
+            size="sm"
+          >
+            Добавить клиента
+          </Button>
+        )}
       </Box>
 
       <Box className={styles.tableWrapper}>
@@ -208,28 +226,39 @@ export const ClientsPage: React.FC = () => {
                         </ActionIcon>
                       </Menu.Target>
                       <Menu.Dropdown>
-                        <Menu.Item
-                          leftSection={<CalendarBlankIcon size={14} />}
-                          onClick={() => setDetailTarget(client)}
-                        >
-                          Записи и история
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<PencilSimpleIcon size={14} />}
-                          onClick={() => openEdit(client)}
-                        >
-                          Редактировать
-                        </Menu.Item>
-                        <Menu.Item onClick={() => setDepositTarget(client)}>
-                          Депозит
-                        </Menu.Item>
-                        <Menu.Item
-                          leftSection={<TrashIcon size={14} />}
-                          color="red"
-                          onClick={() => setDeleteTarget(client)}
-                        >
-                          Удалить
-                        </Menu.Item>
+                        {showArchived ? (
+                          <Menu.Item
+                            leftSection={<ArrowCounterClockwiseIcon size={14} />}
+                            onClick={() => restoreClient.mutate(client.id)}
+                          >
+                            Восстановить
+                          </Menu.Item>
+                        ) : (
+                          <>
+                            <Menu.Item
+                              leftSection={<CalendarBlankIcon size={14} />}
+                              onClick={() => setDetailTarget(client)}
+                            >
+                              Записи и история
+                            </Menu.Item>
+                            <Menu.Item
+                              leftSection={<PencilSimpleIcon size={14} />}
+                              onClick={() => openEdit(client)}
+                            >
+                              Редактировать
+                            </Menu.Item>
+                            <Menu.Item onClick={() => setDepositTarget(client)}>
+                              Депозит
+                            </Menu.Item>
+                            <Menu.Item
+                              leftSection={<ArchiveIcon size={14} />}
+                              color="orange"
+                              onClick={() => setArchiveTarget(client)}
+                            >
+                              Архивировать
+                            </Menu.Item>
+                          </>
+                        )}
                       </Menu.Dropdown>
                     </Menu>
                   </Table.Td>
@@ -282,17 +311,17 @@ export const ClientsPage: React.FC = () => {
         onClose={() => setDetailTarget(null)}
       />
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
-        title="Удалить клиента"
-        message={`Удалить ${deleteTarget ? getClientFullName(deleteTarget) : ''}?`}
-        loading={deleteClient.isPending}
+        opened={Boolean(archiveTarget)}
+        title="Архивировать клиента"
+        message={`Архивировать ${archiveTarget ? getClientFullName(archiveTarget) : ''}? Клиент будет скрыт из списка.`}
+        loading={archiveClient.isPending}
         onConfirm={() =>
-          deleteTarget &&
-          deleteClient.mutate(deleteTarget.id, {
-            onSuccess: () => setDeleteTarget(null),
+          archiveTarget &&
+          archiveClient.mutate(archiveTarget.id, {
+            onSuccess: () => setArchiveTarget(null),
           })
         }
-        onClose={() => setDeleteTarget(null)}
+        onClose={() => setArchiveTarget(null)}
       />
     </Box>
   );
