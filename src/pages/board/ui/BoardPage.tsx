@@ -117,7 +117,7 @@ export const BoardPage: React.FC = () => {
         mode={form.formMode}
         loading={form.formLoading}
         paid={form.editingAppointment?.paid}
-        cancelled={!!form.editingAppointment?.cancelled_at}
+        cancelled={form.editingAppointment?.status === 'cancelled'}
         appointment={form.editingAppointment ?? null}
         values={form.formValues}
         clientOptions={board.clientOptions}

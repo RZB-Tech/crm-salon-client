@@ -249,16 +249,19 @@ export interface AppointmentRecordNested {
   services: AppointmentServiceNested[];
 }
 
+export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
+
 export interface Appointment extends BaseEntity {
   client_id: number;
   client: { id: number; firstname: string; lastname: string | null; phone: string | null } | null;
   start_time_est: string;
   end_time_est: string;
+  status: AppointmentStatus;
   paid: boolean;
   total_price: number;
   records: AppointmentRecordNested[] | null;
   notes: string | null;
-  cancelled_at: string | null;
+  cancelled_reason: string | null;
 }
 
 export interface AppointmentServiceInput {

@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import { Alert, Avatar, Box, Text } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import { ResourcesDayView, type ScheduleEventData } from '@mantine/schedule';
-import type { Employee } from '@/shared/api/types';
+import type { AppointmentStatus, Employee } from '@/shared/api/types';
 import { getEmployeeInitials } from '@/shared/lib/format';
 import type { AppointmentFormValues } from '../lib/appointmentForm';
 import styles from './board-page.module.css';
@@ -24,9 +24,18 @@ interface BoardAppointment {
   endHour: number;
   endMinute: number;
   paid: boolean;
+  status: AppointmentStatus;
   cancelled: boolean;
   totalPrice: number;
 }
+
+const getEventColor = (appt: BoardAppointment): string => {
+  if (appt.cancelled) return 'gray';
+  if (appt.paid) return 'sage';
+  if (appt.status === 'started') return 'blue';
+  if (appt.status === 'finished') return 'teal';
+  return 'orange';
+};
 
 interface BoardScheduleProps {
   date: Date;
@@ -72,7 +81,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         title: `${appt.client} · ${appt.service}`,
         start: `${dateStr} ${padTime(appt.startHour)}:${padTime(appt.startMinute)}:00`,
         end: `${dateStr} ${padTime(appt.endHour)}:${padTime(appt.endMinute)}:00`,
-        color: appt.cancelled ? 'gray' : appt.paid ? 'sage' : 'orange',
+        color: getEventColor(appt),
         resourceId: appt.employeeId,
       })),
     [boardAppointments, dateStr],

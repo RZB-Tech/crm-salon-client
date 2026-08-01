@@ -15,7 +15,7 @@ import {
   SimpleGrid,
   Stack,
 } from '@mantine/core';
-import { ArchiveIcon, Plus } from '@phosphor-icons/react';
+import { ArchiveIcon, PencilSimple, Plus } from '@phosphor-icons/react';
 import { useEmployeeWorkSchedules } from '@/shared/api/hooks/useEmployees';
 import {
   useCreateWorkSchedule,
