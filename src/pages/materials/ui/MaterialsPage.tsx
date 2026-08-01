@@ -1,15 +1,36 @@
 import React from 'react';
-import { ActionIcon, Alert, Button, Group, Menu, Skeleton, Table, Text, TextInput, Tooltip } from '@mantine/core';
-import { Archive, ArrowCounterClockwise, DotsThree, MagnifyingGlassIcon, PencilSimple, Plus } from '@phosphor-icons/react';
+import {
+  ActionIcon,
+  Alert,
+  Box,
+  Button,
+  Group,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core';
+import {
+  ArchiveIcon,
+  ArrowCounterClockwiseIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+} from '@phosphor-icons/react';
 import { useArchiveMaterial, useMaterials, useRestoreMaterial } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
-import { ConfirmModal, DataTable, DataTableRow, ListPage, Pagination } from '@/shared/ui';
+import {
+  ArchiveToggle,
+  ConfirmModal,
+  ListPageShell,
+  ListPaginationFooter,
+  listPageStyles,
+} from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
-import styles from './materials-page.module.css';
 
 export const MaterialsPage: React.FC = () => {
   const { hasPermission } = useAccess();
@@ -35,87 +56,202 @@ export const MaterialsPage: React.FC = () => {
     [materials, search],
   );
 
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(filtered);
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
+    usePagination(filtered, { defaultPageSize: 20 });
 
-  React.useEffect(() => { resetPage(); }, [search, resetPage]);
+  React.useEffect(() => {
+    resetPage();
+  }, [search, resetPage]);
 
-  const openCreate = React.useCallback(() => { setEditing(null); setFormOpen(true); }, []);
-  const openEdit = React.useCallback((m: Material) => { setEditing(m); setFormOpen(true); }, []);
+  const openCreate = React.useCallback(() => {
+    setEditing(null);
+    setFormOpen(true);
+  }, []);
+  const openEdit = React.useCallback((m: Material) => {
+    setEditing(m);
+    setFormOpen(true);
+  }, []);
+
+  const handleChangeQuantity = React.useCallback((m: Material) => {
+    setFormOpen(false);
+    setQuantityTarget(m);
+  }, []);
 
   if (isLoading) {
-    return <ListPage title="Склад"><Skeleton height={48} mb="md" /><Skeleton height={400} radius="md" /></ListPage>;
+    return (
+      <ListPageShell
+        toolbar={
+          <>
+            <Skeleton height={32} width={240} radius="md" />
+            <Skeleton height={32} width={160} radius="md" />
+          </>
+        }
+      >
+        <Stack gap="xs" p="md">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} height={48} radius="sm" />
+          ))}
+        </Stack>
+      </ListPageShell>
+    );
   }
 
   if (isError) {
-    return <ListPage title="Склад"><Alert color="red" title="Не удалось загрузить материалы">Проверьте доступность API</Alert></ListPage>;
+    return (
+      <ListPageShell>
+        <Box p="xl">
+          <Alert color="red" title="Не удалось загрузить материалы">
+            Проверьте доступность API
+          </Alert>
+        </Box>
+      </ListPageShell>
+    );
   }
 
   return (
-    <ListPage
-      title="Склад"
-      subtitle={`${materials?.length ?? 0} ${showArchived ? 'в архиве' : 'материалов'}`}
-      actions={
-        <Group gap="sm">
-          <Tooltip label={showArchived ? 'Показать активные' : 'Показать архив'}>
-            <ActionIcon
-              variant={showArchived ? 'filled' : 'subtle'}
-              color={showArchived ? 'orange' : 'gray'}
-              size="lg"
-              onClick={() => setShowArchived((v) => !v)}
-              aria-label="Переключить архив"
-            >
-              <Archive size={20} />
-            </ActionIcon>
-          </Tooltip>
-          <TextInput placeholder="Поиск по названию или артикулу..." leftSection={<MagnifyingGlassIcon size={15} />} value={search} onChange={(e) => setSearch(e.currentTarget.value)} size="sm" className={styles.searchInput} />
-          {!showArchived && hasPermission(PermissionCode.MATERIAL_CREATE) && (
-            <Button leftSection={<Plus size={16} />} onClick={openCreate}>Добавить материал</Button>
-          )}
-        </Group>
+    <ListPageShell
+      toolbar={
+        <>
+          <TextInput
+            placeholder="Поиск по названию или артикулу..."
+            leftSection={<MagnifyingGlassIcon size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            size="sm"
+            className={listPageStyles.searchInput}
+          />
+          <Group gap={8} wrap="nowrap">
+            {!showArchived && hasPermission(PermissionCode.MATERIAL_CREATE) && (
+              <Button
+                color="sage.7"
+                rightSection={<PlusIcon size={16} />}
+                onClick={openCreate}
+                size="sm"
+              >
+                Добавить материал
+              </Button>
+            )}
+            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
+          </Group>
+        </>
+      }
+      footer={
+        <ListPaginationFooter
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
       }
     >
-      <DataTable
-        columns={[
-          { key: 'article', label: 'Артикул' },
-          { key: 'name', label: 'Название' },
-          { key: 'quantity', label: 'Кол-во' },
-          { key: 'price', label: 'Цена продажи' },
-          { key: 'actions', label: '', width: 48 },
-        ]}
-        isEmpty={filtered.length === 0}
-        emptyMessage="Материалы не найдены"
-      >
-        {paginatedItems.map((material) => (
-          <DataTableRow key={material.id}>
-            <Table.Td><Text size="sm" ff="monospace" c="dimmed">{material.article}</Text></Table.Td>
-            <Table.Td><Text size="sm" fw={500}>{material.name}</Text></Table.Td>
-            <Table.Td><Text size="sm">{material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}</Text></Table.Td>
-            <Table.Td><Text size="sm" fw={600}>{formatPrice(material.sell_price)}</Text></Table.Td>
-            <Table.Td>
-              <Menu shadow="sm" width={180} radius="md">
-                <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
-                <Menu.Dropdown>
-                  {showArchived ? (
-                    hasPermission(PermissionCode.MATERIAL_MANAGE) && <Menu.Item leftSection={<ArrowCounterClockwise size={14} />} onClick={() => restoreMaterial.mutate(material.id)}>Восстановить</Menu.Item>
-                  ) : (
-                    <>
-                      {hasPermission(PermissionCode.MATERIAL_UPDATE) && <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(material)}>Редактировать</Menu.Item>}
-                      {hasPermission(PermissionCode.MATERIAL_UPDATE_QUANTITY) && <Menu.Item onClick={() => setQuantityTarget(material)}>Изменить количество</Menu.Item>}
-                      {hasPermission(PermissionCode.MATERIAL_MANAGE) && <Menu.Item leftSection={<Archive size={14} />} color="orange" onClick={() => setArchiveTarget(material)}>Архивировать</Menu.Item>}
-                    </>
+      <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th className={listPageStyles.headCell}>Артикул</Table.Th>
+            <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={200}>Кол-во</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={200}>Цена продажи</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={48} />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {paginatedItems.length === 0 ? (
+            <Table.Tr>
+              <Table.Td colSpan={5}>
+                <Text size="sm" c="dimmed" ta="center" py="xl">
+                  Материалы не найдены
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          ) : (
+            paginatedItems.map((material) => (
+              <Table.Tr
+                key={material.id}
+                className={`${listPageStyles.row} ${!showArchived && hasPermission(PermissionCode.MATERIAL_UPDATE) ? listPageStyles.rowClickable : ''}`}
+                onClick={
+                  !showArchived && hasPermission(PermissionCode.MATERIAL_UPDATE)
+                    ? () => openEdit(material)
+                    : undefined
+                }
+              >
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" ff="monospace" c="rgba(72,72,72,0.4)">
+                    {material.article}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={400} c="#484848">
+                    {material.name}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                    {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={600} c="#484848">
+                    {formatPrice(material.sell_price)}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  {hasPermission(PermissionCode.MATERIAL_MANAGE) && (
+                    showArchived ? (
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        size="sm"
+                        aria-label="Восстановить"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          restoreMaterial.mutate(material.id);
+                        }}
+                      >
+                        <ArrowCounterClockwiseIcon size={18} />
+                      </ActionIcon>
+                    ) : (
+                      <ActionIcon
+                        variant="subtle"
+                        color="orange"
+                        size="sm"
+                        aria-label="Архивировать"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setArchiveTarget(material);
+                        }}
+                      >
+                        <ArchiveIcon size={18} />
+                      </ActionIcon>
+                    )
                   )}
-                </Menu.Dropdown>
-              </Menu>
-            </Table.Td>
-          </DataTableRow>
-        ))}
-      </DataTable>
+                </Table.Td>
+              </Table.Tr>
+            ))
+          )}
+        </Table.Tbody>
+      </Table>
 
-      <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={setPageSize} />
-
-      <MaterialFormModal opened={formOpen} material={editing} onClose={() => setFormOpen(false)} />
+      <MaterialFormModal
+        opened={formOpen}
+        material={editing}
+        onClose={() => setFormOpen(false)}
+        onChangeQuantity={handleChangeQuantity}
+      />
       <QuantityModal material={quantityTarget} onClose={() => setQuantityTarget(null)} />
-      <ConfirmModal opened={Boolean(archiveTarget)} title="Архивировать материал" message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал будет скрыт из списка.`} loading={archiveMaterial.isPending} onConfirm={() => archiveTarget && archiveMaterial.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) })} onClose={() => setArchiveTarget(null)} />
-    </ListPage>
+      <ConfirmModal
+        opened={Boolean(archiveTarget)}
+        title="Архивировать материал"
+        message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал будет скрыт из списка.`}
+        loading={archiveMaterial.isPending}
+        onConfirm={() =>
+          archiveTarget &&
+          archiveMaterial.mutate(archiveTarget.id, {
+            onSuccess: () => setArchiveTarget(null),
+          })
+        }
+        onClose={() => setArchiveTarget(null)}
+      />
+    </ListPageShell>
   );
 };

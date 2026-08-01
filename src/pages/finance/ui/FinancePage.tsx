@@ -1,13 +1,13 @@
 import React from 'react';
-import { Alert, Button, Group, Skeleton, Tabs } from '@mantine/core';
+import { Alert, Box, Button, Group, Skeleton, Stack } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import { useTransactions } from '@/shared/api/hooks/useTransactions';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
-import { ListPage } from '@/shared/ui';
+import { ListPageShell, ListTabs } from '@/shared/ui';
 import { ReceiptsTab } from './tabs/ReceiptsTab';
 import { PaymentsTab } from './tabs/PaymentsTab';
-import { TransactionsTab } from './tabs/TransactionsTab';
-import { PayoutsTab } from './tabs/PayoutsTab';
+import { TransactionsTab, type TransactionsTabHandle } from './tabs/TransactionsTab';
+import { PayoutsTab, type PayoutsTabHandle } from './tabs/PayoutsTab';
 import { ReceiptFormModal } from './ReceiptFormModal';
 import { PaymentFormModal } from './PaymentFormModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -18,6 +18,8 @@ export const FinancePage: React.FC = () => {
   const [receiptFormOpen, setReceiptFormOpen] = React.useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = React.useState(false);
   const [paymentReceiptId, setPaymentReceiptId] = React.useState<number | null>(null);
+  const transactionsRef = React.useRef<TransactionsTabHandle>(null);
+  const payoutsRef = React.useRef<PayoutsTabHandle>(null);
 
   const { data: receipts, isLoading: receiptsLoading, isError: receiptsError } = useReceipts();
   const { data: payments, isLoading: paymentsLoading, isError: paymentsError } = useTransactions();
@@ -30,62 +32,115 @@ export const FinancePage: React.FC = () => {
   const isLoading = receiptsLoading || paymentsLoading;
   const isError = receiptsError || paymentsError;
 
+  const toolbarActions = (() => {
+    if (tab === 'receipts' || tab === 'payments') {
+      return (
+        <Group gap={8} wrap="nowrap">
+          {hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT) && (
+            <Button variant="light" color="sage" size="sm" onClick={() => openPaymentForm()}>
+              Провести оплату
+            </Button>
+          )}
+          {hasPermission(PermissionCode.RECEIPT_CREATE) && (
+            <Button
+              color="sage.7"
+              rightSection={<PlusIcon size={16} />}
+              size="sm"
+              onClick={() => setReceiptFormOpen(true)}
+            >
+              Новый чек
+            </Button>
+          )}
+        </Group>
+      );
+    }
+    if (tab === 'transactions') {
+      return (
+        <Button
+          color="sage.7"
+          rightSection={<PlusIcon size={16} />}
+          size="sm"
+          onClick={() => transactionsRef.current?.openCreate()}
+        >
+          Новая транзакция
+        </Button>
+      );
+    }
+    if (tab === 'payouts') {
+      return (
+        <Button
+          color="sage.7"
+          rightSection={<PlusIcon size={16} />}
+          size="sm"
+          onClick={() => payoutsRef.current?.openCreate()}
+        >
+          Новая выплата
+        </Button>
+      );
+    }
+    return null;
+  })();
+
   if (isLoading) {
     return (
-      <ListPage title="Финансы">
-        <Skeleton height={48} mb="md" />
-        <Skeleton height={400} radius="md" />
-      </ListPage>
+      <ListPageShell
+        toolbar={
+          <>
+            <Skeleton height={32} width={360} radius="md" />
+            <Skeleton height={32} width={160} radius="md" />
+          </>
+        }
+      >
+        <Stack gap="xs" p="md">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} height={48} radius="sm" />
+          ))}
+        </Stack>
+      </ListPageShell>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Финансы">
-        <Alert color="red" title="Не удалось загрузить финансы">
-          Проверьте доступность API
-        </Alert>
-      </ListPage>
+      <ListPageShell>
+        <Box p="xl">
+          <Alert color="red" title="Не удалось загрузить финансы">
+            Проверьте доступность API
+          </Alert>
+        </Box>
+      </ListPageShell>
     );
   }
 
   return (
-    <ListPage
-      title="Финансы"
-      subtitle={`${receipts?.length ?? 0} чеков · ${payments?.length ?? 0} оплат`}
-      actions={
-        tab !== 'transactions' && tab !== 'payouts' ? (
-          <Group>
-            {hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT) && (
-              <Button variant="light" onClick={() => openPaymentForm()}>
-                Провести оплату
-              </Button>
-            )}
-            {hasPermission(PermissionCode.RECEIPT_CREATE) && (
-              <Button leftSection={<PlusIcon size={16} />} onClick={() => setReceiptFormOpen(true)}>
-                Новый чек
-              </Button>
-            )}
-          </Group>
-        ) : undefined
+    <ListPageShell
+      toolbar={
+        <>
+          <ListTabs
+            value={tab}
+            onChange={setTab}
+            data={[
+              { value: 'receipts', label: 'Чеки' },
+              { value: 'payments', label: 'Оплаты' },
+              { value: 'transactions', label: 'Транзакции' },
+              { value: 'payouts', label: 'Выплаты' },
+            ]}
+          />
+          {toolbarActions}
+        </>
       }
     >
-      <Tabs value={tab} onChange={(value) => setTab(value ?? 'receipts')} variant="pills" radius="md">
-        <Tabs.List mb="md">
-          <Tabs.Tab value="receipts">Чеки</Tabs.Tab>
-          <Tabs.Tab value="payments">Оплаты</Tabs.Tab>
-          <Tabs.Tab value="transactions">Транзакции</Tabs.Tab>
-          <Tabs.Tab value="payouts">Выплаты</Tabs.Tab>
-        </Tabs.List>
-      </Tabs>
-
       {tab === 'receipts' && <ReceiptsTab receipts={receipts ?? []} onPayReceipt={openPaymentForm} />}
       {tab === 'payments' && <PaymentsTab payments={payments ?? []} />}
-      {tab === 'transactions' && <TransactionsTab enabled />}
-      {tab === 'payouts' && <PayoutsTab enabled />}
+      {tab === 'transactions' && <TransactionsTab ref={transactionsRef} enabled />}
+      {tab === 'payouts' && <PayoutsTab ref={payoutsRef} enabled />}
 
       <ReceiptFormModal opened={receiptFormOpen} onClose={() => setReceiptFormOpen(false)} />
-      <PaymentFormModal opened={paymentFormOpen} onClose={() => setPaymentFormOpen(false)} initialReceiptId={paymentReceiptId} />
-    </ListPage>
+      <PaymentFormModal
+        opened={paymentFormOpen}
+        onClose={() => setPaymentFormOpen(false)}
+        initialReceiptId={paymentReceiptId}
+      />
+    </ListPageShell>
   );
 };

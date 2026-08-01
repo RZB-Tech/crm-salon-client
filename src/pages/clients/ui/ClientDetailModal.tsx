@@ -1,5 +1,6 @@
 import React from 'react';
-import { Badge, Modal, Skeleton, Stack, Table, Tabs, Text } from '@mantine/core';
+import { Badge, Button, Group, Modal, Skeleton, Stack, Table, Tabs, Text } from '@mantine/core';
+import { CurrencyCircleDollarIcon, PencilSimpleIcon } from '@phosphor-icons/react';
 import { useClientAppointments } from '@/shared/api/hooks/useClients';
 import { useClientFinanceReport } from '@/shared/api/hooks/useClientFinanceReport';
 import type { Client } from '@/shared/api/types';
@@ -7,13 +8,22 @@ import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatAppointmentDateTime, formatPrice, getClientFullName } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 
 interface ClientDetailModalProps {
   client: Client | null;
   onClose: () => void;
+  onEdit?: (client: Client) => void;
+  onDeposit?: (client: Client) => void;
 }
 
-export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, onClose }) => {
+export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
+  client,
+  onClose,
+  onEdit,
+  onDeposit,
+}) => {
+  const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('appointments');
   const { data: appointments, isLoading } = useClientAppointments(client?.id ?? 0);
   const { data: financeReport, isLoading: financeLoading } = useClientFinanceReport({
@@ -22,8 +32,35 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({ client, on
 
   useResetOnOpen(client, () => setTab('appointments'));
 
+  const canEdit = Boolean(onEdit) && hasPermission(PermissionCode.CLIENT_UPDATE);
+  const canDeposit = Boolean(onDeposit) && hasPermission(PermissionCode.CLIENT_UPDATE_DEPOSIT);
+
   return (
     <Modal opened={Boolean(client)} onClose={onClose} title={client ? getClientFullName(client) : 'Клиент'} radius="md" size="lg">
+      {(canEdit || canDeposit) && client && (
+        <Group gap="sm" mb="md">
+          {canEdit && (
+            <Button
+              variant="light"
+              size="sm"
+              leftSection={<PencilSimpleIcon size={16} />}
+              onClick={() => onEdit?.(client)}
+            >
+              Редактировать
+            </Button>
+          )}
+          {canDeposit && (
+            <Button
+              variant="light"
+              size="sm"
+              leftSection={<CurrencyCircleDollarIcon size={16} />}
+              onClick={() => onDeposit?.(client)}
+            >
+              Депозит
+            </Button>
+          )}
+        </Group>
+      )}
       <Tabs value={tab} onChange={(v) => setTab(v ?? 'appointments')}>
         <Tabs.List mb="md">
           <Tabs.Tab value="appointments">Записи</Tabs.Tab>

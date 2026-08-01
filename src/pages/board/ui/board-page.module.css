@@ -61,27 +61,99 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
-/* шедулера стили бля */
+.resourceLabelText {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.resourceLabelText[data-compact] {
+  display: none;
+}
+
+/*
+  Adaptive schedule grid.
+  Mantine locks slots with flex: 0 0 var(--slot-width) + max-width.
+  Override: stretch root to 100%, grow hour cells equally, size employee
+  column from --resources-day-view-resource-label-width (set in JS).
+*/
 
 .scheduleContainer {
   flex: 1;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  width: 100%;
+}
+
+.scheduleView {
+  height: 100%;
+  width: 100%;
 }
 
 .scheduleRoot {
   border: none !important;
   border-bottom: solid 1px var(--mantine-color-gray-2) !important;
-  border-radius: 0 !important; 
-  --resources-day-view-resource-label-width: 300px;
+  border-radius: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100%;
 }
 
+.scheduleScrollArea {
+  width: 100% !important;
+  height: 100%;
+}
+
+/* ScrollArea content wrapper uses display:table; keep it at least full width */
+.scheduleScrollArea :global([data-scrollarea-viewport] > div) {
+  min-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.scheduleInner {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.scheduleTimeRow,
+.scheduleRow {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.scheduleRowSlots {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+}
+
+/* Hour cells + time headers: share remaining width equally */
+.scheduleTimeSlot {
+  flex: 1 1 0 !important;
+  min-width: 48px !important;
+  max-width: none !important;
+  width: auto !important;
+}
+
+/* Employee column + corner: width from CSS variable (JS sets px) */
+.scheduleCorner,
 .scheduleResourceLabel {
+  flex: 0 0 var(--resources-day-view-resource-label-width) !important;
+  width: var(--resources-day-view-resource-label-width) !important;
+  min-width: var(--resources-day-view-resource-label-width) !important;
+  max-width: var(--resources-day-view-resource-label-width) !important;
   justify-content: flex-start !important;
   padding: 0 12px !important;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .refreshIndicator {

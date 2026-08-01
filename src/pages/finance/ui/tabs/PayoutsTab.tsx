@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Badge,
+  Box,
   Button,
   Group,
   Modal,
@@ -12,11 +13,11 @@ import {
   TextInput,
   Textarea,
 } from '@mantine/core';
-import { Plus } from '@phosphor-icons/react';
 import { useCreatePayout, usePayouts } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutCreatePayload, PayoutMethod, PayoutType } from '@/shared/api/types';
-import { DataTable, DataTableRow } from '@/shared/ui';
+import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { formatDateTime, formatPrice, getEmployeeFullName } from '@/shared/lib/format';
 
 const PAYOUT_TYPE_LABELS: Record<PayoutType, string> = {
@@ -35,11 +36,18 @@ const PAYOUT_METHOD_OPTIONS = [
   { value: 'card', label: 'Карта' },
 ];
 
+export type PayoutsTabHandle = {
+  openCreate: () => void;
+};
+
 interface PayoutsTabProps {
   enabled: boolean;
 }
 
-export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
+export const PayoutsTab = React.forwardRef<PayoutsTabHandle, PayoutsTabProps>(function PayoutsTab(
+  { enabled },
+  ref,
+) {
   const [formOpen, setFormOpen] = React.useState(false);
   const [payoutType, setPayoutType] = React.useState<PayoutType>('other');
   const [employeeId, setEmployeeId] = React.useState<string | null>(null);
@@ -64,6 +72,11 @@ export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
     return map;
   }, [employees]);
 
+  const list = payouts ?? [];
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(list, {
+    defaultPageSize: 20,
+  });
+
   const openForm = React.useCallback(() => {
     setPayoutType('other');
     setEmployeeId(null);
@@ -74,6 +87,8 @@ export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
     setEndDate('');
     setFormOpen(true);
   }, []);
+
+  React.useImperativeHandle(ref, () => ({ openCreate: openForm }), [openForm]);
 
   const handleSubmit = React.useCallback(() => {
     if (!employeeId) return;
@@ -99,69 +114,85 @@ export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
 
   if (!enabled) return null;
 
-  const list = payouts ?? [];
-
   return (
-    <>
-      <Group justify="flex-end" mb="md">
-        <Button leftSection={<Plus size={16} />} onClick={openForm}>
-          Новая выплата
-        </Button>
-      </Group>
+    <Box className={listPageStyles.panel}>
+      <Box className={listPageStyles.panelBody}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>ID</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Сотрудник</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Тип</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Сумма</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Способ</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Дата</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={7}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Выплат нет
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((payout) => (
+                <Table.Tr
+                  key={payout.id}
+                  className={`${listPageStyles.row}${payout.cancelled ? ` ${listPageStyles.mutedRow}` : ''}`}
+                >
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" ff="monospace" c="rgba(72,72,72,0.4)">
+                      #{payout.id}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" fw={500} c="#484848">
+                      {employeeMap.get(payout.employee_id) ?? `#${payout.employee_id}`}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Badge size="sm" variant="light" color="gray">
+                      {PAYOUT_TYPE_LABELS[payout.type] ?? payout.type}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" fw={600} c="#484848">
+                      {formatPrice(payout.total_amount)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c="rgba(72,72,72,0.4)">
+                      {payout.method === 'cash' ? 'Наличные' : 'Карта'}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Badge size="sm" variant="light" color={payout.cancelled ? 'red' : 'green'}>
+                      {payout.cancelled ? 'Отменена' : 'Проведена'}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="xs" c="rgba(72,72,72,0.4)">
+                      {formatDateTime(payout.created_at)}
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
 
-      <DataTable
-        columns={[
-          { key: 'id', label: 'ID' },
-          { key: 'employee', label: 'Сотрудник' },
-          { key: 'type', label: 'Тип' },
-          { key: 'total', label: 'Сумма' },
-          { key: 'method', label: 'Способ' },
-          { key: 'status', label: 'Статус' },
-          { key: 'date', label: 'Дата' },
-        ]}
-        isEmpty={list.length === 0}
-        emptyMessage="Выплат нет"
-      >
-        {list.map((payout) => (
-          <DataTableRow key={payout.id} muted={payout.cancelled}>
-            <Table.Td>
-              <Text size="sm" ff="monospace" c="dimmed">
-                #{payout.id}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm" fw={500}>
-                {employeeMap.get(payout.employee_id) ?? `#${payout.employee_id}`}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Badge size="sm" variant="light" color="gray">
-                {PAYOUT_TYPE_LABELS[payout.type] ?? payout.type}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm" fw={600}>
-                {formatPrice(payout.total_amount)}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm">{payout.method === 'cash' ? 'Наличные' : 'Карта'}</Text>
-            </Table.Td>
-            <Table.Td>
-              <Badge
-                size="sm"
-                variant="light"
-                color={payout.cancelled ? 'red' : 'green'}
-              >
-                {payout.cancelled ? 'Отменена' : 'Проведена'}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Text size="xs">{formatDateTime(payout.created_at)}</Text>
-            </Table.Td>
-          </DataTableRow>
-        ))}
-      </DataTable>
+      <ListPaginationFooter
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       <Modal
         opened={formOpen}
@@ -240,6 +271,6 @@ export const PayoutsTab: React.FC<PayoutsTabProps> = ({ enabled }) => {
           </Group>
         </Stack>
       </Modal>
-    </>
+    </Box>
   );
-};
+});

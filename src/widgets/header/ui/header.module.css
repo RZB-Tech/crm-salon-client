@@ -5,7 +5,7 @@
   padding: 0 20px 0 0;
   background: var(--mantine-color-white);
   border-bottom: 1px solid var(--mantine-color-gray-2);
-  gap: 16px;
+  gap: 12px;
 }
 
 .left {
@@ -23,11 +23,27 @@
   width: 72px;
 }
 
+.logoLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .logoIcon {
   width: auto;
   flex-shrink: 0;
   object-fit: contain;
   transition: height 0.2s ease;
+}
+
+.main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 12px;
+  padding-left: 4px;
 }
 
 .burger {
@@ -36,22 +52,20 @@
 
 .tenantName {
   flex: 1;
-  text-align: center;
+  min-width: 0;
   color: var(--mantine-color-gray-9);
   white-space: nowrap;
-}
-
-.center {
-  flex: 1;
-  max-width: 480px;
-}
-
-.search {
-  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .right {
   flex-shrink: 0;
+  margin-left: auto;
+}
+
+.avatarTarget {
+  cursor: pointer;
 }
 
 .notificationItem {
@@ -70,22 +84,5 @@
 }
 
 .notificationsLink:hover {
-  background: var(--mantine-color-gray-0);
-}
-
-.branchButton {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: var(--mantine-radius-md);
-  border: 1px solid var(--mantine-color-gray-3);
-  color: var(--mantine-color-gray-7);
-  font-size: var(--mantine-font-size-sm);
-  transition: background 0.15s;
-  background: transparent;
-}
-
-.branchButton:hover {
   background: var(--mantine-color-gray-0);
 }

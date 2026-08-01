@@ -6,10 +6,6 @@ import {
   Box,
   Button,
   Group,
-  Menu,
-  Pagination as MantinePagination,
-  SegmentedControl,
-  Select,
   Skeleton,
   Stack,
   Table,
@@ -19,15 +15,18 @@ import {
 import {
   ArchiveIcon,
   ArrowCounterClockwiseIcon,
-  CalendarBlankIcon,
-  DotsThreeVerticalIcon,
   MagnifyingGlassIcon,
-  PencilSimpleIcon,
   PlusIcon,
 } from '@phosphor-icons/react';
 import { useClients, useArchiveClient, useRestoreClient } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
-import { ConfirmModal } from '@/shared/ui';
+import {
+  ArchiveToggle,
+  ConfirmModal,
+  ListPageShell,
+  ListPaginationFooter,
+  listPageStyles,
+} from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatDate,
@@ -40,14 +39,6 @@ import { ClientFormModal } from './ClientFormModal';
 import { DepositModal } from './DepositModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { ClientDetailModal } from './ClientDetailModal';
-import styles from './clients-page.module.css';
-
-const PAGE_SIZE_OPTIONS = [
-  { value: '10', label: '10' },
-  { value: '20', label: '20' },
-  { value: '50', label: '50' },
-  { value: '100', label: '100' },
-];
 
 export const ClientsPage: React.FC = () => {
   const { hasPermission } = useAccess();
@@ -76,10 +67,6 @@ export const ClientsPage: React.FC = () => {
   const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
     usePagination(filtered, { defaultPageSize: 20 });
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
-
   React.useEffect(() => {
     resetPage();
   }, [search, resetPage]);
@@ -94,221 +81,186 @@ export const ClientsPage: React.FC = () => {
     setFormOpen(true);
   }, []);
 
+  const handleEditFromDetail = React.useCallback((c: Client) => {
+    setDetailTarget(null);
+    openEdit(c);
+  }, [openEdit]);
+
+  const handleDepositFromDetail = React.useCallback((c: Client) => {
+    setDetailTarget(null);
+    setDepositTarget(c);
+  }, []);
+
   if (isLoading) {
     return (
-      <Box className={styles.page}>
-        <Box className={styles.toolbar}>
-          <Skeleton height={32} width={240} radius="md" />
-          <Skeleton height={32} width={160} radius="md" />
-        </Box>
+      <ListPageShell
+        toolbar={
+          <>
+            <Skeleton height={32} width={240} radius="md" />
+            <Skeleton height={32} width={160} radius="md" />
+          </>
+        }
+      >
         <Stack gap="xs" p="md">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} height={48} radius="sm" />
           ))}
         </Stack>
-      </Box>
+      </ListPageShell>
     );
   }
 
   if (isError) {
     return (
-      <Box className={styles.page}>
+      <ListPageShell>
         <Box p="xl">
           <Alert color="red" title="Не удалось загрузить клиентов">
             Проверьте доступность API и авторизацию
           </Alert>
         </Box>
-      </Box>
+      </ListPageShell>
     );
   }
 
   return (
-    <Box className={styles.page}>
-      <Box className={styles.toolbar}>
-        <Group gap={8}>
-          <SegmentedControl
-            value={showArchived ? 'archived' : 'active'}
-            onChange={(v) => setShowArchived(v === 'archived')}
-            data={[
-              { value: 'active', label: 'Активные' },
-              { value: 'archived', label: 'Архив' },
-            ]}
-            size="xs"
-            radius="sm"
-          />
+    <ListPageShell
+      toolbar={
+        <>
           <TextInput
             placeholder="Поиск по имени, телефону..."
             leftSection={<MagnifyingGlassIcon size={16} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
             size="sm"
-            className={styles.searchInput}
+            className={listPageStyles.searchInput}
           />
-        </Group>
-        {!showArchived && hasPermission(PermissionCode.CLIENT_CREATE) && (
-          <Button
-            color="sage.7"
-            rightSection={<PlusIcon size={16} />}
-            onClick={openCreate}
-            size="sm"
-          >
-            Добавить клиента
-          </Button>
-        )}
-      </Box>
-
-      <Box className={styles.tableWrapper}>
-        <Table
-          verticalSpacing="sm"
-          horizontalSpacing="md"
-          className={styles.table}
-        >
-          <Table.Thead>
+          <Group gap={8} wrap="nowrap">
+            {!showArchived && hasPermission(PermissionCode.CLIENT_CREATE) && (
+              <Button
+                color="sage.7"
+                rightSection={<PlusIcon size={16} />}
+                onClick={openCreate}
+                size="sm"
+              >
+                Добавить клиента
+              </Button>
+            )}
+            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
+          </Group>
+        </>
+      }
+      footer={
+        <ListPaginationFooter
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      }
+    >
+      <Table
+        verticalSpacing="sm"
+        horizontalSpacing="md"
+        className={listPageStyles.table}
+      >
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th className={listPageStyles.headCell}>Клиенты</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={380}>Телефон</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={275}>Пол</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={310}>Депозит</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={240}>Дата рождения</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={48} />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {paginatedItems.length === 0 ? (
             <Table.Tr>
-              <Table.Th className={styles.headCell}>Клиенты</Table.Th>
-              <Table.Th className={styles.headCell} w={380}>Телефон</Table.Th>
-              <Table.Th className={styles.headCell} w={275}>Пол</Table.Th>
-              <Table.Th className={styles.headCell} w={310}>Депозит</Table.Th>
-              <Table.Th className={styles.headCell} w={240}>Дата рождения</Table.Th>
-              <Table.Th className={styles.headCell} w={48} />
+              <Table.Td colSpan={6}>
+                <Text size="sm" c="dimmed" ta="center" py="xl">
+                  Клиенты не найдены
+                </Text>
+              </Table.Td>
             </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {paginatedItems.length === 0 ? (
-              <Table.Tr>
-                <Table.Td colSpan={6}>
-                  <Text size="sm" c="dimmed" ta="center" py="xl">
-                    Клиенты не найдены
+          ) : (
+            paginatedItems.map((client) => (
+              <Table.Tr
+                key={client.id}
+                className={`${listPageStyles.row} ${!showArchived ? listPageStyles.rowClickable : ''}`}
+                onClick={!showArchived ? () => setDetailTarget(client) : undefined}
+              >
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Group gap={8} wrap="nowrap">
+                    <Avatar radius="md" size={32} color="sage">
+                      {getClientInitials(client)}
+                    </Avatar>
+                    <Box>
+                      <Text size="sm" fw={400} lh="24px" c="#484848">
+                        {getClientFullName(client)}
+                      </Text>
+                      <Text size="xs" lh="12px" c="rgba(72,72,72,0.4)">
+                        Клиент
+                      </Text>
+                    </Box>
+                  </Group>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                    {client.phone ?? '—'}
                   </Text>
                 </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                    {SEX_LABELS[client.sex]}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={600} c="#484848">
+                    {formatPrice(client.deposit)}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                    {formatDate(client.birth_date)}
+                  </Text>
+                </Table.Td>
+                <Table.Td className={listPageStyles.bodyCell}>
+                  {hasPermission(PermissionCode.CLIENT_MANAGE) && (
+                    showArchived ? (
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        size="sm"
+                        aria-label="Восстановить"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          restoreClient.mutate(client.id);
+                        }}
+                      >
+                        <ArrowCounterClockwiseIcon size={18} />
+                      </ActionIcon>
+                    ) : (
+                      <ActionIcon
+                        variant="subtle"
+                        color="orange"
+                        size="sm"
+                        aria-label="Архивировать"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setArchiveTarget(client);
+                        }}
+                      >
+                        <ArchiveIcon size={18} />
+                      </ActionIcon>
+                    )
+                  )}
+                </Table.Td>
               </Table.Tr>
-            ) : (
-              paginatedItems.map((client) => (
-                <Table.Tr key={client.id} className={styles.row}>
-                  <Table.Td className={styles.bodyCell}>
-                    <Group gap={8} wrap="nowrap">
-                      <Avatar radius="md" size={32} color="sage">
-                        {getClientInitials(client)}
-                      </Avatar>
-                      <Box>
-                        <Text size="sm" fw={400} lh="24px" c="#484848">
-                          {getClientFullName(client)}
-                        </Text>
-                        <Text size="xs" lh="12px" c="rgba(72,72,72,0.4)">
-                          Клиент
-                        </Text>
-                      </Box>
-                    </Group>
-                  </Table.Td>
-                  <Table.Td className={styles.bodyCell}>
-                    <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                      {client.phone ?? '—'}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td className={styles.bodyCell}>
-                    <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                      {SEX_LABELS[client.sex]}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td className={styles.bodyCell}>
-                    <Text size="sm" fw={600} c="#484848">
-                      {formatPrice(client.deposit)}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td className={styles.bodyCell}>
-                    <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                      {formatDate(client.birth_date)}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td className={styles.bodyCell}>
-                    <Menu shadow="sm" width={180} radius="md">
-                      <Menu.Target>
-                        <ActionIcon variant="subtle" color="gray" size="sm">
-                          <DotsThreeVerticalIcon size={20} weight="bold" />
-                        </ActionIcon>
-                      </Menu.Target>
-                      <Menu.Dropdown>
-                        {showArchived ? (
-                          hasPermission(PermissionCode.CLIENT_MANAGE) && (
-                            <Menu.Item
-                              leftSection={<ArrowCounterClockwiseIcon size={14} />}
-                              onClick={() => restoreClient.mutate(client.id)}
-                            >
-                              Восстановить
-                            </Menu.Item>
-                          )
-                        ) : (
-                          <>
-                            <Menu.Item
-                              leftSection={<CalendarBlankIcon size={14} />}
-                              onClick={() => setDetailTarget(client)}
-                            >
-                              Записи и история
-                            </Menu.Item>
-                            {hasPermission(PermissionCode.CLIENT_UPDATE) && (
-                              <Menu.Item
-                                leftSection={<PencilSimpleIcon size={14} />}
-                                onClick={() => openEdit(client)}
-                              >
-                                Редактировать
-                              </Menu.Item>
-                            )}
-                            {hasPermission(PermissionCode.CLIENT_UPDATE_DEPOSIT) && (
-                              <Menu.Item onClick={() => setDepositTarget(client)}>
-                                Депозит
-                              </Menu.Item>
-                            )}
-                            {hasPermission(PermissionCode.CLIENT_MANAGE) && (
-                              <Menu.Item
-                                leftSection={<ArchiveIcon size={14} />}
-                                color="orange"
-                                onClick={() => setArchiveTarget(client)}
-                              >
-                                Архивировать
-                              </Menu.Item>
-                            )}
-                          </>
-                        )}
-                      </Menu.Dropdown>
-                    </Menu>
-                  </Table.Td>
-                </Table.Tr>
-              ))
-            )}
-          </Table.Tbody>
-        </Table>
-      </Box>
-
-      <Box className={styles.pagination}>
-        <Box className={styles.paginationMeta}>
-          <Group gap={8}>
-            <Text size="sm" fw={500} c="#484848">
-              Показать:
-            </Text>
-            <Select
-              size="xs"
-              w={64}
-              data={PAGE_SIZE_OPTIONS}
-              value={String(pageSize)}
-              onChange={(value) => {
-                if (value) setPageSize(Number(value));
-              }}
-              allowDeselect={false}
-            />
-          </Group>
-          <Text size="sm" c="#484848">
-            {from}–{to} из {total}
-          </Text>
-        </Box>
-
-        <MantinePagination
-          value={page}
-          onChange={setPage}
-          total={totalPages}
-          size="lg"
-          radius="sm"
-        />
-      </Box>
+            ))
+          )}
+        </Table.Tbody>
+      </Table>
 
       <ClientFormModal
         opened={formOpen}
@@ -319,6 +271,8 @@ export const ClientsPage: React.FC = () => {
       <ClientDetailModal
         client={detailTarget}
         onClose={() => setDetailTarget(null)}
+        onEdit={handleEditFromDetail}
+        onDeposit={handleDepositFromDetail}
       />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
@@ -333,6 +287,6 @@ export const ClientsPage: React.FC = () => {
         }
         onClose={() => setArchiveTarget(null)}
       />
-    </Box>
+    </ListPageShell>
   );
 };

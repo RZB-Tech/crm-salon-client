@@ -1,22 +1,26 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  ActionIcon,
+  Alert,
   Avatar,
-  Box,
-  Group,
-  Text,
   Badge,
+  Box,
+  Button,
   Card,
+  Divider,
+  Group,
   SimpleGrid,
   Skeleton,
-  Alert,
-  Divider,
-  Button,
-  ActionIcon,
-  Menu,
-  Tooltip,
+  Stack,
+  Table,
+  Text,
 } from '@mantine/core';
-import { PlusIcon, DotsThreeIcon, ArchiveIcon, ArrowRightIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
+import {
+  ArchiveIcon,
+  ArrowCounterClockwiseIcon,
+  PlusIcon,
+} from '@phosphor-icons/react';
 import {
   useCreateEmployee,
   useArchiveEmployee,
@@ -25,8 +29,16 @@ import {
 } from '@/shared/api/hooks/useEmployees';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
-import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-
+import {
+  ArchiveToggle,
+  ConfirmModal,
+  ListPageShell,
+  ListPaginationFooter,
+  listPageStyles,
+  ViewModeToggle,
+  type ListViewMode,
+} from '@/shared/ui';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatPrice,
   getEmployeeFullName,
@@ -35,6 +47,17 @@ import {
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './employees-page.module.css';
+
+const VIEW_STORAGE_KEY = 'employees.view';
+
+const readStoredView = (): ListViewMode => {
+  try {
+    const value = localStorage.getItem(VIEW_STORAGE_KEY);
+    return value === 'table' ? 'table' : 'cards';
+  } catch {
+    return 'cards';
+  }
+};
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -46,18 +69,28 @@ interface EmployeeCardProps {
   onRestore: (employee: Employee) => void;
 }
 
-const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationName, showArchived, canManage, onOpen, onDelete, onRestore }) => {
+const EmployeeCard: React.FC<EmployeeCardProps> = ({
+  employee,
+  specializationName,
+  showArchived,
+  canManage,
+  onOpen,
+  onDelete,
+  onRestore,
+}) => {
   const servicesCount = employee.services?.length ?? 0;
 
   return (
     <Card
       padding="lg"
-      radius="lg"
-      shadow="xs"
+      radius="md"
       className={styles.card}
       onClick={() => onOpen(employee)}
       role="button"
       tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onOpen(employee);
+      }}
     >
       <Group justify="space-between" align="flex-start" mb="md">
         <Group gap={12}>
@@ -65,53 +98,70 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ employee, specializationNam
             {getEmployeeInitials(employee)}
           </Avatar>
           <Box>
-            <Text fw={700} size="md">{getEmployeeFullName(employee)}</Text>
-            <Text size="sm" c="dimmed">{specializationName ?? employee.phone ?? '—'}</Text>
+            <Text fw={600} size="sm" c="#484848">
+              {getEmployeeFullName(employee)}
+            </Text>
+            <Text size="sm" c="rgba(72,72,72,0.4)">
+              {specializationName ?? employee.phone ?? '—'}
+            </Text>
           </Box>
         </Group>
         <Group gap={6}>
-          <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">{employee.active ? 'Активен' : 'Неактивен'}</Badge>
-          <Menu shadow="sm" width={180} radius="md">
-            <Menu.Target>
+          <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
+            {employee.active ? 'Активен' : 'Неактивен'}
+          </Badge>
+          {canManage && (
+            showArchived ? (
               <ActionIcon
                 variant="subtle"
                 color="gray"
                 size="sm"
-                onClick={(e) => e.stopPropagation()}
+                aria-label="Восстановить"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRestore(employee);
+                }}
               >
-                <DotsThreeIcon size={16} weight="bold" />
+                <ArrowCounterClockwiseIcon size={18} />
               </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item leftSection={<ArrowRightIcon size={14} />} onClick={(e) => { e.stopPropagation(); onOpen(employee); }}>
-                Открыть профиль
-              </Menu.Item>
-              {showArchived ? (
-                canManage && (
-                  <Menu.Item leftSection={<ArrowCounterClockwiseIcon size={14} />} onClick={(e) => { e.stopPropagation(); onRestore(employee); }}>
-                    Восстановить
-                  </Menu.Item>
-                )
-              ) : (
-                canManage && (
-                  <Menu.Item leftSection={<ArchiveIcon size={14} />} color="orange" onClick={(e) => { e.stopPropagation(); onDelete(employee); }}>
-                    Архивировать
-                  </Menu.Item>
-                )
-              )}
-            </Menu.Dropdown>
-          </Menu>
+            ) : (
+              <ActionIcon
+                variant="subtle"
+                color="orange"
+                size="sm"
+                aria-label="Архивировать"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(employee);
+                }}
+              >
+                <ArchiveIcon size={18} />
+              </ActionIcon>
+            )
+          )}
         </Group>
       </Group>
 
       <Group gap={6} mb="md">
-        <Badge size="xs" variant="light" color="gray">Услуг: {servicesCount}</Badge>
-        {employee.salary_fixed > 0 && <Badge size="xs" variant="light" color="sage">Фикс: {formatPrice(employee.salary_fixed)}</Badge>}
-        {employee.percent_from_services > 0 && <Badge size="xs" variant="light" color="teal">% услуг: {employee.percent_from_services}</Badge>}
+        <Badge size="xs" variant="light" color="gray">
+          Услуг: {servicesCount}
+        </Badge>
+        {employee.salary_fixed > 0 && (
+          <Badge size="xs" variant="light" color="sage">
+            Фикс: {formatPrice(employee.salary_fixed)}
+          </Badge>
+        )}
+        {employee.percent_from_services > 0 && (
+          <Badge size="xs" variant="light" color="teal">
+            % услуг: {employee.percent_from_services}
+          </Badge>
+        )}
       </Group>
 
       <Divider mb="md" />
-      <Text size="xs" c="dimmed">Дата рождения: {employee.birth_date}</Text>
+      <Text size="xs" c="dimmed">
+        Дата рождения: {employee.birth_date}
+      </Text>
     </Card>
   );
 };
@@ -122,6 +172,7 @@ export const EmployeesPage: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [archiveTarget, setArchiveTarget] = React.useState<Employee | null>(null);
   const [showArchived, setShowArchived] = React.useState(false);
+  const [view, setView] = React.useState<ListViewMode>(readStoredView);
 
   const { data: employees, isLoading, isError } = useEmployees(showArchived);
   const { data: specializations } = useSpecializations();
@@ -135,6 +186,24 @@ export const EmployeesPage: React.FC = () => {
     return map;
   }, [specializations]);
 
+  const list = employees ?? [];
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
+    list,
+    { defaultPageSize: 20 },
+  );
+
+  React.useEffect(() => {
+    resetPage();
+  }, [showArchived, resetPage]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(VIEW_STORAGE_KEY, view);
+    } catch {
+      /* ignore */
+    }
+  }, [view]);
+
   const openProfile = React.useCallback(
     (employee: Employee) => navigate(`/employees/${employee.id}`),
     [navigate],
@@ -142,7 +211,9 @@ export const EmployeesPage: React.FC = () => {
 
   const handleCreate = React.useCallback(
     (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
-      createEmployee.mutate(payload as EmployeeCreatePayload, { onSuccess: () => setFormOpen(false) });
+      createEmployee.mutate(payload as EmployeeCreatePayload, {
+        onSuccess: () => setFormOpen(false),
+      });
     },
     [createEmployee],
   );
@@ -152,63 +223,207 @@ export const EmployeesPage: React.FC = () => {
     archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) });
   }, [archiveTarget, archiveEmployee]);
 
+  const canManage = hasPermission(PermissionCode.EMPLOYEE_MANAGE);
+
   if (isLoading) {
     return (
-      <Box className={styles.page}>
-        <Skeleton height={48} mb="md" />
-        <SimpleGrid cols={2} spacing="md">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} height={280} radius="lg" />)}</SimpleGrid>
-      </Box>
+      <ListPageShell
+        toolbar={
+          <>
+            <Skeleton height={32} width={280} radius="md" />
+            <Skeleton height={32} width={160} radius="md" />
+          </>
+        }
+      >
+        <Stack gap="xs" p="md">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} height={48} radius="sm" />
+          ))}
+        </Stack>
+      </ListPageShell>
     );
   }
 
   if (isError) {
-    return <Box className={styles.page}><Alert color="red" title="Не удалось загрузить сотрудников">Проверьте доступность API</Alert></Box>;
+    return (
+      <ListPageShell>
+        <Box p="xl">
+          <Alert color="red" title="Не удалось загрузить сотрудников">
+            Проверьте доступность API
+          </Alert>
+        </Box>
+      </ListPageShell>
+    );
   }
 
-  const list = employees ?? [];
-
   return (
-    <Box className={styles.page}>
-      <Box className={styles.pageHeader}>
-        <Box>
-          <Text size="xl" fw={700}>Сотрудники</Text>
-          <Text size="sm" c="dimmed" mt={2}>{list.length} {showArchived ? 'в архиве' : 'в системе'}</Text>
-        </Box>
-        <Group gap={8}>
-          <Tooltip label={showArchived ? 'Показать активных' : 'Показать архив'}>
-            <ActionIcon
-              variant={showArchived ? 'filled' : 'subtle'}
-              color={showArchived ? 'orange' : 'gray'}
-              size="lg"
-              onClick={() => setShowArchived((v) => !v)}
-              aria-label="Переключить архив"
-            >
-              <ArchiveIcon size={20} />
-            </ActionIcon>
-          </Tooltip>
-          {!showArchived && hasPermission(PermissionCode.EMPLOYEE_CREATE) && (
-            <Button leftSection={<PlusIcon size={16} />} onClick={() => setFormOpen(true)}>Добавить сотрудника</Button>
+    <ListPageShell
+      toolbar={
+        <>
+          <ViewModeToggle value={view} onChange={setView} />
+          <Group gap={8} wrap="nowrap">
+            {!showArchived && hasPermission(PermissionCode.EMPLOYEE_CREATE) && (
+              <Button
+                color="sage.7"
+                rightSection={<PlusIcon size={16} />}
+                size="sm"
+                onClick={() => setFormOpen(true)}
+              >
+                Добавить сотрудника
+              </Button>
+            )}
+            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
+          </Group>
+        </>
+      }
+      footer={
+        <ListPaginationFooter
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+        />
+      }
+    >
+      {view === 'cards' ? (
+        <Box className={styles.cardsArea}>
+          {paginatedItems.length === 0 ? (
+            <Text size="sm" c="dimmed" ta="center" py="xl">
+              Сотрудники не найдены
+            </Text>
+          ) : (
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+              {paginatedItems.map((employee) => (
+                <EmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  specializationName={
+                    employee.specialization_id != null
+                      ? (specializationMap.get(employee.specialization_id) ?? null)
+                      : null
+                  }
+                  showArchived={showArchived}
+                  canManage={canManage}
+                  onOpen={openProfile}
+                  onDelete={setArchiveTarget}
+                  onRestore={(e) => restoreEmployee.mutate(e.id)}
+                />
+              ))}
+            </SimpleGrid>
           )}
-        </Group>
-      </Box>
-
-      {list.length === 0 ? (
-        <Text c="dimmed">Сотрудники не найдены</Text>
+        </Box>
       ) : (
-        <SimpleGrid cols={2} spacing="md">
-          {list.map((employee) => (
-            <EmployeeCard
-              key={employee.id}
-              employee={employee}
-              specializationName={employee.specialization_id != null ? specializationMap.get(employee.specialization_id) ?? null : null}
-              showArchived={showArchived}
-              canManage={hasPermission(PermissionCode.EMPLOYEE_MANAGE)}
-              onOpen={openProfile}
-              onDelete={setArchiveTarget}
-              onRestore={(e) => restoreEmployee.mutate(e.id)}
-            />
-          ))}
-        </SimpleGrid>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>Сотрудник</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Специализация</Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={120}>
+                Услуги
+              </Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={180}>
+                Ставка
+              </Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={120}>
+                Статус
+              </Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={48} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={6}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Сотрудники не найдены
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((employee) => {
+                const specializationName =
+                  employee.specialization_id != null
+                    ? (specializationMap.get(employee.specialization_id) ?? null)
+                    : null;
+                return (
+                  <Table.Tr
+                    key={employee.id}
+                    className={`${listPageStyles.row} ${listPageStyles.rowClickable}`}
+                    onClick={() => openProfile(employee)}
+                  >
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Group gap={8} wrap="nowrap">
+                        <Avatar radius="md" size={32} color="sage">
+                          {getEmployeeInitials(employee)}
+                        </Avatar>
+                        <Box>
+                          <Text size="sm" fw={400} c="#484848">
+                            {getEmployeeFullName(employee)}
+                          </Text>
+                          <Text size="xs" c="rgba(72,72,72,0.4)">
+                            {employee.phone ?? '—'}
+                          </Text>
+                        </Box>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" c="rgba(72,72,72,0.4)">
+                        {specializationName ?? '—'}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" c="rgba(72,72,72,0.4)">
+                        {employee.services?.length ?? 0}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" fw={600} c="#484848">
+                        {employee.salary_fixed > 0 ? formatPrice(employee.salary_fixed) : '—'}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
+                        {employee.active ? 'Активен' : 'Неактивен'}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      {canManage && (
+                        showArchived ? (
+                          <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            size="sm"
+                            aria-label="Восстановить"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              restoreEmployee.mutate(employee.id);
+                            }}
+                          >
+                            <ArrowCounterClockwiseIcon size={18} />
+                          </ActionIcon>
+                        ) : (
+                          <ActionIcon
+                            variant="subtle"
+                            color="orange"
+                            size="sm"
+                            aria-label="Архивировать"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setArchiveTarget(employee);
+                            }}
+                          >
+                            <ArchiveIcon size={18} />
+                          </ActionIcon>
+                        )
+                      )}
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            )}
+          </Table.Tbody>
+        </Table>
       )}
 
       <EmployeeFormModal
@@ -227,6 +442,6 @@ export const EmployeesPage: React.FC = () => {
         onConfirm={handleArchive}
         onClose={() => setArchiveTarget(null)}
       />
-    </Box>
+    </ListPageShell>
   );
 };

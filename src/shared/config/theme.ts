@@ -75,6 +75,14 @@ export const theme = createTheme({
     ActionIcon: {
       defaultProps: { radius: 'md' },
     },
+    SegmentedControl: {
+      defaultProps: {
+        size: 'sm',
+        radius: 'xs',
+        color: 'sage.6',
+        withItemsBorders: false,
+      },
+    },
     Badge: {
       defaultProps: { radius: 'sm' },
     },

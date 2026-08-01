@@ -3,18 +3,15 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Group,
   Modal,
   NumberInput,
   Select,
-  SimpleGrid,
   Skeleton,
   Table,
   Text,
   Textarea,
 } from '@mantine/core';
-import { Plus } from '@phosphor-icons/react';
 import {
   useCancelTransaction,
   useCreateTransaction,
@@ -26,7 +23,8 @@ import type {
   TransactionMethod,
   TransactionType,
 } from '@/shared/api/types';
-import { ConfirmModal, DataTable, DataTableRow } from '@/shared/ui';
+import { ConfirmModal, ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatDateTime,
   formatPrice,
@@ -37,7 +35,10 @@ import {
   TRANSACTION_TYPE_LABELS,
   TRANSACTION_TYPE_OPTIONS,
 } from '@/shared/lib/format';
-import styles from './transactions-tab.module.css';
+
+export type TransactionsTabHandle = {
+  openCreate: () => void;
+};
 
 interface TransactionsTabProps {
   enabled: boolean;
@@ -64,7 +65,8 @@ const isActiveTransaction = (transaction: Transaction): boolean => !transaction.
 const getSignedAmount = (transaction: Transaction): number =>
   transaction.type === 'income' ? transaction.amount : -transaction.amount;
 
-export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => {
+export const TransactionsTab = React.forwardRef<TransactionsTabHandle, TransactionsTabProps>(
+  function TransactionsTab({ enabled }, ref) {
   const [formOpen, setFormOpen] = React.useState(false);
   const [cancelTarget, setCancelTarget] = React.useState<number | null>(null);
   const [typeFilter, setTypeFilter] = React.useState<string | null>(null);
@@ -109,6 +111,15 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
     return items;
   }, [transactions, typeFilter, categoryFilter, sourceFilter]);
 
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
+    filteredTransactions,
+    { defaultPageSize: 20 },
+  );
+
+  React.useEffect(() => {
+    resetPage();
+  }, [typeFilter, categoryFilter, sourceFilter, resetPage]);
+
   const summary = React.useMemo(() => {
     const active = (transactions ?? []).filter(isActiveTransaction);
 
@@ -128,6 +139,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
     setFormOpen(true);
   }, []);
 
+  React.useImperativeHandle(ref, () => ({ openCreate: openForm }), [openForm]);
+
   const submitForm = React.useCallback(() => {
     if (form.amount <= 0) return;
 
@@ -145,12 +158,8 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
 
   if (isLoading) {
     return (
-      <Box className={styles.tab}>
-        <SimpleGrid cols={{ base: 1, sm: 3 }} mb="md">
-          <Skeleton height={88} radius="md" />
-          <Skeleton height={88} radius="md" />
-          <Skeleton height={88} radius="md" />
-        </SimpleGrid>
+      <Box className={listPageStyles.panel} p="md">
+        <Skeleton height={72} mb="md" radius="md" />
         <Skeleton height={360} radius="md" />
       </Box>
     );
@@ -158,67 +167,67 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
 
   if (isError) {
     return (
-      <Card padding="lg" radius="lg" shadow="xs">
+      <Box className={listPageStyles.panel} p="xl">
         <Text c="red">Не удалось загрузить транзакции</Text>
-      </Card>
+      </Box>
     );
   }
 
   return (
-    <Box className={styles.tab}>
-      <SimpleGrid cols={{ base: 1, sm: 3 }} mb="md">
-        <Card padding="md" radius="lg" shadow="xs" className={styles.summaryCard}>
+    <Box className={listPageStyles.panel}>
+      <Box className={listPageStyles.summaryRow}>
+        <Box className={listPageStyles.summaryItem}>
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
             Доход
           </Text>
-          <Text size="xl" fw={700} c="green">
+          <Text size="lg" fw={700} c="green">
             {formatPrice(summary.income)}
           </Text>
-        </Card>
-        <Card padding="md" radius="lg" shadow="xs" className={styles.summaryCard}>
+        </Box>
+        <Box className={listPageStyles.summaryItem}>
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
             Расход
           </Text>
-          <Text size="xl" fw={700} c="red">
+          <Text size="lg" fw={700} c="red">
             {formatPrice(summary.expense)}
           </Text>
-        </Card>
-        <Card padding="md" radius="lg" shadow="xs" className={styles.summaryCard}>
+        </Box>
+        <Box className={listPageStyles.summaryItem}>
           <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
             Баланс
           </Text>
-          <Text size="xl" fw={700} c={summary.balance >= 0 ? 'green' : 'red'}>
+          <Text size="lg" fw={700} c={summary.balance >= 0 ? 'green' : 'red'}>
             {formatPrice(summary.balance)}
           </Text>
-        </Card>
-      </SimpleGrid>
+        </Box>
+      </Box>
 
-      <Group justify="space-between" mb="md" align="flex-end" wrap="wrap">
+      <Box className={listPageStyles.panelToolbar}>
         <Group gap="sm" wrap="wrap">
           <Select
-            label="Тип"
-            placeholder="Все"
+            placeholder="Тип"
             clearable
-            w={160}
+            w={140}
+            size="sm"
             data={TRANSACTION_TYPE_OPTIONS}
             value={typeFilter}
             onChange={setTypeFilter}
           />
           <Select
-            label="Категория"
-            placeholder="Все"
+            placeholder="Категория"
             clearable
             searchable
-            w={200}
+            w={180}
+            size="sm"
             data={categoryFilterOptions}
             value={categoryFilter}
             onChange={setCategoryFilter}
           />
           <Select
-            label="Источник"
-            placeholder="Все"
+            placeholder="Источник"
             clearable
             w={160}
+            size="sm"
             data={[
               { value: 'auto', label: 'Автоматические' },
               { value: 'manual', label: 'Ручные' },
@@ -227,121 +236,144 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
             onChange={setSourceFilter}
           />
         </Group>
-        <Button leftSection={<Plus size={16} />} onClick={openForm}>
-          Новая транзакция
-        </Button>
-      </Group>
+      </Box>
 
-      <DataTable
-        columns={[
-          { key: 'id', label: 'ID' },
-          { key: 'type', label: 'Тип' },
-          { key: 'category', label: 'Категория' },
-          { key: 'amount', label: 'Сумма' },
-          { key: 'method', label: 'Способ' },
-          { key: 'link', label: 'Связь' },
-          { key: 'status', label: 'Статус' },
-          { key: 'date', label: 'Дата' },
-          { key: 'actions', label: '', width: 100 },
-        ]}
-        isEmpty={filteredTransactions.length === 0}
-        emptyMessage="Транзакций нет"
-      >
-        {filteredTransactions.map((transaction) => {
-          const cancelled = Boolean(transaction.cancelled);
-          const canCancel = !transaction.auto_generated && !cancelled;
+      <Box className={listPageStyles.panelBody}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>ID</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Тип</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Категория</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Сумма</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Способ</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Связь</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Дата</Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={100} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={9}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Транзакций нет
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((transaction) => {
+                const cancelled = Boolean(transaction.cancelled);
+                const canCancel = !transaction.auto_generated && !cancelled;
 
-          return (
-            <DataTableRow key={transaction.id} muted={cancelled}>
-              <Table.Td>
-                <Text size="sm" ff="monospace" c="dimmed">
-                  #{transaction.id}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Badge
-                  size="sm"
-                  variant="light"
-                  color={transaction.type === 'income' ? 'green' : 'red'}
-                >
-                  {TRANSACTION_TYPE_LABELS[transaction.type] ?? transaction.type}
-                </Badge>
-              </Table.Td>
-              <Table.Td>
-                <Text size="sm">
-                  {TRANSACTION_CATEGORY_LABELS[transaction.category] ?? transaction.category}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text
-                  size="sm"
-                  fw={600}
-                  c={transaction.type === 'income' ? 'green' : 'red'}
-                  td={cancelled ? 'line-through' : undefined}
-                >
-                  {formatPrice(Math.abs(getSignedAmount(transaction)))}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                <Text size="sm">
-                  {TRANSACTION_METHOD_LABELS[transaction.method] ?? transaction.method}
-                </Text>
-              </Table.Td>
-              <Table.Td>
-                {transaction.receipt_id != null && (
-                  <Text size="xs">Чек #{transaction.receipt_id}</Text>
-                )}
-                {transaction.payout_id != null && (
-                  <Text size="xs">Выплата #{transaction.payout_id}</Text>
-                )}
-                {transaction.receipt_id == null && transaction.payout_id == null && (
-                  <Text size="xs" c="dimmed">
-                    —
-                  </Text>
-                )}
-              </Table.Td>
-              <Table.Td>
-                <Group gap={6}>
-                  {transaction.auto_generated ? (
-                    <Badge size="xs" variant="outline" color="sage">
-                      Авто
-                    </Badge>
-                  ) : (
-                    <Badge size="xs" variant="outline" color="gray">
-                      Ручная
-                    </Badge>
-                  )}
-                  {cancelled && (
-                    <Badge size="xs" variant="light" color="gray">
-                      Отменена
-                    </Badge>
-                  )}
-                </Group>
-              </Table.Td>
-              <Table.Td>
-                <Text size="xs">{formatDateTime(transaction.created_at)}</Text>
-                {transaction.notes && (
-                  <Text size="xs" c="dimmed" lineClamp={1}>
-                    {transaction.notes}
-                  </Text>
-                )}
-              </Table.Td>
-              <Table.Td>
-                {canCancel && (
-                  <Button
-                    size="xs"
-                    variant="subtle"
-                    color="red"
-                    onClick={() => setCancelTarget(transaction.id)}
+                return (
+                  <Table.Tr
+                    key={transaction.id}
+                    className={`${listPageStyles.row}${cancelled ? ` ${listPageStyles.mutedRow}` : ''}`}
                   >
-                    Отменить
-                  </Button>
-                )}
-              </Table.Td>
-            </DataTableRow>
-          );
-        })}
-      </DataTable>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" ff="monospace" c="rgba(72,72,72,0.4)">
+                        #{transaction.id}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Badge
+                        size="sm"
+                        variant="light"
+                        color={transaction.type === 'income' ? 'green' : 'red'}
+                      >
+                        {TRANSACTION_TYPE_LABELS[transaction.type] ?? transaction.type}
+                      </Badge>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" c="#484848">
+                        {TRANSACTION_CATEGORY_LABELS[transaction.category] ?? transaction.category}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text
+                        size="sm"
+                        fw={600}
+                        c={transaction.type === 'income' ? 'green' : 'red'}
+                        td={cancelled ? 'line-through' : undefined}
+                      >
+                        {formatPrice(Math.abs(getSignedAmount(transaction)))}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="sm" c="rgba(72,72,72,0.4)">
+                        {TRANSACTION_METHOD_LABELS[transaction.method] ?? transaction.method}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      {transaction.receipt_id != null && (
+                        <Text size="xs">Чек #{transaction.receipt_id}</Text>
+                      )}
+                      {transaction.payout_id != null && (
+                        <Text size="xs">Выплата #{transaction.payout_id}</Text>
+                      )}
+                      {transaction.receipt_id == null && transaction.payout_id == null && (
+                        <Text size="xs" c="dimmed">
+                          —
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Group gap={6}>
+                        {transaction.auto_generated ? (
+                          <Badge size="xs" variant="outline" color="sage">
+                            Авто
+                          </Badge>
+                        ) : (
+                          <Badge size="xs" variant="outline" color="gray">
+                            Ручная
+                          </Badge>
+                        )}
+                        {cancelled && (
+                          <Badge size="xs" variant="light" color="gray">
+                            Отменена
+                          </Badge>
+                        )}
+                      </Group>
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      <Text size="xs" c="rgba(72,72,72,0.4)">
+                        {formatDateTime(transaction.created_at)}
+                      </Text>
+                      {transaction.notes && (
+                        <Text size="xs" c="dimmed" lineClamp={1}>
+                          {transaction.notes}
+                        </Text>
+                      )}
+                    </Table.Td>
+                    <Table.Td className={listPageStyles.bodyCell}>
+                      {canCancel && (
+                        <Button
+                          size="xs"
+                          variant="subtle"
+                          color="red"
+                          onClick={() => setCancelTarget(transaction.id)}
+                        >
+                          Отменить
+                        </Button>
+                      )}
+                    </Table.Td>
+                  </Table.Tr>
+                );
+              })
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
+
+      <ListPaginationFooter
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       <Modal
         opened={formOpen}
@@ -425,4 +457,4 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({ enabled }) => 
       />
     </Box>
   );
-};
+});

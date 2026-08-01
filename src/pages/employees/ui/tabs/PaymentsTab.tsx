@@ -7,14 +7,13 @@ import {
   Text,
   Badge,
   ActionIcon,
-  Menu,
   Modal,
   Select,
   TextInput,
   Skeleton,
   NumberInput,
 } from '@mantine/core';
-import { Plus, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react';
+import { ArchiveIcon, Plus } from '@phosphor-icons/react';
 import { useEmployeePayrolls } from '@/shared/api/hooks/useEmployees';
 import {
   useCreatePayroll,
@@ -115,7 +114,11 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
           emptyMessage="Выплат пока нет"
         >
           {(payrolls ?? []).map((payroll) => (
-            <DataTableRow key={payroll.id}>
+            <DataTableRow
+              key={payroll.id}
+              onClick={() => openEdit(payroll)}
+              style={{ cursor: 'pointer' }}
+            >
               <Table.Td>
                 <Badge size="sm" variant="light">
                   {PAYROLL_TYPE_LABELS[payroll.type]}
@@ -133,21 +136,18 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
                 <Text size="sm">{formatDate(payroll.created_at)}</Text>
               </Table.Td>
               <Table.Td>
-                <Menu shadow="sm" width={160} radius="md">
-                  <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray" size="sm">
-                      <DotsThree size={16} weight="bold" />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => openEdit(payroll)}>
-                      Редактировать
-                    </Menu.Item>
-                    <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteTarget(payroll)}>
-                      Удалить
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
+                <ActionIcon
+                  variant="subtle"
+                  color="orange"
+                  size="sm"
+                  aria-label="Архивировать"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteTarget(payroll);
+                  }}
+                >
+                  <ArchiveIcon size={16} />
+                </ActionIcon>
               </Table.Td>
             </DataTableRow>
           ))}

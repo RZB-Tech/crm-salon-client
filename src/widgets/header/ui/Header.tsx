@@ -15,8 +15,9 @@ import {
   ScrollArea,
   Stack,
   Text,
+  UnstyledButton,
 } from '@mantine/core';
-import { BellIcon, KeyIcon, ListIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
+import { BellIcon, KeyIcon, ListIcon, SignOutIcon } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
@@ -25,6 +26,7 @@ import { authStorage } from '@/shared/api/client';
 import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime } from '@/shared/lib/format';
+import { addNotification } from '@/shared/lib/notifications';
 import { AUTH_ENABLED } from '@/shared/config/env';
 import LogoSvg from '@/shared/assets/logo.svg?url';
 import MiniLogoSvg from '@/shared/assets/miniLogo.svg?url';
@@ -71,6 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
+      addNotification.error({ message: 'Пароли не совпадают' });
       return;
     }
     changePassword.mutate(
@@ -88,126 +91,128 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
 
   const isPasswordValid = oldPassword && newPassword && newPassword === confirmPassword && newPassword.length >= 6;
   const tenantName = authStorage.getTenantName() ?? 'Salon CRM';
+  const hasUnread = unreadCount > 0;
 
   return (
     <header className={styles.header}>
       <Box
         className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`}
       >
-        <Image
-          src={collapsed ? MiniLogoSvg : LogoSvg}
-          alt="Logo"
-          className={styles.logoIcon}
-          h={collapsed ? 28 : 57}
-          w="auto"
-          fit="contain"
-        />
+        <Link to="/board" className={styles.logoLink} aria-label="На рабочий стол">
+          <Image
+            src={collapsed ? MiniLogoSvg : LogoSvg}
+            alt="Logo"
+            className={styles.logoIcon}
+            h={collapsed ? 28 : 57}
+            w="auto"
+            fit="contain"
+          />
+        </Link>
       </Box>
 
-      <ActionIcon
-        variant="subtle"
-        color="gray"
-        size="lg"
-        onClick={onToggle}
-        aria-label="Toggle sidebar"
-        className={styles.burger}
-      >
-        <ListIcon size={20} />
-      </ActionIcon>
+      <Box className={styles.main}>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="lg"
+          onClick={onToggle}
+          aria-label="Toggle sidebar"
+          className={styles.burger}
+        >
+          <ListIcon size={20} />
+        </ActionIcon>
 
-      <Text fw={700} size="sm" className={styles.tenantName}>
-        {tenantName}
-      </Text>
+        <Text fw={700} size="sm" className={styles.tenantName}>
+          {tenantName}
+        </Text>
 
-      <Group gap="sm" className={styles.right}>
-        <Popover width={320} position="bottom-end" shadow="md" radius="md">
-          <Popover.Target>
-            <Indicator
-              label={unreadCount > 0 ? String(unreadCount) : undefined}
-              color="red"
-              size={unreadCount > 0 ? 16 : 8}
-              offset={4}
-              disabled={unreadCount === 0 && !connected}
-              processing={unreadCount > 0}
-            >
-              <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
-                <BellIcon size={20} />
-              </ActionIcon>
-            </Indicator>
-          </Popover.Target>
-          <Popover.Dropdown p={0}>
-            <Stack gap={0}>
-              <Group justify="space-between" px="md" py="sm">
-                <Text size="sm" fw={600}>
-                  Уведомления
-                </Text>
-                <Badge size="xs" variant="light" color={connected ? 'green' : 'gray'}>
-                  {connected ? 'online' : 'offline'}
-                </Badge>
-              </Group>
-              <ScrollArea.Autosize mah={280}>
-                {recent.length === 0 ? (
-                  <Text size="sm" c="dimmed" px="md" py="sm">
-                    Нет уведомлений
-                  </Text>
-                ) : (
-                  recent.map((item) => (
-                    <Box key={item.id} className={styles.notificationItem}>
-                      <Text size="sm" fw={500} lineClamp={1}>
-                        {item.title ?? 'Уведомление'}
-                      </Text>
-                      <Text size="xs" c="dimmed" lineClamp={2}>
-                        {item.body}
-                      </Text>
-                      <Text size="xs" c="dimmed" mt={4}>
-                        {formatDateTime(item.scheduled_at)}
-                      </Text>
-                    </Box>
-                  ))
-                )}
-              </ScrollArea.Autosize>
-              <Link to="/notifications" className={styles.notificationsLink}>
-                Все уведомления
-              </Link>
-            </Stack>
-          </Popover.Dropdown>
-        </Popover>
-
-        {AUTH_ENABLED ? (
-          <Menu shadow="md" width={200} position="bottom-end" radius="md">
-            <Menu.Target>
-              <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Профиль">
-                <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Label>{meDisplayName || 'Аккаунт'}</Menu.Label>
-              <Menu.Item leftSection={<UserIcon size={14} />} disabled>
-                Профиль
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<KeyIcon size={14} />}
-                onClick={() => setChangePasswordOpen(true)}
-              >
-                Сменить пароль
-              </Menu.Item>
-              <Menu.Divider />
-              <Menu.Item
-                leftSection={<SignOutIcon size={14} />}
+        <Group gap="sm" className={styles.right}>
+          <Popover width={320} position="bottom-end" shadow="md" radius="md">
+            <Popover.Target>
+              <Indicator
+                label={hasUnread ? String(unreadCount) : undefined}
                 color="red"
-                onClick={handleLogout}
-                disabled={logout.isPending}
+                size={16}
+                offset={4}
+                disabled={!hasUnread}
+                processing={hasUnread}
               >
-                {logout.isPending ? 'Выход...' : 'Выйти'}
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        ) : (
-          <Avatar size="sm" radius="md" color="sage">
-            CRM
-          </Avatar>
-        )}
-      </Group>
+                <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
+                  <BellIcon size={20} />
+                </ActionIcon>
+              </Indicator>
+            </Popover.Target>
+            <Popover.Dropdown p={0}>
+              <Stack gap={0}>
+                <Group justify="space-between" px="md" py="sm">
+                  <Text size="sm" fw={600}>
+                    Уведомления
+                  </Text>
+                  <Badge size="xs" variant="light" color={connected ? 'green' : 'gray'}>
+                    {connected ? 'online' : 'offline'}
+                  </Badge>
+                </Group>
+                <ScrollArea.Autosize mah={280}>
+                  {recent.length === 0 ? (
+                    <Text size="sm" c="dimmed" px="md" py="sm">
+                      Нет уведомлений
+                    </Text>
+                  ) : (
+                    recent.map((item) => (
+                      <Box key={item.id} className={styles.notificationItem}>
+                        <Text size="sm" fw={500} lineClamp={1}>
+                          {item.title ?? 'Уведомление'}
+                        </Text>
+                        <Text size="xs" c="dimmed" lineClamp={2}>
+                          {item.body}
+                        </Text>
+                        <Text size="xs" c="dimmed" mt={4}>
+                          {formatDateTime(item.scheduled_at)}
+                        </Text>
+                      </Box>
+                    ))
+                  )}
+                </ScrollArea.Autosize>
+                <Link to="/notifications" className={styles.notificationsLink}>
+                  Все уведомления
+                </Link>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+
+          {AUTH_ENABLED ? (
+            <Menu shadow="md" width={200} position="bottom-end" radius="md">
+              <Menu.Target>
+                <UnstyledButton className={styles.avatarTarget} aria-label="Аккаунт">
+                  <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
+                </UnstyledButton>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Label>{meDisplayName || 'Аккаунт'}</Menu.Label>
+                <Menu.Item
+                  leftSection={<KeyIcon size={14} />}
+                  onClick={() => setChangePasswordOpen(true)}
+                >
+                  Сменить пароль
+                </Menu.Item>
+                <Menu.Divider />
+                <Menu.Item
+                  leftSection={<SignOutIcon size={14} />}
+                  color="red"
+                  onClick={handleLogout}
+                  disabled={logout.isPending}
+                >
+                  {logout.isPending ? 'Выход...' : 'Выйти'}
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          ) : (
+            <Avatar size="sm" radius="md" color="sage">
+              CRM
+            </Avatar>
+          )}
+        </Group>
+      </Box>
 
       <Modal
         opened={changePasswordOpen}

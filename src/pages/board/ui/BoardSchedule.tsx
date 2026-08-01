@@ -10,10 +10,9 @@ import styles from './board-page.module.css';
 
 const padTime = (v: number) => v.toString().padStart(2, '0');
 
-const RESOURCE_LABEL_WIDTH = 300;
-const START_HOUR = 8;
-const END_HOUR = 24;
-const SLOT_COUNT = END_HOUR - START_HOUR;
+/** Employee column ≈ 20% of board width, clamped for readability */
+const LABEL_MIN = 144;
+const LABEL_MAX = 300;
 
 interface BoardAppointment {
   id: number;
@@ -52,10 +51,9 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
 }) => {
   const { ref: containerRef, width: containerWidth } = useElementSize();
 
-  const slotWidth = React.useMemo(() => {
-    if (containerWidth <= 0) return '80px';
-    const available = containerWidth - RESOURCE_LABEL_WIDTH;
-    return `${Math.floor(available / SLOT_COUNT)}px`;
+  const labelWidth = React.useMemo(() => {
+    if (containerWidth <= 0) return 240;
+    return Math.round(Math.min(LABEL_MAX, Math.max(LABEL_MIN, containerWidth * 0.2)));
   }, [containerWidth]);
 
   const resources = React.useMemo(
@@ -139,6 +137,8 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
     );
   }
 
+  const labelWidthCss = `${labelWidth}px`;
+
   return (
     <Box ref={containerRef} className={styles.scheduleContainer}>
       <ResourcesDayView
@@ -148,22 +148,40 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         events={scheduleEvents}
         startTime="08:00:00"
         endTime="24:00:00"
+        intervalMinutes={60}
         locale="ru"
         withCurrentTimeIndicator
         withDragSlotSelect
         withHeader={false}
-        slotWidth={slotWidth}
         onTimeSlotClick={handleTimeSlotClick}
         onSlotDragEnd={handleSlotDragEnd}
         onEventClick={handleEventClick}
-        startScrollTime="09:00:00"
+        style={
+          {
+            '--resources-day-view-resource-label-width': labelWidthCss,
+          } as React.CSSProperties
+        }
+        styles={{
+          resourcesDayView: {
+            '--resources-day-view-resource-label-width': labelWidthCss,
+          } as React.CSSProperties,
+        }}
         classNames={{
+          resourcesDayView: styles.scheduleView,
           resourcesDayViewRoot: styles.scheduleRoot,
+          resourcesDayViewScrollArea: styles.scheduleScrollArea,
+          resourcesDayViewInner: styles.scheduleInner,
+          resourcesDayViewTimeLabelsRow: styles.scheduleTimeRow,
+          resourcesDayViewRow: styles.scheduleRow,
+          resourcesDayViewRowSlots: styles.scheduleRowSlots,
+          resourcesDayViewTimeLabel: styles.scheduleTimeSlot,
+          resourcesDayViewRowSlot: styles.scheduleTimeSlot,
           resourcesDayViewResourceLabel: styles.scheduleResourceLabel,
+          resourcesDayViewCorner: styles.scheduleCorner,
         }}
         renderResourceLabel={(resource) => (
           <Box className={styles.resourceLabel}>
-            <Avatar size="sm" radius="md" color="sage">
+            <Avatar size="sm" radius="md" color="sage" style={{ flex: '0 0 auto' }}>
               {getEmployeeInitials(
                 filteredEmployees.find((e) => e.id === resource.id) ?? {
                   firstname: String(resource.label).charAt(0),
@@ -171,13 +189,15 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
                 },
               )}
             </Avatar>
-            <Box>
+            <Box className={styles.resourceLabelText} data-compact={labelWidth < 180 || undefined}>
               <Text size="sm" fw={500} lineClamp={1}>
                 {resource.label}
               </Text>
-              <Text size="xs" c="dimmed">
-                Сотрудник
-              </Text>
+              {labelWidth >= 200 && (
+                <Text size="xs" c="dimmed" lineClamp={1}>
+                  Сотрудник
+                </Text>
+              )}
             </Box>
           </Box>
         )}

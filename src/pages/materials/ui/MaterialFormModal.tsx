@@ -5,6 +5,7 @@ import type { Material, MaterialCreatePayload, MaterialUpdatePayload, Measuremen
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 
 const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({ value, label }));
 
@@ -28,9 +29,16 @@ interface MaterialFormModalProps {
   opened: boolean;
   material: Material | null;
   onClose: () => void;
+  onChangeQuantity?: (material: Material) => void;
 }
 
-export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ opened, material, onClose }) => {
+export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
+  opened,
+  material,
+  onClose,
+  onChangeQuantity,
+}) => {
+  const { hasPermission } = useAccess();
   const [form, setForm] = React.useState<MaterialFormState>(emptyForm);
   const createMaterial = useCreateMaterial();
   const updateMaterial = useUpdateMaterial();
@@ -47,8 +55,26 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ opened, ma
     createMaterial.mutate(payload, { onSuccess: onClose });
   }, [material, form, createMaterial, updateMaterial, onClose]);
 
+  const canChangeQuantity =
+    Boolean(material && onChangeQuantity) &&
+    hasPermission(PermissionCode.MATERIAL_UPDATE_QUANTITY);
+
   return (
     <Modal opened={opened} onClose={onClose} title={material ? 'Редактировать материал' : 'Новый материал'} radius="md" size="lg">
+      {canChangeQuantity && material && (
+        <Group mb="md">
+          <Button
+            variant="light"
+            size="sm"
+            onClick={() => onChangeQuantity?.(material)}
+          >
+            Изменить количество
+          </Button>
+          <Text size="sm" c="dimmed">
+            Сейчас: {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
+          </Text>
+        </Group>
+      )}
       <Group grow mb="md">
         <TextInput label="Артикул" required value={form.article} onChange={(e) => setForm({ ...form, article: e.currentTarget.value })} />
         <TextInput label="Название" required value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} />

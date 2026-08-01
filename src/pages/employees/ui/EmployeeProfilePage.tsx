@@ -11,12 +11,20 @@ import {
   Tabs,
   Skeleton,
   Alert,
-  Menu,
   CopyButton,
   Tooltip,
   Box,
 } from '@mantine/core';
-import { ArrowLeftIcon, PencilSimpleIcon, TrashIcon, PhoneIcon, CakeIcon, DotsThreeIcon, LockKeyIcon, CopyIcon, CheckIcon } from '@phosphor-icons/react';
+import {
+  ArchiveIcon,
+  ArrowLeftIcon,
+  CakeIcon,
+  CheckIcon,
+  CopyIcon,
+  LockKeyIcon,
+  PencilSimpleIcon,
+  PhoneIcon,
+} from '@phosphor-icons/react';
 import {
   useEmployee,
   useUpdateEmployee,
@@ -49,7 +57,7 @@ export const EmployeeProfilePage: React.FC = () => {
   const { hasPermission } = useAccess();
   const [searchParams, setSearchParams] = useSearchParams();
   const [editOpen, setEditOpen] = React.useState(false);
-  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [archiveOpen, setArchiveOpen] = React.useState(false);
 
   const employeeId = Number(id);
   const { data: employee, isLoading, isError } = useEmployee(employeeId);
@@ -76,7 +84,7 @@ export const EmployeeProfilePage: React.FC = () => {
     [updateEmployee],
   );
 
-  const handleDelete = React.useCallback(() => {
+  const handleArchive = React.useCallback(() => {
     archiveEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
   }, [archiveEmployee, employeeId, navigate]);
 
@@ -117,7 +125,7 @@ export const EmployeeProfilePage: React.FC = () => {
           К сотрудникам
         </Button>
 
-        <Card padding="lg" radius="lg" shadow="xs" className={styles.headerCard}>
+        <Card padding="md" radius="md" withBorder className={styles.headerCard}>
           <Box className={styles.headerLeft}>
             <Avatar radius="md" size={64} color="sage">
               {getEmployeeInitials(employee)}
@@ -151,30 +159,25 @@ export const EmployeeProfilePage: React.FC = () => {
               </Button>
             )}
             {hasPermission(PermissionCode.EMPLOYEE_MANAGE) && (
-              <Menu shadow="md" width={200} position="bottom-end" radius="md">
-                <Menu.Target>
-                  <ActionIcon variant="light" color="gray" size="lg" aria-label="Ещё действия">
-                    <DotsThreeIcon size={18} weight="bold" />
-                  </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item
-                    leftSection={<LockKeyIcon size={14} />}
-                    onClick={handleResetPassword}
-                    disabled={resetPassword.isPending}
-                  >
-                    Сбросить пароль
-                  </Menu.Item>
-                  <Menu.Divider />
-                  <Menu.Item
-                    leftSection={<TrashIcon size={14} />}
-                    color="red"
-                    onClick={() => setDeleteOpen(true)}
-                  >
-                    Удалить
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
+              <>
+                <Button
+                  variant="light"
+                  leftSection={<LockKeyIcon size={16} />}
+                  onClick={handleResetPassword}
+                  loading={resetPassword.isPending}
+                >
+                  Сбросить пароль
+                </Button>
+                <ActionIcon
+                  variant="light"
+                  color="orange"
+                  size="lg"
+                  aria-label="Архивировать"
+                  onClick={() => setArchiveOpen(true)}
+                >
+                  <ArchiveIcon size={18} />
+                </ActionIcon>
+              </>
             )}
           </Group>
         </Card>
@@ -253,12 +256,12 @@ export const EmployeeProfilePage: React.FC = () => {
       />
 
       <ConfirmModal
-        opened={deleteOpen}
+        opened={archiveOpen}
         title="Архивировать сотрудника"
         message={`Архивировать ${getEmployeeFullName(employee)}? Сотрудник будет скрыт из списка.`}
         loading={archiveEmployee.isPending}
-        onConfirm={handleDelete}
-        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleArchive}
+        onClose={() => setArchiveOpen(false)}
       />
     </Box>
   );

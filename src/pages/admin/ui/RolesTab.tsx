@@ -1,18 +1,17 @@
 import React from 'react';
 import {
   Badge,
+  Box,
   Button,
   Checkbox,
   Collapse,
   Group,
-  Menu,
   Modal,
   Paper,
   ScrollArea,
   SimpleGrid,
   Skeleton,
   Stack,
-  Switch,
   Table,
   Text,
   TextInput,
@@ -21,10 +20,16 @@ import {
   ActionIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { CaretDownIcon, CaretRightIcon, DotsThreeVerticalIcon } from '@phosphor-icons/react';
+import {
+  ArchiveIcon,
+  ArrowCounterClockwiseIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react';
 import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
-import { DataTable, DataTableRow } from '@/shared/ui';
+import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import type { Permission, Role, RoleCreatePayload } from '@/shared/api/types';
 
 interface RoleForm {
@@ -35,7 +40,18 @@ interface RoleForm {
 
 const INITIAL_FORM: RoleForm = { name: '', description: '', permissions: [] };
 
-export const RolesTab: React.FC = () => {
+export type RolesTabHandle = {
+  openCreate: () => void;
+};
+
+interface RolesTabProps {
+  showArchived: boolean;
+}
+
+export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function RolesTab(
+  { showArchived },
+  ref,
+) {
   const { data: roles, isLoading } = useRoles();
   const { data: permissions } = usePermissions();
   const createRole = useCreateRole();
@@ -45,7 +61,6 @@ export const RolesTab: React.FC = () => {
   const [editingRole, setEditingRole] = React.useState<Role | null>(null);
   const [form, setForm] = React.useState<RoleForm>(INITIAL_FORM);
   const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
-  const [showArchived, setShowArchived] = React.useState(false);
 
   const permissionsByResource = React.useMemo(() => {
     if (!permissions) return {};
@@ -77,6 +92,8 @@ export const RolesTab: React.FC = () => {
     setExpandedResources(new Set());
     open();
   }, [open]);
+
+  React.useImperativeHandle(ref, () => ({ openCreate: () => handleOpen() }), [handleOpen]);
 
   const handleTogglePermission = React.useCallback((code: number) => {
     setForm((prev) => ({
@@ -144,69 +161,108 @@ export const RolesTab: React.FC = () => {
 
   const isAllSelected = allPermissionCodes.length > 0 && allPermissionCodes.every((c) => form.permissions.includes(c));
 
-  const columns = React.useMemo(
-    () => [
-      { key: 'name', label: 'Название' },
-      { key: 'description', label: 'Описание' },
-      { key: 'permissions_count', label: 'Разрешений' },
-      { key: 'status', label: 'Статус' },
-      { key: 'actions', label: '' },
-    ],
-    [],
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
+    filteredRoles,
+    { defaultPageSize: 20 },
   );
 
-  if (isLoading) return <Skeleton height={300} radius="md" />;
+  React.useEffect(() => {
+    resetPage();
+  }, [showArchived, resetPage]);
+
+  if (isLoading) {
+    return (
+      <Box className={listPageStyles.panel} p="md">
+        <Skeleton height={300} radius="md" />
+      </Box>
+    );
+  }
 
   return (
-    <Stack gap="md">
-      <Group justify="space-between">
-        <Switch
-          label="Показать архивные"
-          checked={showArchived}
-          onChange={(e) => setShowArchived(e.currentTarget.checked)}
-          size="sm"
-        />
-        <Button onClick={() => handleOpen()}>Создать роль</Button>
-      </Group>
+    <Box className={listPageStyles.panel}>
+      <Box className={listPageStyles.panelBody}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Описание</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Разрешений</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={48} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={5}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Нет ролей
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((r) => (
+                <Table.Tr
+                  key={r.id}
+                  className={`${listPageStyles.row} ${listPageStyles.rowClickable}${r.archived ? ` ${listPageStyles.mutedRow}` : ''}`}
+                  onClick={() => handleOpen(r)}
+                >
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c={r.archived ? 'dimmed' : '#484848'}>
+                      {r.name}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c="rgba(72,72,72,0.4)">
+                      {r.description || '—'}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Badge variant="light">{r.permissions.length}</Badge>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    {r.archived ? (
+                      <Badge color="gray" variant="light" size="sm">
+                        Архив
+                      </Badge>
+                    ) : (
+                      <Badge color="green" variant="light" size="sm">
+                        Активна
+                      </Badge>
+                    )}
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <ActionIcon
+                      variant="subtle"
+                      color={r.archived ? 'gray' : 'orange'}
+                      size="sm"
+                      aria-label={r.archived ? 'Восстановить' : 'Архивировать'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleArchive(r);
+                      }}
+                    >
+                      {r.archived ? (
+                        <ArrowCounterClockwiseIcon size={16} />
+                      ) : (
+                        <ArchiveIcon size={16} />
+                      )}
+                    </ActionIcon>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
 
-      <DataTable columns={columns} isEmpty={filteredRoles.length === 0} emptyMessage="Нет ролей">
-        {filteredRoles.map((r) => (
-          <DataTableRow key={r.id}>
-            <Table.Td>
-              <Text size="sm" c={r.archived ? 'dimmed' : undefined}>{r.name}</Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size="sm" c="dimmed">{r.description || '—'}</Text>
-            </Table.Td>
-            <Table.Td><Badge variant="light">{r.permissions.length}</Badge></Table.Td>
-            <Table.Td>
-              {r.archived ? (
-                <Badge color="gray" variant="light" size="sm">Архив</Badge>
-              ) : (
-                <Badge color="green" variant="light" size="sm">Активна</Badge>
-              )}
-            </Table.Td>
-            <Table.Td>
-              <Menu position="bottom-end" withinPortal>
-                <Menu.Target>
-                  <ActionIcon variant="subtle" size="sm">
-                    <DotsThreeVerticalIcon size={16} />
-                  </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item onClick={() => handleOpen(r)}>Редактировать</Menu.Item>
-                  <Menu.Item
-                    color={r.archived ? 'green' : 'orange'}
-                    onClick={() => handleToggleArchive(r)}
-                  >
-                    {r.archived ? 'Восстановить' : 'Архивировать'}
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            </Table.Td>
-          </DataTableRow>
-        ))}
-      </DataTable>
+      <ListPaginationFooter
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       <Modal
         opened={opened}
@@ -310,6 +366,6 @@ export const RolesTab: React.FC = () => {
           </Group>
         </Stack>
       </Modal>
-    </Stack>
+    </Box>
   );
-};
+});

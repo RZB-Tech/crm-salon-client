@@ -1,0 +1,12 @@
+.formSection {
+  padding: 16px;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+}
+
+.sectionTitle {
+  margin-bottom: 12px;
+}
+
+.specSection {
+  padding: 16px;
+}

@@ -7,10 +7,6 @@ import {
   Button,
   FileButton,
   Group,
-  Menu,
-  Pagination as MantinePagination,
-  SegmentedControl,
-  Select,
   Skeleton,
   Stack,
   Table,
@@ -21,10 +17,8 @@ import {
 import {
   ArchiveIcon,
   ArrowCounterClockwiseIcon,
-  DotsThreeVerticalIcon,
   DownloadSimpleIcon,
   MagnifyingGlassIcon,
-  PencilSimpleIcon,
   PlusIcon,
 } from '@phosphor-icons/react';
 import {
@@ -35,20 +29,20 @@ import {
   useServices,
 } from '@/shared/api/hooks/useServices';
 import type { Service, ServiceCategory } from '@/shared/api/types';
-import { ConfirmModal } from '@/shared/ui';
+import {
+  ArchiveToggle,
+  ConfirmModal,
+  ListPageShell,
+  ListPaginationFooter,
+  ListTabs,
+  listPageStyles,
+} from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { ServiceFormModal } from './ServiceFormModal';
 import { CategoryFormModal } from './CategoryFormModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './services-page.module.css';
-
-const PAGE_SIZE_OPTIONS = [
-  { value: '10', label: '10' },
-  { value: '20', label: '20' },
-  { value: '50', label: '50' },
-  { value: '100', label: '100' },
-];
 
 const formatDuration = (minutes: number): string => {
   if (minutes <= 0) return '—';
@@ -72,7 +66,6 @@ export const ServicesPage: React.FC = () => {
   const [editingService, setEditingService] = React.useState<Service | null>(null);
   const [archiveServiceTarget, setArchiveServiceTarget] = React.useState<Service | null>(null);
 
-  // Keep category modal for potential usage from other places
   const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
   const [editingCategory] = React.useState<ServiceCategory | null>(null);
 
@@ -116,10 +109,6 @@ export const ServicesPage: React.FC = () => {
   const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
     usePagination(filtered, { defaultPageSize: 20 });
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
-
   React.useEffect(() => {
     resetPage();
   }, [search, activeCategory, resetPage]);
@@ -145,260 +134,223 @@ export const ServicesPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box className={styles.page}>
-        <Box className={styles.toolbar}>
-          <Skeleton height={32} width={400} radius="sm" />
-          <Skeleton height={32} width={240} radius="md" />
-        </Box>
+      <ListPageShell
+        toolbar={
+          <>
+            <Skeleton height={32} width={400} radius="sm" />
+            <Skeleton height={32} width={240} radius="md" />
+          </>
+        }
+      >
         <Stack gap="xs" p="md">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} height={48} radius="sm" />
           ))}
         </Stack>
-      </Box>
+      </ListPageShell>
     );
   }
 
   if (isError) {
     return (
-      <Box className={styles.page}>
+      <ListPageShell>
         <Box p="xl">
           <Alert color="red" title="Не удалось загрузить данные">
             Проверьте доступность API
           </Alert>
         </Box>
-      </Box>
+      </ListPageShell>
     );
   }
 
   return (
-    <Box className={styles.page}>
-      <Box className={styles.toolbar}>
-        <Group gap={8}>
-          <SegmentedControl
+    <ListPageShell
+      toolbar={
+        <>
+          <ListTabs
             value={activeCategory}
             onChange={setActiveCategory}
             data={segmentData}
-            size="xs"
-            radius="sm"
-            color="sage.6"
-            styles={{
-              root: { background: '#f9f6f3' },
-            }}
-          />
-          <Tooltip label="Добавить категорию" position="right">
-            <ActionIcon
-              variant="subtle"
-              color="sage"
-              size="sm"
-              onClick={() => setCategoryFormOpen(true)}
-              aria-label="Добавить категорию"
-            >
-              <PlusIcon size={16} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label={showArchived ? 'Показать активные' : 'Показать архив'} position="right">
-            <ActionIcon
-              variant={showArchived ? 'filled' : 'subtle'}
-              color={showArchived ? 'orange' : 'gray'}
-              size="sm"
-              onClick={() => setShowArchived((v) => !v)}
-              aria-label="Переключить архив"
-            >
-              <ArchiveIcon size={16} />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-
-        <Group gap={8}>
-          <TextInput
-            placeholder="Поиск услуги"
-            leftSection={<MagnifyingGlassIcon size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            size="sm"
-            className={styles.searchInput}
-          />
-          {!showArchived && (
-            <>
-              {hasPermission(PermissionCode.SERVICE_IMPORT) && (
-                <FileButton
-                  onChange={handleImportFile}
-                  accept=".xlsx,.xls"
-                  resetRef={resetImportRef}
-                >
-                  {(props) => (
-                    <Button
-                      {...props}
-                      variant="light"
-                      color="sage"
-                      rightSection={<DownloadSimpleIcon size={16} />}
-                      size="sm"
-                      loading={importServices.isPending}
-                    >
-                      Импорт Excel
-                    </Button>
-                  )}
-                </FileButton>
-              )}
-              {hasPermission(PermissionCode.SERVICE_CREATE) && (
-                <Button
-                  color="sage.6"
-                  rightSection={<PlusIcon size={16} />}
-                  onClick={openServiceCreate}
+            action={
+              <Tooltip label="Добавить категорию" position="bottom">
+                <ActionIcon
                   size="sm"
+                  variant="subtle"
+                  color="sage"
+                  onClick={() => setCategoryFormOpen(true)}
+                  aria-label="Добавить категорию"
                 >
-                  Добавить услугу
-                </Button>
-              )}
-            </>
-          )}
-        </Group>
-      </Box>
+                  <PlusIcon size={16} />
+                </ActionIcon>
+              </Tooltip>
+            }
+          />
 
-      <Box className={styles.tableWrapper}>
-        <Table verticalSpacing="sm" horizontalSpacing="md" className={styles.table}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th className={styles.headCell}>Услуга</Table.Th>
-              <Table.Th className={styles.headCell} w={275}>
-                Длительность
-              </Table.Th>
-              <Table.Th className={styles.headCell} w={380}>
-                Категория
-              </Table.Th>
-              <Table.Th className={styles.headCell} w={310}>
-                Цена
-              </Table.Th>
-              <Table.Th className={styles.headCell} w={48} />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {paginatedItems.length === 0 ? (
-              <Table.Tr>
-                <Table.Td colSpan={5}>
-                  <Text size="sm" c="dimmed" ta="center" py="xl">
-                    Услуги не найдены
-                  </Text>
-                </Table.Td>
-              </Table.Tr>
-            ) : (
-              paginatedItems.map((service) => {
-                const catLabel =
-                  service.category_id != null
-                    ? (categoryMap.get(service.category_id)?.name ?? null)
-                    : null;
-                return (
-                  <Table.Tr key={service.id} className={styles.row}>
-                    <Table.Td className={styles.bodyCell}>
-                      <Text size="sm" fw={400} c="#484848">
-                        {service.name}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td className={styles.bodyCell}>
-                      <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                        {formatDuration(service.estimated_time)}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td className={styles.bodyCell}>
-                      {catLabel ? (
-                        <Badge
-                          size="sm"
-                          radius="xl"
-                          className={styles.categoryBadge}
-                        >
-                          {catLabel}
-                        </Badge>
-                      ) : (
-                        <Text size="sm" c="dimmed">
-                          —
-                        </Text>
-                      )}
-                    </Table.Td>
-                    <Table.Td className={styles.bodyCell}>
-                      <Text size="sm" fw={600} c="#484848">
-                        {service.price > 0 ? formatPrice(service.price) : '—'}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td className={styles.bodyCell}>
-                      <Menu shadow="sm" width={160} radius="md">
-                        <Menu.Target>
-                          <ActionIcon variant="subtle" color="gray" size="sm">
-                            <DotsThreeVerticalIcon size={20} weight="bold" />
-                          </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          {showArchived ? (
-                            hasPermission(PermissionCode.SERVICE_MANAGE) && (
-                              <Menu.Item
-                                leftSection={<ArrowCounterClockwiseIcon size={14} />}
-                                onClick={() => restoreService.mutate(service.id)}
-                              >
-                                Восстановить
-                              </Menu.Item>
-                            )
-                          ) : (
-                            <>
-                              {hasPermission(PermissionCode.SERVICE_UPDATE) && (
-                                <Menu.Item
-                                  leftSection={<PencilSimpleIcon size={14} />}
-                                  onClick={() => openServiceEdit(service)}
-                                >
-                                  Редактировать
-                                </Menu.Item>
-                              )}
-                              {hasPermission(PermissionCode.SERVICE_MANAGE) && (
-                                <Menu.Item
-                                  leftSection={<ArchiveIcon size={14} />}
-                                  color="orange"
-                                  onClick={() => setArchiveServiceTarget(service)}
-                                >
-                                  Архивировать
-                                </Menu.Item>
-                              )}
-                            </>
-                          )}
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Table.Td>
-                  </Table.Tr>
-                );
-              })
-            )}
-          </Table.Tbody>
-        </Table>
-      </Box>
-
-      <Box className={styles.pagination}>
-        <Box className={styles.paginationMeta}>
-          <Group gap={8}>
-            <Text size="sm" fw={500} c="#484848">
-              Показать:
-            </Text>
-            <Select
-              size="xs"
-              w={64}
-              data={PAGE_SIZE_OPTIONS}
-              value={String(pageSize)}
-              onChange={(value) => {
-                if (value) setPageSize(Number(value));
-              }}
-              allowDeselect={false}
+          <Group gap={8} wrap="nowrap">
+            <TextInput
+              placeholder="Поиск услуги"
+              leftSection={<MagnifyingGlassIcon size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              size="sm"
+              className={listPageStyles.searchInput}
             />
+            {!showArchived && (
+              <>
+                {hasPermission(PermissionCode.SERVICE_IMPORT) && (
+                  <FileButton
+                    onChange={handleImportFile}
+                    accept=".xlsx,.xls"
+                    resetRef={resetImportRef}
+                  >
+                    {(props) => (
+                      <Button
+                        {...props}
+                        variant="light"
+                        color="sage"
+                        rightSection={<DownloadSimpleIcon size={16} />}
+                        size="sm"
+                        loading={importServices.isPending}
+                      >
+                        Импорт Excel
+                      </Button>
+                    )}
+                  </FileButton>
+                )}
+                {hasPermission(PermissionCode.SERVICE_CREATE) && (
+                  <Button
+                    color="sage.6"
+                    rightSection={<PlusIcon size={16} />}
+                    onClick={openServiceCreate}
+                    size="sm"
+                  >
+                    Добавить услугу
+                  </Button>
+                )}
+              </>
+            )}
+            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
           </Group>
-          <Text size="sm" c="#484848">
-            {from}–{to} из {total}
-          </Text>
-        </Box>
-
-        <MantinePagination
-          value={page}
-          onChange={setPage}
-          total={totalPages}
-          size="lg"
-          radius="sm"
+        </>
+      }
+      footer={
+        <ListPaginationFooter
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
-      </Box>
+      }
+    >
+      <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th className={listPageStyles.headCell}>Услуга</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={275}>
+              Длительность
+            </Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={380}>
+              Категория
+            </Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={310}>
+              Цена
+            </Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={48} />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {paginatedItems.length === 0 ? (
+            <Table.Tr>
+              <Table.Td colSpan={5}>
+                <Text size="sm" c="dimmed" ta="center" py="xl">
+                  Услуги не найдены
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          ) : (
+            paginatedItems.map((service) => {
+              const catLabel =
+                service.category_id != null
+                  ? (categoryMap.get(service.category_id)?.name ?? null)
+                  : null;
+              return (
+                <Table.Tr
+                  key={service.id}
+                  className={`${listPageStyles.row} ${!showArchived && hasPermission(PermissionCode.SERVICE_UPDATE) ? listPageStyles.rowClickable : ''}`}
+                  onClick={
+                    !showArchived && hasPermission(PermissionCode.SERVICE_UPDATE)
+                      ? () => openServiceEdit(service)
+                      : undefined
+                  }
+                >
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" fw={400} c="#484848">
+                      {service.name}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
+                      {formatDuration(service.estimated_time)}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    {catLabel ? (
+                      <Badge
+                        size="sm"
+                        radius="xl"
+                        className={styles.categoryBadge}
+                      >
+                        {catLabel}
+                      </Badge>
+                    ) : (
+                      <Text size="sm" c="dimmed">
+                        —
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" fw={600} c="#484848">
+                      {service.price > 0 ? formatPrice(service.price) : '—'}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    {hasPermission(PermissionCode.SERVICE_MANAGE) && (
+                      showArchived ? (
+                        <ActionIcon
+                          variant="subtle"
+                          color="gray"
+                          size="sm"
+                          aria-label="Восстановить"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            restoreService.mutate(service.id);
+                          }}
+                        >
+                          <ArrowCounterClockwiseIcon size={18} />
+                        </ActionIcon>
+                      ) : (
+                        <ActionIcon
+                          variant="subtle"
+                          color="orange"
+                          size="sm"
+                          aria-label="Архивировать"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setArchiveServiceTarget(service);
+                          }}
+                        >
+                          <ArchiveIcon size={18} />
+                        </ActionIcon>
+                      )
+                    )}
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })
+          )}
+        </Table.Tbody>
+      </Table>
 
       <ServiceFormModal
         opened={serviceFormOpen}
@@ -425,6 +377,6 @@ export const ServicesPage: React.FC = () => {
         }
         onClose={() => setArchiveServiceTarget(null)}
       />
-    </Box>
+    </ListPageShell>
   );
 };

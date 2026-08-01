@@ -1,29 +1,61 @@
 import React from 'react';
-import { Tabs } from '@mantine/core';
-import { ListPage } from '@/shared/ui';
-import { StaffTab } from './StaffTab';
-import { RolesTab } from './RolesTab';
-
+import { Button, Group } from '@mantine/core';
+import { PlusIcon } from '@phosphor-icons/react';
+import { ArchiveToggle, ListPageShell, ListTabs } from '@/shared/ui';
+import { StaffTab, type StaffTabHandle } from './StaffTab';
+import { RolesTab, type RolesTabHandle } from './RolesTab';
 
 export const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState<string | null>('staff');
+  const [activeTab, setActiveTab] = React.useState('staff');
+  const [showArchivedRoles, setShowArchivedRoles] = React.useState(false);
+  const staffRef = React.useRef<StaffTabHandle>(null);
+  const rolesRef = React.useRef<RolesTabHandle>(null);
 
   return (
-    <ListPage title="Администрирование" subtitle="Пользователи, роли и права доступа">
-      <Tabs value={activeTab} onChange={setActiveTab}>
-        <Tabs.List>
-          <Tabs.Tab value="staff">Пользователи</Tabs.Tab>
-          <Tabs.Tab value="roles">Роли</Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Panel value="staff" pt="md">
-          <StaffTab />
-        </Tabs.Panel>
-
-        <Tabs.Panel value="roles" pt="md">
-          <RolesTab />
-        </Tabs.Panel>
-      </Tabs>
-    </ListPage>
+    <ListPageShell
+      toolbar={
+        <>
+          <ListTabs
+            value={activeTab}
+            onChange={setActiveTab}
+            data={[
+              { value: 'staff', label: 'Пользователи' },
+              { value: 'roles', label: 'Роли' },
+            ]}
+          />
+          <Group gap={8} wrap="nowrap">
+            {activeTab === 'staff' && (
+              <Button
+                color="sage.7"
+                size="sm"
+                rightSection={<PlusIcon size={16} />}
+                onClick={() => staffRef.current?.openCreate()}
+              >
+                Создать пользователя
+              </Button>
+            )}
+            {activeTab === 'roles' && (
+              <>
+                <Button
+                  color="sage.7"
+                  size="sm"
+                  rightSection={<PlusIcon size={16} />}
+                  onClick={() => rolesRef.current?.openCreate()}
+                >
+                  Создать роль
+                </Button>
+                <ArchiveToggle active={showArchivedRoles} onChange={setShowArchivedRoles} />
+              </>
+            )}
+          </Group>
+        </>
+      }
+    >
+      {activeTab === 'staff' ? (
+        <StaffTab ref={staffRef} />
+      ) : (
+        <RolesTab ref={rolesRef} showArchived={showArchivedRoles} />
+      )}
+    </ListPageShell>
   );
 };

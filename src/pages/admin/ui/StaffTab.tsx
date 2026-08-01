@@ -32,7 +32,6 @@ import {
   CaretRightIcon,
   Check,
   Copy,
-  DotsThreeVerticalIcon,
 } from '@phosphor-icons/react';
 import {
   useStaffList,
@@ -43,7 +42,8 @@ import {
 import { useRoles } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { useResetPassword } from '@/shared/api/hooks/useAuth';
-import { DataTable, DataTableRow } from '@/shared/ui';
+import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { formatDateTime } from '@/shared/lib/format';
 import type { Permission, Staff, StaffCreatePayload, StaffType } from '@/shared/api/types';
 
@@ -65,7 +65,11 @@ const INITIAL_FORM: CreateForm = {
   password: '',
 };
 
-export const StaffTab: React.FC = () => {
+export type StaffTabHandle = {
+  openCreate: () => void;
+};
+
+export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_props, ref) {
   const { data: staffList, isLoading } = useStaffList();
   const { data: roles } = useRoles();
   const { data: permissions } = usePermissions();
@@ -75,6 +79,8 @@ export const StaffTab: React.FC = () => {
   const resetPassword = useResetPassword();
 
   const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+
+  React.useImperativeHandle(ref, () => ({ openCreate }), [openCreate]);
   const [rolesOpened, { open: openRoles, close: closeRoles }] = useDisclosure(false);
   const [permsOpened, { open: openPerms, close: closePerms }] = useDisclosure(false);
   const [resetOpened, { open: openReset, close: closeReset }] = useDisclosure(false);
@@ -235,16 +241,10 @@ export const StaffTab: React.FC = () => {
 
   const isAllPermsSelected = allPermissionCodes.length > 0 && allPermissionCodes.every((c) => selectedPerms.includes(c));
 
-  const columns = React.useMemo(
-    () => [
-      { key: 'login', label: 'Логин' },
-      { key: 'name', label: 'Имя' },
-      { key: 'roles', label: 'Роли' },
-      { key: 'status', label: 'Статус' },
-      { key: 'actions', label: '' },
-    ],
-    [],
-  );
+  const staffItems = staffList ?? [];
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(staffItems, {
+    defaultPageSize: 20,
+  });
 
   // Resolve permission names for display
   const getPermissionNames = React.useCallback((codes: number[]) => {
@@ -254,45 +254,78 @@ export const StaffTab: React.FC = () => {
       .filter(Boolean) as Permission[];
   }, [permissions]);
 
-  if (isLoading) return <Skeleton height={300} radius="md" />;
+  if (isLoading) {
+    return (
+      <Box className={listPageStyles.panel} p="md">
+        <Skeleton height={300} radius="md" />
+      </Box>
+    );
+  }
 
   return (
-    <Stack gap="md">
-      <Group justify="flex-end">
-        <Button onClick={openCreate}>Создать пользователя</Button>
-      </Group>
+    <Box className={listPageStyles.panel}>
+      <Box className={listPageStyles.panelBody}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>Логин</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Имя</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Роли</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {paginatedItems.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={4}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Нет пользователей
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              paginatedItems.map((s) => (
+                <Table.Tr
+                  key={s.id}
+                  className={`${listPageStyles.row} ${listPageStyles.rowClickable}`}
+                  onClick={() => handleSelectStaff(s)}
+                >
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c="#484848">{s.login}</Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c="#484848">
+                      {[s.firstname, s.lastname].filter(Boolean).join(' ') || '—'}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Badge
+                      color={s.roles.some((r) => r.name.toLowerCase().includes('admin')) ? 'violet' : 'blue'}
+                      variant="light"
+                      size="sm"
+                    >
+                      {s.roles.length > 0 ? s.roles.map((r) => r.name).join(', ') : '—'}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Badge color={s.active ? 'green' : 'gray'} variant="dot" size="sm">
+                      {s.active ? 'Активен' : 'Неактивен'}
+                    </Badge>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
 
-      <DataTable columns={columns} isEmpty={(staffList ?? []).length === 0} emptyMessage="Нет пользователей">
-        {(staffList ?? []).map((s) => (
-          <DataTableRow key={s.id} onClick={() => handleSelectStaff(s)} style={{ cursor: 'pointer' }}>
-            <Table.Td><Text size="sm">{s.login}</Text></Table.Td>
-            <Table.Td><Text size="sm">{[s.firstname, s.lastname].filter(Boolean).join(' ') || '—'}</Text></Table.Td>
-            <Table.Td>
-              <Badge
-                color={s.roles.some((r) => r.name.toLowerCase().includes('admin')) ? 'violet' : 'blue'}
-                variant="light"
-                size="sm"
-              >
-                {s.roles.length > 0 ? s.roles.map((r) => r.name).join(', ') : '—'}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <Badge color={s.active ? 'green' : 'gray'} variant="dot" size="sm">
-                {s.active ? 'Активен' : 'Неактивен'}
-              </Badge>
-            </Table.Td>
-            <Table.Td>
-              <ActionIcon
-                variant="subtle"
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); handleOpenReset(s); }}
-              >
-                <DotsThreeVerticalIcon size={16} />
-              </ActionIcon>
-            </Table.Td>
-          </DataTableRow>
-        ))}
-      </DataTable>
+      <ListPaginationFooter
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       {/* Staff Detail Drawer */}
       <Drawer
@@ -675,6 +708,6 @@ export const StaffTab: React.FC = () => {
           )}
         </Stack>
       </Modal>
-    </Stack>
+    </Box>
   );
-};
+});

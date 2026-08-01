@@ -1,16 +1,18 @@
 import React from 'react';
 import {
   ActionIcon,
+  Box,
   Button,
-  Card,
   Group,
-  Menu,
   Modal,
   Table,
   Text,
   TextInput,
 } from '@mantine/core';
-import { DotsThree, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import {
+  ArchiveIcon,
+  PlusIcon,
+} from '@phosphor-icons/react';
 import {
   useCreateSpecialization,
   useArchiveSpecialization,
@@ -18,7 +20,7 @@ import {
   useUpdateSpecialization,
 } from '@/shared/api/hooks/useSpecializations';
 import type { Specialization } from '@/shared/api/types';
-import { ConfirmModal, DataTable, DataTableRow } from '@/shared/ui';
+import { ConfirmModal, listPageStyles } from '@/shared/ui';
 
 export const SpecializationsSection: React.FC = () => {
   const { data: specializations } = useSpecializations();
@@ -29,7 +31,7 @@ export const SpecializationsSection: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Specialization | null>(null);
   const [name, setName] = React.useState('');
-  const [deleteTarget, setDeleteTarget] = React.useState<Specialization | null>(null);
+  const [archiveTarget, setArchiveTarget] = React.useState<Specialization | null>(null);
 
   const openCreate = React.useCallback(() => {
     setEditing(null);
@@ -55,57 +57,70 @@ export const SpecializationsSection: React.FC = () => {
 
   return (
     <>
-      <Card padding="xl" radius="lg" shadow="xs">
-        <Group justify="space-between" mb="md">
-          <Text fw={600}>Специализации</Text>
-          <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={openCreate}>
-            Добавить
-          </Button>
-        </Group>
-
-        <DataTable
-          columns={[
-            { key: 'name', label: 'Название' },
-            { key: 'actions', label: '', width: 48 },
-          ]}
-          isEmpty={list.length === 0}
-          emptyMessage="Специализации не добавлены"
-          compact
-          stickyHeader={false}
+      <Group justify="space-between" mb="md">
+        <Text fw={600} size="sm" c="#484848">
+          Специализации
+        </Text>
+        <Button
+          size="xs"
+          variant="light"
+          color="sage"
+          rightSection={<PlusIcon size={14} />}
+          onClick={openCreate}
         >
-          {list.map((spec) => (
-            <DataTableRow key={spec.id}>
-              <Table.Td>
-                <Text size="sm">{spec.name}</Text>
-              </Table.Td>
-              <Table.Td>
-                <Menu shadow="sm" width={160} radius="md">
-                  <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray" size="sm">
-                      <DotsThree size={16} weight="bold" />
+          Добавить
+        </Button>
+      </Group>
+
+      <Box style={{ border: '1px solid var(--mantine-color-gray-2)', borderRadius: 8, overflow: 'hidden' }}>
+        <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
+              <Table.Th className={listPageStyles.headCell} w={48} />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {list.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={2}>
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    Специализации не добавлены
+                  </Text>
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              list.map((spec) => (
+                <Table.Tr
+                  key={spec.id}
+                  className={`${listPageStyles.row} ${listPageStyles.rowClickable}`}
+                  onClick={() => openEdit(spec)}
+                >
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <Text size="sm" c="#484848">
+                      {spec.name}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td className={listPageStyles.bodyCell}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="orange"
+                      size="sm"
+                      aria-label="Архивировать"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setArchiveTarget(spec);
+                      }}
+                    >
+                      <ArchiveIcon size={18} />
                     </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      leftSection={<PencilSimple size={14} />}
-                      onClick={() => openEdit(spec)}
-                    >
-                      Редактировать
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<Trash size={14} />}
-                      color="red"
-                      onClick={() => setDeleteTarget(spec)}
-                    >
-                      Удалить
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </Table.Td>
-            </DataTableRow>
-          ))}
-        </DataTable>
-      </Card>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            )}
+          </Table.Tbody>
+        </Table>
+      </Box>
 
       <Modal
         opened={formOpen}
@@ -135,15 +150,15 @@ export const SpecializationsSection: React.FC = () => {
       </Modal>
 
       <ConfirmModal
-        opened={Boolean(deleteTarget)}
+        opened={Boolean(archiveTarget)}
         title="Архивировать специализацию"
-        message={`Архивировать «${deleteTarget?.name ?? ''}»?`}
+        message={`Архивировать «${archiveTarget?.name ?? ''}»?`}
         loading={archiveSpec.isPending}
         onConfirm={() =>
-          deleteTarget &&
-          archiveSpec.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })
+          archiveTarget &&
+          archiveSpec.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) })
         }
-        onClose={() => setDeleteTarget(null)}
+        onClose={() => setArchiveTarget(null)}
       />
     </>
   );

@@ -1,8 +1,8 @@
 import React from 'react';
 import {
   Alert,
+  Box,
   Button,
-  Card,
   Group,
   NumberInput,
   Select,
@@ -17,10 +17,11 @@ import {
   useUpdateTenantPreferences,
   type TenantPreferences,
 } from '@/shared/api/hooks/useTenantPreferences';
-import { ListPage } from '@/shared/ui';
+import { ListPageShell } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { SpecializationsSection } from './SpecializationsSection';
+import styles from './settings-page.module.css';
 
 export const SettingsPage: React.FC = () => {
   const { hasPermission } = useAccess();
@@ -29,7 +30,6 @@ export const SettingsPage: React.FC = () => {
 
   const [form, setForm] = React.useState<TenantPreferences | null>(null);
 
-  // Инициализируем форму один раз при загрузке prefs, не затирая правки пользователя
   useResetOnOpen(prefs, () => setForm((current) => current ?? prefs ?? null));
 
   const handleSave = React.useCallback(() => {
@@ -39,28 +39,51 @@ export const SettingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ListPage title="Настройки">
-        <Skeleton height={300} radius="lg" />
-      </ListPage>
+      <ListPageShell
+        toolbar={
+          <Text size="sm" fw={700} c="#484848">
+            Настройки
+          </Text>
+        }
+      >
+        <Box p="md">
+          <Skeleton height={300} radius="md" />
+        </Box>
+      </ListPageShell>
     );
   }
 
   if (isError) {
     return (
-      <ListPage title="Настройки">
-        <Alert color="red" title="Не удалось загрузить настройки">
-          Проверьте доступность API
-        </Alert>
-      </ListPage>
+      <ListPageShell>
+        <Box p="xl">
+          <Alert color="red" title="Не удалось загрузить настройки">
+            Проверьте доступность API
+          </Alert>
+        </Box>
+      </ListPageShell>
     );
   }
 
   if (!form) return null;
 
   return (
-    <ListPage title="Настройки" subtitle="Параметры вашего салона">
-      <Card padding="xl" radius="lg" shadow="xs">
-        <Text fw={600} mb="md">
+    <ListPageShell
+      toolbar={
+        <>
+          <Text size="sm" fw={700} c="#484848">
+            Настройки
+          </Text>
+          {hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE) && (
+            <Button color="sage.7" size="sm" onClick={handleSave} loading={updatePrefs.isPending}>
+              Сохранить
+            </Button>
+          )}
+        </>
+      }
+    >
+      <Box className={styles.formSection}>
+        <Text fw={600} size="sm" c="#484848" className={styles.sectionTitle}>
           Общие
         </Text>
         <Stack gap="md">
@@ -100,17 +123,12 @@ export const SettingsPage: React.FC = () => {
               setForm({ ...form, enable_telegram_booking: e.currentTarget.checked })
             }
           />
-          {hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE) && (
-            <Group justify="flex-end">
-              <Button onClick={handleSave} loading={updatePrefs.isPending}>
-                Сохранить настройки
-              </Button>
-            </Group>
-          )}
         </Stack>
-      </Card>
+      </Box>
 
-      <SpecializationsSection />
-    </ListPage>
+      <Box className={styles.specSection}>
+        <SpecializationsSection />
+      </Box>
+    </ListPageShell>
   );
 };

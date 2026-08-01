@@ -6,7 +6,6 @@ import {
   Table,
   Text,
   ActionIcon,
-  Menu,
   Modal,
   TextInput,
   Skeleton,
@@ -16,7 +15,7 @@ import {
   SimpleGrid,
   Stack,
 } from '@mantine/core';
-import { Plus, PencilSimple, DotsThree, Trash } from '@phosphor-icons/react';
+import { ArchiveIcon, Plus } from '@phosphor-icons/react';
 import { useEmployeeWorkSchedules } from '@/shared/api/hooks/useEmployees';
 import {
   useCreateWorkSchedule,
@@ -264,18 +263,34 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
           emptyMessage="Отсутствий нет"
         >
           {absences.map((absence) => (
-            <DataTableRow key={absence.id}>
+            <DataTableRow
+              key={absence.id}
+              onClick={() => {
+                setEditingAbsence(absence);
+                setStartDate(absence.start_date);
+                setEndDate(absence.end_date);
+                setAbsenceType(absence.absence_type);
+                setReason(absence.reason ?? '');
+                setAbsenceFormOpen(true);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
               <Table.Td><Badge variant="light" size="sm">{ABSENCE_TYPE_LABELS[absence.absence_type]}</Badge></Table.Td>
               <Table.Td>{formatDate(absence.start_date)} — {formatDate(absence.end_date)}</Table.Td>
               <Table.Td><Text size="sm" c="dimmed" lineClamp={1}>{absence.reason ?? '—'}</Text></Table.Td>
               <Table.Td>
-                <Menu shadow="sm" width={160} radius="md">
-                  <Menu.Target><ActionIcon variant="subtle" color="gray" size="sm"><DotsThree size={16} weight="bold" /></ActionIcon></Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<PencilSimple size={14} />} onClick={() => { setEditingAbsence(absence); setStartDate(absence.start_date); setEndDate(absence.end_date); setAbsenceType(absence.absence_type); setReason(absence.reason ?? ''); setAbsenceFormOpen(true); }}>Редактировать</Menu.Item>
-                    <Menu.Item leftSection={<Trash size={14} />} color="red" onClick={() => setDeleteAbsenceTarget(absence)}>Удалить</Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
+                <ActionIcon
+                  variant="subtle"
+                  color="orange"
+                  size="sm"
+                  aria-label="Архивировать"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteAbsenceTarget(absence);
+                  }}
+                >
+                  <ArchiveIcon size={16} />
+                </ActionIcon>
               </Table.Td>
             </DataTableRow>
           ))}
