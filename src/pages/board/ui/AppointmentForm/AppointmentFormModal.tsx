@@ -248,6 +248,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
             value={values.endTime}
             onChange={(value) => onChange({ ...values, endTime: value })}
             disabled={fieldsLocked}
+            error={values.startTime >= values.endTime ? 'Конец должен быть позже начала' : undefined}
           />
         </div>
 

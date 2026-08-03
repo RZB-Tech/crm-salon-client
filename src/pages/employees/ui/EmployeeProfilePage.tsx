@@ -61,12 +61,17 @@ export const EmployeeProfilePage: React.FC = () => {
   const [archiveOpen, setArchiveOpen] = React.useState(false);
 
   const employeeId = Number(id);
-  const { data: employee, isLoading, isError } = useEmployee(employeeId);
+  const { data: employee, isLoading, isFetching, isError } = useEmployee(employeeId);
   const updateEmployee = useUpdateEmployee();
   const archiveEmployee = useArchiveEmployee();
   const resetPassword = useResetPassword();
 
   const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
+
+  // BUG-006: Очистка результата сброса пароля при размонтировании или смене сотрудника
+  React.useEffect(() => {
+    return () => setResetPasswordResult(null);
+  }, [employeeId]);
 
   const tabParam = searchParams.get('tab');
   const activeTab: TabValue = isTabValue(tabParam) ? tabParam : 'overview';
@@ -96,8 +101,28 @@ export const EmployeeProfilePage: React.FC = () => {
       },
     });
   }, [resetPassword, employeeId]);
+  
+  // BUG-004: Валидация ID из URL
+  if (!id || isNaN(employeeId) || employeeId <= 0) {
+    return (
+      <Box className={styles.page}>
+        <Button 
+          variant="subtle" 
+          leftSection={<ArrowLeftIcon size={16} />} 
+          onClick={() => navigate('/employees')} 
+          w="fit-content"
+        >
+          К сотрудникам
+        </Button>
+        <Alert color="red" title="Некорректный ID">
+          URL содержит невалидный идентификатор сотрудника.
+        </Alert>
+      </Box>
+    );
+  }
 
-  if (isLoading) {
+  // BUG-013: Показывать loading при переходе между сотрудниками
+  if (isLoading || (isFetching && !employee)) {
     return (
       <Box className={styles.page}>
         <Skeleton height={120} radius="lg" />
@@ -143,11 +168,11 @@ export const EmployeeProfilePage: React.FC = () => {
               <Box className={styles.contactRow}>
                 <Group gap={5}>
                   <PhoneIcon size={14} color="var(--mantine-color-gray-5)" />
-                  <Text size="sm" c="dimmed">{employee.phone ?? '—'}</Text>
+                  <Text size="sm" c="dimmed">{employee.phone || '—'}</Text>
                 </Group>
                 <Group gap={5}>
                   <CakeIcon size={14} color="var(--mantine-color-gray-5)" />
-                  <Text size="sm" c="dimmed">{employee.birth_date}</Text>
+                  <Text size="sm" c="dimmed">{employee.birth_date || '—'}</Text>
                 </Group>
               </Box>
             </Box>
@@ -169,15 +194,17 @@ export const EmployeeProfilePage: React.FC = () => {
                 >
                   Сбросить пароль
                 </Button>
-                <ActionIcon
-                  variant="light"
-                  color="orange"
-                  size="lg"
-                  aria-label="Архивировать"
-                  onClick={() => setArchiveOpen(true)}
-                >
-                  <ArchiveIcon size={18} />
-                </ActionIcon>
+                {employee.active && (
+                  <ActionIcon
+                    variant="light"
+                    color="orange"
+                    size="lg"
+                    aria-label="Архивировать"
+                    onClick={() => setArchiveOpen(true)}
+                  >
+                    <ArchiveIcon size={18} />
+                  </ActionIcon>
+                )}
               </>
             )}
           </Group>
@@ -191,8 +218,8 @@ export const EmployeeProfilePage: React.FC = () => {
             withCloseButton
           >
             <Group gap="sm">
-              <Text size="sm" fw={600}>
-                Новый пароль: {resetPasswordResult}
+              <Text size="sm" fw={600} component="div">
+                Новый пароль: <Box component="code" style={{ fontFamily: 'monospace', background: 'var(--mantine-color-gray-1)', padding: '2px 6px', borderRadius: '4px' }}>{resetPasswordResult}</Box>
               </Text>
               <CopyButton value={resetPasswordResult}>
                 {({ copied, copy }) => (

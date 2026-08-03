@@ -58,41 +58,57 @@ export const authStorage = {
 
 const parseErrorMessage = async (response: Response): Promise<string> => {
   try {
-    const data = (await response.json()) as { detail?: string | { msg: string }[] };
+    const text = await response.text();
+    if (!text) return `Ошибка API: ${response.status}`;
+    
+    const data = JSON.parse(text) as { detail?: string | { msg: string }[] };
     if (typeof data.detail === 'string') return data.detail;
     if (Array.isArray(data.detail) && data.detail[0]?.msg) return data.detail[0].msg;
   } catch {
-    // ignore
+    return `Ошибка сервера: ${response.status} ${response.statusText}`;
   }
   return `Ошибка API: ${response.status}`;
 };
 
+let isRedirecting = false;
+
 export async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      credentials: 'include',
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
 
-  if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
-    authStorage.setAuthenticated(false);
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+    if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
+      authStorage.setAuthenticated(false);
+      if (!isRedirecting && window.location.pathname !== '/login') {
+        isRedirecting = true;
+        window.location.href = '/login';
+      }
     }
-  }
 
-  if (!response.ok) {
-    throw new ApiError(response.status, await parseErrorMessage(response));
-  }
+    if (!response.ok) {
+      throw new ApiError(response.status, await parseErrorMessage(response));
+    }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
+    if (response.status === 204) {
+      return undefined as T;
+    }
 
-  return response.json() as Promise<T>;
+    return response.json() as Promise<T>;
+  } catch (error) {
+    // BUG-005: Обработка сетевых ошибок
+    if (error instanceof TypeError) {
+      const networkError = new Error('Нет соединения с сервером. Проверьте интернет-соединение.');
+      (networkError as { cause?: unknown }).cause = error;
+      throw networkError;
+    }
+    throw error;
+  }
 }
 
 export async function apiPostGetAll<T>(
@@ -114,11 +130,25 @@ export async function apiFetchAllPost<T>(
   let page = 1;
   let totalPages = 1;
 
-  while (page <= totalPages) {
+  // BUG-014: Защита от бесконечного цикла
+  const MAX_PAGES = 1000;
+
+  while (page <= totalPages && page <= MAX_PAGES) {
     const data = await apiPostGetAll<T>(path, { page, pageSize: 100, filters });
     all.push(...data.items);
+    
+    // Проверка на корректность totalPages
+    if (typeof data.totalPages !== 'number' || data.totalPages < 0) {
+      console.warn('apiFetchAllPost: некорректное значение totalPages', data.totalPages);
+      break;
+    }
+    
     totalPages = data.totalPages;
     page += 1;
+  }
+
+  if (page > MAX_PAGES) {
+    console.warn(`apiFetchAllPost: достигнут лимит страниц (${MAX_PAGES})`);
   }
 
   return all;
@@ -138,12 +168,26 @@ export async function apiFetchAllGet<T>(path: string): Promise<T[]> {
   const all: T[] = [];
   let page = 1;
   let totalPages = 1;
+  
+  // BUG-014: Защита от бесконечного цикла
+  const MAX_PAGES = 1000;
 
-  while (page <= totalPages) {
+  while (page <= totalPages && page <= MAX_PAGES) {
     const data = await apiGetPaginated<T>(path, { page, pageSize: 100 });
     all.push(...data.items);
+    
+    // Проверка на корректность totalPages
+    if (typeof data.totalPages !== 'number' || data.totalPages < 0) {
+      console.warn('apiFetchAllGet: некорректное значение totalPages', data.totalPages);
+      break;
+    }
+    
     totalPages = data.totalPages;
     page += 1;
+  }
+
+  if (page > MAX_PAGES) {
+    console.warn(`apiFetchAllGet: достигнут лимит страниц (${MAX_PAGES})`);
   }
 
   return all;
@@ -168,6 +212,13 @@ export async function apiDelete<T = void>(path: string): Promise<T> {
 }
 
 export async function apiPostGetMany<T>(path: string, ids: number[]): Promise<T[]> {
+  // BUG-015: Проверка размера массива
+  if (ids.length === 0) return [];
+  
+  if (ids.length > 500) {
+    console.warn(`apiPostGetMany: слишком много ID (${ids.length}). Рекомендуется батчинг.`);
+  }
+  
   return apiPost<T[], number[]>(`${path}/get-many`, ids);
 }
 

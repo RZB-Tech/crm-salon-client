@@ -18,8 +18,11 @@ const UNINITIALIZED = Symbol('uninitialized');
 export const useResetOnOpen = (trigger: unknown, reset: () => void): void => {
   const [prev, setPrev] = React.useState<unknown>(UNINITIALIZED);
 
+  // BUG-009: Исправлена проверка на falsy значения
   if (trigger !== prev) {
     setPrev(trigger);
-    if (trigger) reset();
+    if (trigger != null && trigger !== false) {
+      reset();
+    }
   }
 };

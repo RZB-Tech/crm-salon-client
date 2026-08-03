@@ -107,7 +107,7 @@ export const isLineFilled = (line: AppointmentServiceLine): boolean =>
   line.kind === 'service' ? Boolean(line.serviceId) : Boolean(line.materialId);
 
 export const isPriceChanged = (line: AppointmentServiceLine): boolean =>
-  isLineFilled(line) && line.catalogPrice > 0 && line.price !== line.catalogPrice;
+  isLineFilled(line) && line.price !== line.catalogPrice;
 
 export const appointmentToFormValues = (
   appointment: Appointment,
@@ -265,7 +265,8 @@ export const isAppointmentFormValid = (values: AppointmentFormValues): boolean =
 
   return values.services.every((line) => {
     if (!isLineFilled(line)) return true;
-    if (line.price <= 0) return false;
+    // BUG-013: Проверка на отрицательные значения
+    if (line.price <= 0 || line.quantity <= 0) return false;
     if (isPriceChanged(line) && getLineReason(line).length < 5) return false;
     return true;
   });
