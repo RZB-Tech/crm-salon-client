@@ -238,6 +238,7 @@ export interface AppointmentServiceNested {
   material_id: number | null;
   quantity: number;
   price: number;
+  price_changed_reason: string | null;
   notes: string | null;
 }
 
@@ -251,8 +252,15 @@ export interface AppointmentRecordNested {
 
 export type AppointmentStatus = 'awaiting' | 'started' | 'finished' | 'cancelled';
 
+export type AppointmentCancelledReason =
+  | 'client changed his mind'
+  | 'mistaken input'
+  | 'incorrect client'
+  | 'incorrect date';
+
 export interface Appointment extends BaseEntity {
-  client_id: number;
+  /** Может отсутствовать в ответе API — тогда брать `client.id` */
+  client_id?: number;
   client: { id: number; firstname: string; lastname: string | null; phone: string | null } | null;
   start_time_est: string;
   end_time_est: string;
@@ -261,14 +269,15 @@ export interface Appointment extends BaseEntity {
   total_price: number;
   records: AppointmentRecordNested[] | null;
   notes: string | null;
-  cancelled_reason: string | null;
+  cancelled_reason: AppointmentCancelledReason | null;
 }
 
 export interface AppointmentServiceInput {
   service_id?: number | null;
   material_id?: number | null;
   quantity: number;
-  price: number;
+  price?: number | null;
+  price_changed_reason?: string | null;
   notes?: string | null;
 }
 
@@ -349,7 +358,7 @@ export interface MaterialQuantityPayload {
 
 export type ReceiptType = 'appointment' | 'direct sale';
 export type ReceiptStatus = 'pending' | 'paid' | 'cancelled';
-export type PaymentMethod = 'cash' | 'card' | 'deposit';
+export type PaymentMethod = 'cash' | 'card' | 'bank transfer' | 'deposit';
 
 export interface ReceiptItem extends BaseEntity {
   material_id: number | null;
@@ -485,11 +494,11 @@ export interface AppointmentServiceRecord extends BaseEntity {
 }
 
 export interface AppointmentServiceCreatePayload {
-  appointment_record_id: number;
+  appointment_record_id?: number | null;
   service_id?: number | null;
   material_id?: number | null;
   quantity?: number;
-  price: number;
+  price?: number | null;
   price_changed_reason?: string | null;
   notes?: string | null;
 }
@@ -497,7 +506,7 @@ export interface AppointmentServiceCreatePayload {
 export interface AppointmentRecordCreatePayload {
   appointment_id: number;
   employee_id: number;
-  services: AppointmentServiceCreatePayload[];
+  services: Omit<AppointmentServiceCreatePayload, 'appointment_record_id'>[];
 }
 
 export interface ServicesImportResult {
@@ -669,10 +678,14 @@ export interface ClientFinanceReport {
 
 export interface AppointmentUpdatePayload {
   id: number;
-  client_id?: number;
-  start_time_est?: string;
-  end_time_est?: string;
+  status?: AppointmentStatus | null;
   notes?: string | null;
+  archived?: boolean | null;
+}
+
+export interface AppointmentCancelPayload {
+  id: number;
+  reason: AppointmentCancelledReason;
 }
 
 // ─── Appointment Services (granular) ───────────────────────────────────────
@@ -695,3 +708,40 @@ export interface ReceiptPaymentPayload {
   method: PaymentMethod;
   add_change_to_deposit?: boolean;
 }
+
+// ─── Table filter docs ─────────────────────────────────────────────────────
+
+export type FilterTable =
+  | 'appointments'
+  | 'clients'
+  | 'employees'
+  | 'employee_absences'
+  | 'employee_work_schedules'
+  | 'materials'
+  | 'payments'
+  | 'payrolls'
+  | 'transactions'
+  | 'receipts'
+  | 'service_categories'
+  | 'services'
+  | 'specializations'
+  | 'notifications'
+  | 'roles';
+
+export type FilterFieldType = 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'enum';
+
+export interface FilterFieldSchema {
+  field: string;
+  type: FilterFieldType;
+  options?: string[] | null;
+}
+
+/** Значение фильтра get-all: равенство или операторы сравнения */
+export type FilterValue =
+  | string
+  | number
+  | boolean
+  | { eq?: string | number | boolean; ne?: string | number | boolean; gt?: string | number; gte?: string | number; lt?: string | number; lte?: string | number };
+
+export type ListFilters = Record<string, FilterValue>;
+

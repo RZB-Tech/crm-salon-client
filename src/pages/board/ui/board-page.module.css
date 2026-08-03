@@ -15,6 +15,7 @@
   border-bottom: 1px solid var(--mantine-color-gray-2);
   flex-shrink: 0;
   gap: 16px;
+  animation: rise-in 300ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .toolbarMain {
@@ -63,6 +64,7 @@
   gap: 8px;
   width: 100%;
   min-width: 0;
+  transition: transform 160ms var(--motion-ease, ease);
 }
 
 .resourceLabelText {
@@ -84,6 +86,7 @@
   min-height: 0;
   overflow: hidden;
   width: 100%;
+  animation: fade-in 360ms ease both;
 }
 
 .scheduleView {
@@ -152,6 +155,10 @@
   box-sizing: border-box;
 }
 
+.scheduleResourceLabel:hover .resourceLabel {
+  transform: translateX(2px);
+}
+
 .refreshIndicator {
   position: fixed;
   top: 72px;
@@ -164,4 +171,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  animation: refresh-in 280ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+@keyframes refresh-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refreshIndicator,
+  .toolbar,
+  .scheduleContainer {
+    animation: none;
+  }
+
+  .scheduleResourceLabel:hover .resourceLabel {
+    transform: none;
+  }
 }

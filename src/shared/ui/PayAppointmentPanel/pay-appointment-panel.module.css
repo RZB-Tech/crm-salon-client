@@ -1,0 +1,110 @@
+.payHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--mantine-color-sage-0) 0%,
+    color-mix(in srgb, var(--mantine-color-sage-1) 60%, white) 100%
+  );
+  border: 1px solid var(--mantine-color-sage-2);
+  margin-bottom: 4px;
+}
+
+.payHeroLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mantine-color-sage-8);
+}
+
+.payHeroAmount {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--mantine-color-sage-9);
+  line-height: 1.1;
+}
+
+.paySteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.payStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mantine-color-gray-7);
+  background: var(--mantine-color-gray-1);
+}
+
+.payStepActive {
+  color: var(--mantine-color-sage-9);
+  background: var(--mantine-color-sage-1);
+}
+
+.payStepDone {
+  color: var(--mantine-color-teal-8);
+  background: var(--mantine-color-teal-0);
+}
+
+.paidBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--mantine-color-teal-0);
+  border: 1px solid var(--mantine-color-teal-2);
+}
+
+.sectionCard {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-2);
+  box-shadow: 0 1px 2px rgba(20, 15, 10, 0.03);
+}
+
+.sectionCardMuted {
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--mantine-color-gray-0);
+  border: 1px solid var(--mantine-color-gray-2);
+}
+
+.sectionTitle {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mantine-color-sage-8);
+}
+
+.sectionTitleMuted {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mantine-color-gray-6);
+}
+
+.sectionHint {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--mantine-color-gray-6);
+}

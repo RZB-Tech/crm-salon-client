@@ -1,6 +1,7 @@
 .card {
   overflow: hidden;
   border: 1px solid var(--mantine-color-gray-2);
+  animation: rise-in 360ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .scroll {
@@ -23,8 +24,45 @@
 }
 
 .row {
-  transition: background-color 120ms ease;
+  transition:
+    background-color 140ms ease,
+    box-shadow 180ms var(--motion-ease, ease);
   border-bottom: 1px solid var(--mantine-color-gray-1);
+  animation: row-in 280ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.row:nth-child(1) {
+  animation-delay: 0ms;
+}
+.row:nth-child(2) {
+  animation-delay: 24ms;
+}
+.row:nth-child(3) {
+  animation-delay: 48ms;
+}
+.row:nth-child(4) {
+  animation-delay: 72ms;
+}
+.row:nth-child(5) {
+  animation-delay: 96ms;
+}
+.row:nth-child(6) {
+  animation-delay: 120ms;
+}
+.row:nth-child(7) {
+  animation-delay: 144ms;
+}
+.row:nth-child(8) {
+  animation-delay: 168ms;
+}
+.row:nth-child(9) {
+  animation-delay: 192ms;
+}
+.row:nth-child(10) {
+  animation-delay: 216ms;
+}
+.row:nth-child(n + 11) {
+  animation-delay: 240ms;
 }
 
 .row:last-child {
@@ -33,6 +71,7 @@
 
 .row:hover {
   background: color-mix(in srgb, var(--mantine-color-sage-0) 55%, white);
+  box-shadow: inset 3px 0 0 var(--mantine-color-sage-4);
 }
 
 .rowMuted {
@@ -41,11 +80,13 @@
 
 .rowMuted:hover {
   background: var(--mantine-color-gray-0);
+  box-shadow: none;
 }
 
 .empty {
   padding: 48px 24px;
   text-align: center;
+  animation: scale-in 360ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .emptyIcon {
@@ -58,9 +99,40 @@
   border-radius: 50%;
   background: var(--mantine-color-gray-1);
   color: var(--mantine-color-gray-5);
+  transition: transform 220ms var(--motion-ease, ease), background 180ms ease;
+}
+
+.empty:hover .emptyIcon {
+  transform: scale(1.06);
+  background: var(--mantine-color-sage-0);
+  color: var(--mantine-color-sage-6);
 }
 
 .compact .headCell {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .row,
+  .empty {
+    animation: none;
+  }
+
+  .empty:hover .emptyIcon {
+    transform: none;
+  }
 }

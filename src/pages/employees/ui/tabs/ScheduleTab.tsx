@@ -15,6 +15,7 @@ import {
   SimpleGrid,
   Stack,
 } from '@mantine/core';
+import { DateInput, TimePicker } from '@mantine/dates';
 import { ArchiveIcon, PencilSimple, Plus } from '@phosphor-icons/react';
 import { useEmployeeWorkSchedules } from '@/shared/api/hooks/useEmployees';
 import {
@@ -330,18 +331,18 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
                 <Text size="sm" fw={500} className={scheduleStyles.dayName}>
                   {DAY_OF_WEEK_LABELS[entry.day]}
                 </Text>
-                <TextInput
-                  type="time"
+                <TimePicker
                   size="xs"
+                  minutesStep={15}
                   value={entry.startTime}
-                  onChange={(e) => updateDayTime(entry.day, 'startTime', e.currentTarget.value)}
+                  onChange={(value) => updateDayTime(entry.day, 'startTime', value)}
                 />
                 <Text size="xs" c="dimmed" ta="center">—</Text>
-                <TextInput
-                  type="time"
+                <TimePicker
                   size="xs"
+                  minutesStep={15}
                   value={entry.endTime}
-                  onChange={(e) => updateDayTime(entry.day, 'endTime', e.currentTarget.value)}
+                  onChange={(value) => updateDayTime(entry.day, 'endTime', value)}
                 />
               </Group>
             ))}
@@ -364,8 +365,16 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
       <Modal opened={absenceFormOpen} onClose={() => setAbsenceFormOpen(false)} title={editingAbsence ? 'Редактировать отсутствие' : 'Новое отсутствие'} radius="md">
         <Select label="Тип" data={ABSENCE_TYPE_OPTIONS} mb="md" value={absenceType} onChange={(v) => setAbsenceType((v as AbsenceType) ?? 'vacation')} />
         <Group grow mb="md">
-          <TextInput label="С" type="date" value={startDate} onChange={(e) => setStartDate(e.currentTarget.value)} />
-          <TextInput label="По" type="date" value={endDate} onChange={(e) => setEndDate(e.currentTarget.value)} />
+          <DateInput
+            label="С"
+            value={startDate || null}
+            onChange={(value) => setStartDate(value ?? '')}
+          />
+          <DateInput
+            label="По"
+            value={endDate || null}
+            onChange={(value) => setEndDate(value ?? '')}
+          />
         </Group>
         <TextInput label="Причина" mb="lg" value={reason} onChange={(e) => setReason(e.currentTarget.value)} />
         {editingAbsence && (

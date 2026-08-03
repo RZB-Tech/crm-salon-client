@@ -10,9 +10,9 @@ import {
   Stack,
   Table,
   Text,
-  TextInput,
   Textarea,
 } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { useCreatePayout, usePayouts } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutCreatePayload, PayoutMethod, PayoutType } from '@/shared/api/types';
@@ -236,17 +236,17 @@ export const PayoutsTab = React.forwardRef<PayoutsTabHandle, PayoutsTabProps>(fu
 
           {payoutType === 'other' && (
             <Group grow>
-              <TextInput
+              <DateInput
                 label="Начало периода"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.currentTarget.value)}
+                clearable
+                value={startDate || null}
+                onChange={(value) => setStartDate(value ?? '')}
               />
-              <TextInput
+              <DateInput
                 label="Конец периода"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.currentTarget.value)}
+                clearable
+                value={endDate || null}
+                onChange={(value) => setEndDate(value ?? '')}
               />
             </Group>
           )}

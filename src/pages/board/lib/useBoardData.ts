@@ -4,9 +4,11 @@ import {
   useAppointments,
   useCreateAppointment,
   useArchiveAppointment,
+  useRestoreAppointment,
   useCancelAppointment,
 } from '@/shared/api/hooks/useAppointments';
 import { useClients } from '@/shared/api/hooks/useClients';
+import { useMaterials } from '@/shared/api/hooks/useMaterials';
 import { useServices } from '@/shared/api/hooks/useServices';
 import type { Employee } from '@/shared/api/types';
 import {
@@ -17,11 +19,12 @@ import {
   toDateInput,
 } from '@/shared/lib/format';
 import { mapAppointmentsToBoard } from './appointmentBoard';
-import { buildServiceOptions } from './appointmentForm';
+import { buildMaterialOptions, buildServiceOptions } from './appointmentForm';
 
 export const useBoardData = () => {
   const [date, setDate] = React.useState(() => new Date());
   const [employeeFilter, setEmployeeFilter] = React.useState<Set<number>>(() => new Set());
+  const [showArchived, setShowArchived] = React.useState(false);
 
   const dateStr = React.useMemo(() => toDateInput(date), [date]);
   const today = React.useMemo(() => new Date(), []);
@@ -38,12 +41,14 @@ export const useBoardData = () => {
     data: appointments,
     isLoading: appointmentsLoading,
     isFetching: appointmentsFetching,
-  } = useAppointments();
+  } = useAppointments(showArchived);
   const { data: clients } = useClients();
   const { data: services } = useServices();
+  const { data: materials } = useMaterials();
 
   const createAppointment = useCreateAppointment();
   const archiveAppointment = useArchiveAppointment();
+  const restoreAppointment = useRestoreAppointment();
   const cancelAppointment = useCancelAppointment();
 
   const boardEmployees = React.useMemo(() => assignedEmployees ?? [], [assignedEmployees]);
@@ -87,6 +92,11 @@ export const useBoardData = () => {
     return all.map((e) => ({ value: String(e.id), label: getEmployeeFullName(e) }));
   }, [allEmployees, boardEmployees]);
 
+  const materialOptions = React.useMemo(
+    () => buildMaterialOptions(materials ?? []),
+    [materials],
+  );
+
   const goToday = React.useCallback(() => setDate(new Date()), []);
 
   const isInitialLoading = employeesLoading || appointmentsLoading;
@@ -101,16 +111,21 @@ export const useBoardData = () => {
     filteredEmployees,
     employeeFilter,
     setEmployeeFilter,
+    showArchived,
+    setShowArchived,
     boardAppointments,
     appointmentDates,
     dayRevenue,
     clientOptions,
     employeeOptions,
+    materialOptions,
     clients: clients ?? [],
     allEmployees: allEmployees ?? [],
     services: services ?? [],
+    materials: materials ?? [],
     createAppointment,
     archiveAppointment,
+    restoreAppointment,
     cancelAppointment,
     goToday,
     isInitialLoading,

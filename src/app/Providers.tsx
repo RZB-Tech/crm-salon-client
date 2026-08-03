@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { MantineProvider } from '@mantine/core';
+import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import 'dayjs/locale/ru';
 import { theme } from '@/shared/config';
 import { addNotification } from '@/shared/lib/notifications';
 import { NotificationsWsProvider } from '@/shared/lib/notifications/NotificationsWsProvider';
@@ -62,10 +64,12 @@ interface ProvidersProps {
 export const Providers = ({ children }: ProvidersProps) => (
   <QueryClientProvider client={queryClient}>
     <MantineProvider theme={theme} defaultColorScheme="light">
-      <Notifications position="top-right" zIndex={1000} />
-      <BrowserRouter>
-        <NotificationsWsProvider>{children}</NotificationsWsProvider>
-      </BrowserRouter>
+      <DatesProvider settings={{ locale: 'ru', firstDayOfWeek: 1, weekendDays: [0, 6] }}>
+        <Notifications position="top-right" zIndex={1000} transitionDuration={220} />
+        <BrowserRouter>
+          <NotificationsWsProvider>{children}</NotificationsWsProvider>
+        </BrowserRouter>
+      </DatesProvider>
     </MantineProvider>
   </QueryClientProvider>
 );

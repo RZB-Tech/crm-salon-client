@@ -14,5 +14,6 @@ export {
   ViewModeToggle,
 } from './ListPageShell';
 export type { ListViewMode } from './ListPageShell';
+export { PageTransition } from './PageTransition';
 export { Pagination } from './Pagination';
 export { PayAppointmentPanel } from './PayAppointmentPanel';

@@ -9,14 +9,21 @@ export const useCreatePayment = () => {
 
   return useMutation({
     mutationFn: (payload: PaymentCreatePayload) =>
-      // apiPost<Receipt, PaymentCreatePayload>('/api/v1/transactions', payload),
       apiPost<Receipt, PaymentCreatePayload>('/api/v1/receipts/make_payment', payload),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      if (result.appointment_id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.appointments.detail(result.appointment_id),
+        });
+      }
       addNotification.success({ message: 'Оплата проведена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось провести оплату' });
     },
   });
 };

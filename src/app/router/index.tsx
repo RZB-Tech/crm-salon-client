@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Center, Loader } from '@mantine/core';
+import { Box, Center, Loader, Stack, Text } from '@mantine/core';
 import { AppLayout } from '@/shared/ui/AppLayout';
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
 import { PermissionGuard } from '@/app/router/PermissionGuard';
@@ -13,6 +13,9 @@ import { BoardPage } from '@/pages/board';
 import { LoginPage } from '@/pages/login';
 
 // Остальные страницы - lazy load
+const AppointmentsPage = lazy(() =>
+  import('@/pages/appointments').then((m) => ({ default: m.AppointmentsPage }))
+);
 const ClientsPage = lazy(() =>
   import('@/pages/clients').then((m) => ({ default: m.ClientsPage }))
 );
@@ -41,10 +44,16 @@ const AdminPage = lazy(() =>
   import('@/pages/admin').then((m) => ({ default: m.AdminPage }))
 );
 
-// Компонент загрузки для Suspense
 const PageLoader = () => (
-  <Center h="100%">
-    <Loader size="lg" />
+  <Center h="100%" style={{ animation: 'fade-in 280ms ease both' }}>
+    <Stack align="center" gap="sm">
+      <Box style={{ animation: 'soft-pulse 1.2s ease-in-out infinite' }}>
+        <Loader size="lg" color="sage" type="dots" />
+      </Box>
+      <Text size="sm" c="dimmed">
+        Загрузка…
+      </Text>
+    </Stack>
   </Center>
 );
 
@@ -62,6 +71,16 @@ export const AppRouter: React.FC = () => (
             <BoardPage />
           </PermissionGuard>
         } />
+        <Route
+          path="/appointments"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <PermissionGuard permissions={[PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE]}>
+                <AppointmentsPage />
+              </PermissionGuard>
+            </Suspense>
+          }
+        />
         <Route
           path="/clients"
           element={

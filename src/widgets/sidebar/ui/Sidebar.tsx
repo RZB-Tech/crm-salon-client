@@ -11,6 +11,7 @@ import {
   BellIcon,
   GearSixIcon,
   ShieldCheckIcon,
+  CalendarCheckIcon,
 } from '@phosphor-icons/react';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { PermissionCodeValue } from '@/shared/lib/permissions';
@@ -35,6 +36,12 @@ const NAV_ITEMS: NavItem[] = [
     path: '/board',
     label: 'Рабочий стол',
     Icon: SquaresFourIcon,
+    permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE],
+  },
+  {
+    path: '/appointments',
+    label: 'Посещения',
+    Icon: CalendarCheckIcon,
     permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE],
   },
   {

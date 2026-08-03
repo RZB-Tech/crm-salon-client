@@ -23,11 +23,25 @@
   color: var(--mantine-color-sage-6);
   letter-spacing: -0.02em;
   border-bottom: 1px solid var(--mantine-color-gray-2);
+  animation: rise-in 360ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .section {
   padding: 14px 16px;
   border-bottom: 1px solid var(--mantine-color-gray-2);
+  animation: rise-in 400ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.section:nth-of-type(1) {
+  animation-delay: 40ms;
+}
+
+.section:nth-of-type(2) {
+  animation-delay: 80ms;
+}
+
+.section:nth-of-type(3) {
+  animation-delay: 120ms;
 }
 
 .revenueValue {
@@ -37,5 +51,12 @@
 @media (max-width: 1100px) {
   .sidebar {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clock,
+  .section {
+    animation: none;
   }
 }

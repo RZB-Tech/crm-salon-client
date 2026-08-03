@@ -8,18 +8,35 @@ import {
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Appointment,
+  AppointmentCancelPayload,
   AppointmentCreatePayload,
   AppointmentUpdatePayload,
+  ListFilters,
   Receipt,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-export const useAppointments = () =>
-  useQuery({
-    queryKey: queryKeys.appointments.all,
-    queryFn: () => apiFetchAllPost<Appointment>('/api/v1/appointments'),
-    staleTime: 1 * 60 * 1000, // 1 минута - часто обновляется
+const normalizeAppointmentFilters = (
+  filters?: ListFilters | boolean | null,
+): ListFilters => {
+  if (typeof filters === 'boolean') {
+    return { archived: filters };
+  }
+  return {
+    archived: false,
+    ...(filters ?? {}),
+  };
+};
+
+export const useAppointments = (filters?: ListFilters | boolean) => {
+  const normalized = normalizeAppointmentFilters(filters);
+
+  return useQuery({
+    queryKey: [...queryKeys.appointments.all, normalized] as const,
+    queryFn: () => apiFetchAllPost<Appointment>('/api/v1/appointments', normalized),
+    staleTime: 1 * 60 * 1000,
   });
+};
 
 export const useAppointment = (id: number) =>
   useQuery({
@@ -50,14 +67,11 @@ export const useCancelAppointment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) =>
-      apiPatch<Appointment, Record<string, never>>(
-        `/api/v1/appointments/${id}/cancel`,
-        {},
-      ),
-    onSuccess: (_, id) => {
+    mutationFn: (payload: AppointmentCancelPayload) =>
+      apiPatch<Appointment, AppointmentCancelPayload>('/api/v1/appointments/cancel', payload),
+    onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
       addNotification.success({ message: 'Запись отменена' });
     },
     onError: (error: Error) => {
@@ -71,13 +85,37 @@ export const useArchiveAppointment = () => {
 
   return useMutation({
     mutationFn: (id: number) =>
-      apiPatch<Appointment, { id: number; archived: boolean }>('/api/v1/appointments', { id, archived: true }),
-    onSuccess: () => {
+      apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', {
+        id,
+        archived: true,
+      }),
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
       addNotification.success({ message: 'Запись архивирована' });
     },
     onError: (error: Error) => {
       addNotification.error({ message: error.message || 'Не удалось архивировать запись' });
+    },
+  });
+};
+
+export const useRestoreAppointment = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', {
+        id,
+        archived: false,
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
+      addNotification.success({ message: 'Запись восстановлена из архива' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось восстановить запись' });
     },
   });
 };

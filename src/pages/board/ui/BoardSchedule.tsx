@@ -210,11 +210,9 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
           const labelContent = (
             <Box className={styles.resourceLabel}>
               <Avatar
-                // size={isNarrow ? 'xs' : 'sm'}
                 size='sm'
                 radius='md'
                 color='sage'
-                style={{ flex: '0 0 auto' }}
               >
                 {getEmployeeInitials(
                   filteredEmployees.find((e) => e.id === resource.id) ?? {

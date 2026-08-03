@@ -6,10 +6,54 @@
   cursor: pointer;
   border: 1px solid var(--mantine-color-gray-2);
   box-shadow: none;
-  transition: background-color 120ms ease, border-color 120ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 160ms ease,
+    transform 200ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 200ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  animation: rise-in 320ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.card:nth-child(2) {
+  animation-delay: 40ms;
+}
+.card:nth-child(3) {
+  animation-delay: 80ms;
+}
+.card:nth-child(4) {
+  animation-delay: 120ms;
+}
+.card:nth-child(5) {
+  animation-delay: 160ms;
+}
+.card:nth-child(6) {
+  animation-delay: 200ms;
+}
+.card:nth-child(n + 7) {
+  animation-delay: 240ms;
 }
 
 .card:hover {
   background: color-mix(in srgb, var(--mantine-color-sage-0) 55%, white);
   border-color: var(--mantine-color-sage-2);
+  transform: translateY(-3px);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.card:active {
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+  }
+
+  .card:hover,
+  .card:active {
+    transform: none;
+  }
 }

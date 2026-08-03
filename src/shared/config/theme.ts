@@ -1,4 +1,5 @@
 import { createTheme, rem, ScrollArea, type MantineColorsTuple } from '@mantine/core';
+import { DateInput, DateTimePicker, TimePicker } from '@mantine/dates';
 
 const sage: MantineColorsTuple = [
   '#F1EAE3',
@@ -104,21 +105,61 @@ export const theme = createTheme({
         scrollbarSize: 6,
       },
     },
+    Tooltip: {
+      defaultProps: {
+        transitionProps: { transition: 'fade', duration: 120 },
+      },
+    },
+    Popover: {
+      defaultProps: {
+        transitionProps: { transition: 'pop-top-left', duration: 160 },
+      },
+    },
+    Menu: {
+      defaultProps: {
+        transitionProps: { transition: 'pop-top-right', duration: 150 },
+      },
+    },
     Modal: {
       defaultProps: {
         radius: 'lg',
         padding: 'xl',
         scrollAreaComponent: ScrollArea.Autosize,
+        transitionProps: { transition: 'pop', duration: 220 },
+        overlayProps: { backgroundOpacity: 0.45, blur: 2 },
       },
     },
     Drawer: {
       defaultProps: {
         padding: 'xl',
         scrollAreaComponent: ScrollArea.Autosize,
+        transitionProps: { duration: 220 },
+        overlayProps: { backgroundOpacity: 0.45, blur: 2 },
       },
     },
     Notification: {
       defaultProps: { radius: 'md' },
     },
+    DateInput: DateInput.extend({
+      defaultProps: {
+        valueFormat: 'DD.MM.YYYY',
+        radius: 'md',
+        popoverProps: { withinPortal: true },
+      },
+    }),
+    DateTimePicker: DateTimePicker.extend({
+      defaultProps: {
+        valueFormat: 'DD.MM.YYYY HH:mm',
+        radius: 'md',
+        popoverProps: { withinPortal: true },
+      },
+    }),
+    TimePicker: TimePicker.extend({
+      defaultProps: {
+        format: '24h',
+        withDropdown: true,
+        radius: 'md',
+      },
+    }),
   },
 });

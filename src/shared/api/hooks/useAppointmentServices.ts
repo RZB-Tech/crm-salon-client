@@ -8,6 +8,16 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
+const invalidateAppointment = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  appointmentId?: number,
+) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+  if (appointmentId) {
+    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(appointmentId) });
+  }
+};
+
 export const useCreateAppointmentService = () => {
   const queryClient = useQueryClient();
 
@@ -18,9 +28,11 @@ export const useCreateAppointmentService = () => {
         payload,
       ),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
-      addNotification.success({ message: 'Услуга добавлена' });
+      invalidateAppointment(queryClient, result.id);
+      addNotification.success({ message: 'Позиция добавлена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось добавить позицию' });
     },
   });
 };
@@ -35,9 +47,11 @@ export const useUpdateAppointmentService = () => {
         payload,
       ),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
-      addNotification.success({ message: 'Услуга обновлена' });
+      invalidateAppointment(queryClient, result.id);
+      addNotification.success({ message: 'Позиция обновлена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось обновить позицию' });
     },
   });
 };
@@ -47,10 +61,13 @@ export const useDeleteAppointmentService = () => {
 
   return useMutation({
     mutationFn: (id: number) =>
-      apiDelete(`/api/v1/appointments-services/${id}`) as Promise<unknown> as Promise<Appointment>,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      addNotification.success({ message: 'Услуга убрана' });
+      apiDelete<Appointment>(`/api/v1/appointments-services/${id}`),
+    onSuccess: (result) => {
+      invalidateAppointment(queryClient, result?.id);
+      addNotification.success({ message: 'Позиция удалена' });
+    },
+    onError: (error: Error) => {
+      addNotification.error({ message: error.message || 'Не удалось удалить позицию' });
     },
   });
 };

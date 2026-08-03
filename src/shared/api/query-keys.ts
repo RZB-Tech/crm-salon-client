@@ -43,6 +43,9 @@ export const queryKeys = {
     all: ['appointments'] as const,
     detail: (id: number) => ['appointments', id] as const,
   },
+  filterDocs: {
+    table: (table: string) => ['filter-docs', table] as const,
+  },
   materials: {
     all: ['materials'] as const,
     detail: (id: number) => ['materials', id] as const,

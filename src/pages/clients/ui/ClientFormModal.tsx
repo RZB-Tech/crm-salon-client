@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Group, Modal, NumberInput, Select, Textarea, TextInput } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { useCreateClient, useUpdateClient } from '@/shared/api/hooks/useClients';
 import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
 import { SEX_OPTIONS } from '@/shared/lib/format';
@@ -78,7 +79,12 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
       </Group>
       <Group grow mb="md">
         <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
-        <TextInput label="Дата рождения" type="date" value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
+        <DateInput
+          label="Дата рождения"
+          clearable
+          value={form.birth_date || null}
+          onChange={(value) => setForm({ ...form, birth_date: value ?? '' })}
+        />
       </Group>
       {!client && (
         <NumberInput label="Начальный депозит" mb="md" min={0} value={form.deposit} onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })} />

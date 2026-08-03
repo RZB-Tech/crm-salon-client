@@ -68,6 +68,11 @@
 
 .burger {
   flex-shrink: 0;
+  transition: transform 180ms var(--motion-ease, ease);
+}
+
+.burger:hover {
+  transform: scale(1.06);
 }
 
 .tenantName {
@@ -86,11 +91,21 @@
 
 .avatarTarget {
   cursor: pointer;
+  transition: transform 180ms var(--motion-ease, ease);
+}
+
+.avatarTarget:hover {
+  transform: scale(1.05);
 }
 
 .notificationItem {
   padding: 10px 16px;
   border-top: 1px solid var(--mantine-color-gray-2);
+  transition: background-color 140ms ease;
+}
+
+.notificationItem:hover {
+  background: var(--mantine-color-gray-0);
 }
 
 .notificationsLink {
@@ -101,8 +116,17 @@
   font-size: var(--mantine-font-size-sm);
   color: var(--mantine-color-sage-6);
   text-decoration: none;
+  transition: background-color 140ms ease, color 140ms ease;
 }
 
 .notificationsLink:hover {
   background: var(--mantine-color-gray-0);
+  color: var(--mantine-color-sage-8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burger:hover,
+  .avatarTarget:hover {
+    transform: none;
+  }
 }

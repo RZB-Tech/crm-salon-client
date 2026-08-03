@@ -80,9 +80,10 @@ export const mapAppointmentsToBoard = (
       endParts.hours * 60 + endParts.minutes - (startParts.hours * 60 + startParts.minutes),
       15
     );
+    const clientId = appt.client_id ?? appt.client?.id ?? 0;
     const clientName = appt.client
       ? [appt.client.firstname, appt.client.lastname].filter(Boolean).join(' ')
-      : `Клиент #${appt.client_id}`;
+      : `Клиент #${clientId}`;
 
     for (const record of appt.records ?? []) {
       if (employeeFilter && employeeFilter.size > 0 && !employeeFilter.has(record.employee_id)) {
@@ -94,13 +95,15 @@ export const mapAppointmentsToBoard = (
         : `Сотрудник #${record.employee_id}`;
 
       const serviceName =
-        record.services?.map((s) => s.service?.name ?? 'Услуга').join(', ') || 'Запись';
+        record.services
+          ?.map((s) => s.service?.name ?? (s.material_id != null ? `Товар #${s.material_id}` : 'Услуга'))
+          .join(', ') || 'Запись';
       const serviceId = record.services?.[0]?.service_id ?? null;
 
       result.push({
         id: appt.id,
         employeeId: record.employee_id,
-        clientId: appt.client_id,
+        clientId,
         serviceId,
         startHour: startParts.hours,
         startMinute: startParts.minutes,

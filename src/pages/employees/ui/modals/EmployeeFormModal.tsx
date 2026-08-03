@@ -11,6 +11,7 @@ import {
   Stack,
   NumberInput,
 } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type {
@@ -163,7 +164,13 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
         </Group>
         <Group grow>
           <TextInput label="Отчество" value={form.middlename} onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })} />
-          <TextInput label="Дата рождения" type="date" required value={form.birth_date} error={errors.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.currentTarget.value })} />
+          <DateInput
+            label="Дата рождения"
+            required
+            value={form.birth_date || null}
+            error={errors.birth_date}
+            onChange={(value) => setForm({ ...form, birth_date: value ?? '' })}
+          />
         </Group>
         <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
         <Select

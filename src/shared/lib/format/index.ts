@@ -149,8 +149,22 @@ export const MEASUREMENT_UNIT_LABELS: Record<string, string> = {
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'Наличные',
   card: 'Карта',
-  deposit: 'Депозит'
+  'bank transfer': 'Банковский перевод',
+  deposit: 'Депозит',
 };
+
+export const APPOINTMENT_STATUS_LABELS: Record<string, string> = {
+  awaiting: 'Ожидание',
+  started: 'Начата',
+  finished: 'Завершена',
+  cancelled: 'Отменена',
+};
+
+export const APPOINTMENT_STATUS_OPTIONS = [
+  { value: 'awaiting', label: 'Ожидание' },
+  { value: 'started', label: 'Начата' },
+  { value: 'finished', label: 'Завершена' },
+];
 
 export const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD_LABELS).map(
   ([value, label]) => ({ value, label })
@@ -161,6 +175,17 @@ export const RECEIPT_STATUS_LABELS: Record<string, string> = {
   paid: 'Оплачен',
   cancelled: 'Отменён'
 };
+
+export const APPOINTMENT_CANCELLED_REASON_LABELS: Record<string, string> = {
+  'client changed his mind': 'Клиент передумал',
+  'mistaken input': 'Ошибочный ввод',
+  'incorrect client': 'Некорректный клиент',
+  'incorrect date': 'Некорректная дата',
+};
+
+export const APPOINTMENT_CANCELLED_REASON_OPTIONS = Object.entries(
+  APPOINTMENT_CANCELLED_REASON_LABELS,
+).map(([value, label]) => ({ value, label }));
 
 export const RECEIPT_TYPE_LABELS: Record<string, string> = {
   appointment: 'По записи',

@@ -163,8 +163,8 @@ export async function apiPatch<T, B>(path: string, body: B): Promise<T> {
   });
 }
 
-export async function apiDelete(path: string): Promise<void> {
-  return apiRequest<void>(path, { method: 'DELETE' });
+export async function apiDelete<T = void>(path: string): Promise<T> {
+  return apiRequest<T>(path, { method: 'DELETE' });
 }
 
 export async function apiPostGetMany<T>(path: string, ids: number[]): Promise<T[]> {

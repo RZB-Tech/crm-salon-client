@@ -12,6 +12,7 @@ interface RouteEntry {
 
 const ROUTE_PRIORITY: RouteEntry[] = [
   { path: '/board', permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE] },
+  { path: '/appointments', permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE] },
   { path: '/clients', permissions: [PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE] },
   { path: '/services', permissions: [PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE] },
   { path: '/employees', permissions: [PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE] },

@@ -3,6 +3,7 @@ import { AppShell } from '@mantine/core';
 import { Outlet } from 'react-router-dom';
 import { Header } from '@/widgets/header';
 import { Sidebar } from '@/widgets/sidebar';
+import { PageTransition } from '@/shared/ui/PageTransition';
 import styles from './app-layout.module.css';
 
 /** base — ноутбук, xl (≥88em) — большой монитор */
@@ -25,6 +26,7 @@ export const AppLayout: React.FC = () => {
       }}
       padding={0}
       classNames={{ root: styles.root, main: styles.main }}
+      transitionDuration={220}
     >
       <AppShell.Header>
         <Header collapsed={collapsed} onToggle={toggleCollapsed} />
@@ -35,7 +37,9 @@ export const AppLayout: React.FC = () => {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </AppShell.Main>
     </AppShell>
   );

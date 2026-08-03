@@ -1,6 +1,8 @@
 import React from 'react';
-import { Alert, Box, Button, Loader, Skeleton, Stack, Text } from '@mantine/core';
+import { Alert, Box, Button, Checkbox, Loader, Select, Skeleton, Stack, Text } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
+import type { AppointmentCancelledReason } from '@/shared/api/types';
+import { APPOINTMENT_CANCELLED_REASON_OPTIONS } from '@/shared/lib/format';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useBoardData } from '../lib/useBoardData';
@@ -26,8 +28,11 @@ export const BoardPage: React.FC = () => {
   const { hasPermission } = useAccess();
   const form = useBoardForm({
     date: board.date,
+    services: board.services,
+    materials: board.materials,
     createAppointment: board.createAppointment,
     archiveAppointment: board.archiveAppointment,
+    restoreAppointment: board.restoreAppointment,
     cancelAppointment: board.cancelAppointment,
   });
 
@@ -60,7 +65,9 @@ export const BoardPage: React.FC = () => {
       {board.isBackgroundFetching && (
         <Box className={styles.refreshIndicator}>
           <Loader size="xs" />
-          <Text size="xs" c="dimmed">Обновление...</Text>
+          <Text size="xs" c="dimmed">
+            Обновление...
+          </Text>
         </Box>
       )}
 
@@ -74,6 +81,12 @@ export const BoardPage: React.FC = () => {
               embedded
             />
           )}
+          <Checkbox
+            label="Архив"
+            checked={board.showArchived}
+            onChange={(event) => board.setShowArchived(event.currentTarget.checked)}
+            size="sm"
+          />
           {hasPermission(PermissionCode.APPOINTMENT_CREATE) && (
             <Button
               leftSection={<Plus size={16} />}
@@ -118,23 +131,29 @@ export const BoardPage: React.FC = () => {
         loading={form.formLoading}
         paid={form.editingAppointment?.paid}
         cancelled={form.editingAppointment?.status === 'cancelled'}
+        archived={form.editingAppointment?.archived}
+        structureLocked={form.hasActiveReceipt}
+        activeReceipt={form.activeReceipt}
         appointment={form.editingAppointment ?? null}
         values={form.formValues}
         clientOptions={board.clientOptions}
         clients={board.clients}
         employeeOptions={board.employeeOptions}
         serviceOptions={serviceOptions}
+        materialOptions={board.materialOptions}
         onChange={form.setFormValues}
         onClose={form.closeForm}
-        onSubmit={form.handleFormSubmit}
+        onSubmit={() => void form.handleFormSubmit()}
         onDelete={form.formMode === 'edit' ? () => form.setDeleteConfirmOpen(true) : undefined}
-        onCancel={form.formMode === 'edit' ? () => form.setCancelConfirmOpen(true) : undefined}
+        onRestore={form.formMode === 'edit' ? form.handleRestore : undefined}
+        onCancel={form.formMode === 'edit' ? form.openCancelConfirm : undefined}
       />
 
       <ConfirmModal
         opened={form.deleteConfirmOpen}
         title="Архивировать запись"
-        message="Архивировать эту запись? Она будет скрыта из расписания."
+        message="Архивировать эту запись? Она будет скрыта из расписания. Восстановить можно через фильтр «Архив»."
+        confirmLabel="Архивировать"
         loading={board.archiveAppointment.isPending}
         onConfirm={form.handleDelete}
         onClose={() => form.setDeleteConfirmOpen(false)}
@@ -143,11 +162,28 @@ export const BoardPage: React.FC = () => {
       <ConfirmModal
         opened={form.cancelConfirmOpen}
         title="Отменить запись"
-        message="Отменить эту запись? Она останется в системе, но будет помечена как отменённая."
+        message="Отменить эту запись? Она останется в системе, но будет помечена как отменённая. Оплаченные записи и записи с активным чеком отменить нельзя — сначала отмените чек."
+        confirmLabel="Отменить запись"
         loading={board.cancelAppointment.isPending}
+        confirmDisabled={!form.cancelReason || form.hasActiveReceipt}
         onConfirm={form.handleCancel}
         onClose={() => form.setCancelConfirmOpen(false)}
-      />
+      >
+        {form.hasActiveReceipt && (
+          <Alert color="orange" mb="sm">
+            Есть активный чек. Сначала отмените его в блоке оплаты.
+          </Alert>
+        )}
+        <Select
+          label="Причина отмены"
+          data={APPOINTMENT_CANCELLED_REASON_OPTIONS}
+          value={form.cancelReason}
+          onChange={(value) => {
+            if (value) form.setCancelReason(value as AppointmentCancelledReason);
+          }}
+          allowDeselect={false}
+        />
+      </ConfirmModal>
     </Box>
   );
 };
