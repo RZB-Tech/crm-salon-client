@@ -39,6 +39,7 @@ import { ClientFormModal } from './ClientFormModal';
 import { DepositModal } from './DepositModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { ClientDetailModal } from './ClientDetailModal';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 
 export const ClientsPage: React.FC = () => {
   const { hasPermission } = useAccess();
@@ -47,12 +48,25 @@ export const ClientsPage: React.FC = () => {
   const [formOpen, setFormOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Client | null>(null);
   const [depositTarget, setDepositTarget] = React.useState<Client | null>(null);
-  const [archiveTarget, setArchiveTarget] = React.useState<Client | null>(null);
+  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
   const [detailTarget, setDetailTarget] = React.useState<Client | null>(null);
 
   const { data: clients, isLoading, isError } = useClients(showArchived);
   const archiveClient = useArchiveClient();
   const restoreClient = useRestoreClient();
+
+  /** Актуальная копия клиента из кэша списка — модалки не залипают на старом snapshot */
+  const resolveClient = React.useCallback(
+    (target: Client | null) => {
+      if (!target) return null;
+      return (clients ?? []).find((client) => client.id === target.id) ?? target;
+    },
+    [clients],
+  );
+  const liveEditing = resolveClient(editing);
+  const liveDepositTarget = resolveClient(depositTarget);
+  const liveDetailTarget = resolveClient(detailTarget);
+  const archiveTarget = useResolvedById(clients, archiveTargetId);
 
   const filtered = React.useMemo(
     () =>
@@ -248,7 +262,7 @@ export const ClientsPage: React.FC = () => {
                         aria-label="Архивировать"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setArchiveTarget(client);
+                          setArchiveTargetId(client.id);
                         }}
                       >
                         <ArchiveIcon size={18} />
@@ -264,12 +278,12 @@ export const ClientsPage: React.FC = () => {
 
       <ClientFormModal
         opened={formOpen}
-        client={editing}
+        client={liveEditing}
         onClose={() => setFormOpen(false)}
       />
-      <DepositModal client={depositTarget} onClose={() => setDepositTarget(null)} />
+      <DepositModal client={liveDepositTarget} onClose={() => setDepositTarget(null)} />
       <ClientDetailModal
-        client={detailTarget}
+        client={liveDetailTarget}
         onClose={() => setDetailTarget(null)}
         onEdit={handleEditFromDetail}
         onDeposit={handleDepositFromDetail}
@@ -282,10 +296,10 @@ export const ClientsPage: React.FC = () => {
         onConfirm={() =>
           archiveTarget &&
           archiveClient.mutate(archiveTarget.id, {
-            onSuccess: () => setArchiveTarget(null),
+            onSuccess: () => setArchiveTargetId(null),
           })
         }
-        onClose={() => setArchiveTarget(null)}
+        onClose={() => setArchiveTargetId(null)}
       />
     </ListPageShell>
   );

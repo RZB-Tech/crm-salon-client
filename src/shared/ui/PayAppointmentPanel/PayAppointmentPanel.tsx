@@ -84,7 +84,9 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
     });
   }, [receipt, cancelReceipt]);
 
-  const isPaid = appointment.paid || receipt?.status === 'paid';
+  const isPaid = receiptsLoading
+    ? Boolean(appointment.paid)
+    : receipt?.status === 'paid';
   const isLoading =
     createReceipt.isPending || createPayment.isPending || cancelReceipt.isPending || receiptsLoading;
 

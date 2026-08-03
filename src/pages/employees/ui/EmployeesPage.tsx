@@ -39,6 +39,7 @@ import {
   type ListViewMode,
 } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import {
   formatPrice,
   getEmployeeFullName,
@@ -170,7 +171,7 @@ export const EmployeesPage: React.FC = () => {
   const { hasPermission } = useAccess();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = React.useState(false);
-  const [archiveTarget, setArchiveTarget] = React.useState<Employee | null>(null);
+  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
   const [showArchived, setShowArchived] = React.useState(false);
   const [view, setView] = React.useState<ListViewMode>(readStoredView);
 
@@ -179,6 +180,8 @@ export const EmployeesPage: React.FC = () => {
   const createEmployee = useCreateEmployee();
   const archiveEmployee = useArchiveEmployee();
   const restoreEmployee = useRestoreEmployee();
+
+  const archiveTarget = useResolvedById(employees, archiveTargetId);
 
   const specializationMap = React.useMemo(() => {
     const map = new Map<number, string>();
@@ -220,7 +223,7 @@ export const EmployeesPage: React.FC = () => {
 
   const handleArchive = React.useCallback(() => {
     if (!archiveTarget) return;
-    archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) });
+    archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTargetId(null) });
   }, [archiveTarget, archiveEmployee]);
 
   const canManage = hasPermission(PermissionCode.EMPLOYEE_MANAGE);
@@ -306,7 +309,7 @@ export const EmployeesPage: React.FC = () => {
                   showArchived={showArchived}
                   canManage={canManage}
                   onOpen={openProfile}
-                  onDelete={setArchiveTarget}
+                  onDelete={(employee) => setArchiveTargetId(employee.id)}
                   onRestore={(e) => restoreEmployee.mutate(e.id)}
                 />
               ))}
@@ -410,7 +413,7 @@ export const EmployeesPage: React.FC = () => {
                             aria-label="Архивировать"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setArchiveTarget(employee);
+                              setArchiveTargetId(employee.id);
                             }}
                           >
                             <ArchiveIcon size={18} />
@@ -440,7 +443,7 @@ export const EmployeesPage: React.FC = () => {
         message={`Архивировать ${archiveTarget ? getEmployeeFullName(archiveTarget) : ''}? Сотрудник будет скрыт из списка.`}
         loading={archiveEmployee.isPending}
         onConfirm={handleArchive}
-        onClose={() => setArchiveTarget(null)}
+        onClose={() => setArchiveTargetId(null)}
       />
     </ListPageShell>
   );

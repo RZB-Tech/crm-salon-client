@@ -45,11 +45,11 @@ const queryClient = new QueryClient({
   }),
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000, // Данные свежие 2 минуты (агрессивный кэш)
-      gcTime: 10 * 60 * 1000, // Кэш хранится 10 минут в памяти
+      staleTime: 30 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: 1,
-      refetchOnWindowFocus: false, // Не перезагружать при возврате на вкладку
-      refetchOnReconnect: true, // Только при восстановлении сети
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
     },
     mutations: {
       retry: 1,

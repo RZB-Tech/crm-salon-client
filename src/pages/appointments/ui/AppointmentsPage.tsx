@@ -40,6 +40,7 @@ import {
   listPageStyles,
 } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import {
   APPOINTMENT_CANCELLED_REASON_LABELS,
   APPOINTMENT_CANCELLED_REASON_OPTIONS,
@@ -85,7 +86,7 @@ export const AppointmentsPage: React.FC = () => {
   const [filterForm, setFilterForm] = React.useState<AppointmentFilterFormState>(
     emptyAppointmentFilterForm,
   );
-  const [archiveTarget, setArchiveTarget] = React.useState<Appointment | null>(null);
+  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
 
   const { data: filterSchema } = useTableFilters('appointments');
   const listFilters = React.useMemo(
@@ -98,6 +99,7 @@ export const AppointmentsPage: React.FC = () => {
   const { data: allEmployees } = useEmployees();
   const { data: services } = useServices();
   const { data: materials } = useMaterials();
+  const archiveTarget = useResolvedById(appointments, archiveTargetId);
 
   const createAppointment = useCreateAppointment();
   const archiveAppointment = useArchiveAppointment();
@@ -220,7 +222,7 @@ export const AppointmentsPage: React.FC = () => {
   const handleArchiveRow = React.useCallback(
     (event: React.MouseEvent, appointment: Appointment) => {
       event.stopPropagation();
-      setArchiveTarget(appointment);
+      setArchiveTargetId(appointment.id);
     },
     [],
   );
@@ -510,7 +512,7 @@ export const AppointmentsPage: React.FC = () => {
         opened={form.formOpen}
         mode={form.formMode}
         loading={form.formLoading}
-        paid={form.editingAppointment?.paid}
+        paid={form.isPaid}
         cancelled={form.editingAppointment?.status === 'cancelled'}
         archived={form.editingAppointment?.archived}
         structureLocked={form.hasActiveReceipt}
@@ -549,10 +551,10 @@ export const AppointmentsPage: React.FC = () => {
         onConfirm={() =>
           archiveTarget &&
           archiveAppointment.mutate(archiveTarget.id, {
-            onSuccess: () => setArchiveTarget(null),
+            onSuccess: () => setArchiveTargetId(null),
           })
         }
-        onClose={() => setArchiveTarget(null)}
+        onClose={() => setArchiveTargetId(null)}
       />
 
       <ConfirmModal

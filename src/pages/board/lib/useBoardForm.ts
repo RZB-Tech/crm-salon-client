@@ -5,6 +5,7 @@ import {
   useAppointmentReceipts,
 } from '@/shared/api/hooks/useAppointments';
 import { queryKeys } from '@/shared/api/query-keys';
+import { invalidateAppointmentRelations } from '@/shared/api/invalidate';
 import type {
   AppointmentCancelPayload,
   AppointmentCancelledReason,
@@ -129,10 +130,12 @@ export const useBoardForm = ({
         editingEmployeeId,
         hasActiveReceipt,
       });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.appointments.detail(editingId),
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: editingId,
+        clientId: Number(formValues.clientId) || null,
+        employeeId: editingEmployeeId,
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       addNotification.success({ message: 'Запись сохранена' });
       afterSave();
     } catch (error) {
@@ -180,6 +183,11 @@ export const useBoardForm = ({
     );
   }, [editingId, cancelReason, cancelAppointment, closeForm]);
 
+  const isPaid = React.useMemo(() => {
+    if (appointmentReceipts == null) return Boolean(editingAppointment?.paid);
+    return appointmentReceipts.some((receipt) => receipt.status === 'paid');
+  }, [appointmentReceipts, editingAppointment?.paid]);
+
   const isSaving =
     createAppointment.isPending ||
     archiveAppointment.isPending ||
@@ -196,6 +204,7 @@ export const useBoardForm = ({
     editingAppointment,
     activeReceipt,
     hasActiveReceipt,
+    isPaid,
     deleteConfirmOpen,
     setDeleteConfirmOpen,
     cancelConfirmOpen,

@@ -5,6 +5,7 @@ import { useCancelReceipt } from '@/shared/api/hooks/useReceipts';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal, ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import {
   formatDateTime,
   formatPrice,
@@ -19,8 +20,9 @@ interface ReceiptsTabProps {
 
 export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt }) => {
   const [cancelTarget, setCancelTarget] = React.useState<number | null>(null);
-  const [historyReceipt, setHistoryReceipt] = React.useState<Receipt | null>(null);
+  const [historyReceiptId, setHistoryReceiptId] = React.useState<number | null>(null);
   const cancelReceipt = useCancelReceipt();
+  const historyReceipt = useResolvedById(receipts, historyReceiptId);
 
   const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(receipts, {
     defaultPageSize: 20,
@@ -95,7 +97,7 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
                     <Group gap={6}>
-                      <Button size="xs" variant="subtle" onClick={() => setHistoryReceipt(receipt)}>
+                      <Button size="xs" variant="subtle" onClick={() => setHistoryReceiptId(receipt.id)}>
                         История
                       </Button>
                       {receipt.status === 'pending' && (
@@ -144,7 +146,7 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
 
       <Modal
         opened={Boolean(historyReceipt)}
-        onClose={() => setHistoryReceipt(null)}
+        onClose={() => setHistoryReceiptId(null)}
         title={historyReceipt ? `История чека #${historyReceipt.id}` : 'История чека'}
         radius="md"
         size="lg"

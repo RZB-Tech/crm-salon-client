@@ -28,6 +28,7 @@ import {
 } from '@/shared/ui';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -37,13 +38,17 @@ export const MaterialsPage: React.FC = () => {
   const [search, setSearch] = React.useState('');
   const [showArchived, setShowArchived] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<Material | null>(null);
-  const [quantityTarget, setQuantityTarget] = React.useState<Material | null>(null);
-  const [archiveTarget, setArchiveTarget] = React.useState<Material | null>(null);
+  const [editingId, setEditingId] = React.useState<number | null>(null);
+  const [quantityTargetId, setQuantityTargetId] = React.useState<number | null>(null);
+  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
 
   const { data: materials, isLoading, isError } = useMaterials(showArchived);
   const archiveMaterial = useArchiveMaterial();
   const restoreMaterial = useRestoreMaterial();
+
+  const editing = useResolvedById(materials, editingId);
+  const quantityTarget = useResolvedById(materials, quantityTargetId);
+  const archiveTarget = useResolvedById(materials, archiveTargetId);
 
   const filtered = React.useMemo(
     () =>
@@ -64,17 +69,17 @@ export const MaterialsPage: React.FC = () => {
   }, [search, resetPage]);
 
   const openCreate = React.useCallback(() => {
-    setEditing(null);
+    setEditingId(null);
     setFormOpen(true);
   }, []);
   const openEdit = React.useCallback((m: Material) => {
-    setEditing(m);
+    setEditingId(m.id);
     setFormOpen(true);
   }, []);
 
   const handleChangeQuantity = React.useCallback((m: Material) => {
     setFormOpen(false);
-    setQuantityTarget(m);
+    setQuantityTargetId(m.id);
   }, []);
 
   if (isLoading) {
@@ -218,7 +223,7 @@ export const MaterialsPage: React.FC = () => {
                         aria-label="Архивировать"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setArchiveTarget(material);
+                          setArchiveTargetId(material.id);
                         }}
                       >
                         <ArchiveIcon size={18} />
@@ -238,7 +243,7 @@ export const MaterialsPage: React.FC = () => {
         onClose={() => setFormOpen(false)}
         onChangeQuantity={handleChangeQuantity}
       />
-      <QuantityModal material={quantityTarget} onClose={() => setQuantityTarget(null)} />
+      <QuantityModal material={quantityTarget} onClose={() => setQuantityTargetId(null)} />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
         title="Архивировать материал"
@@ -247,10 +252,10 @@ export const MaterialsPage: React.FC = () => {
         onConfirm={() =>
           archiveTarget &&
           archiveMaterial.mutate(archiveTarget.id, {
-            onSuccess: () => setArchiveTarget(null),
+            onSuccess: () => setArchiveTargetId(null),
           })
         }
-        onClose={() => setArchiveTarget(null)}
+        onClose={() => setArchiveTargetId(null)}
       />
     </ListPageShell>
   );

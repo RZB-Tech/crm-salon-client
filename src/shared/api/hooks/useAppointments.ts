@@ -5,6 +5,7 @@ import {
   apiPost,
   apiRequest,
 } from '@/shared/api/client';
+import { invalidateAppointmentRelations } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Appointment,
@@ -34,7 +35,7 @@ export const useAppointments = (filters?: ListFilters | boolean) => {
   return useQuery({
     queryKey: [...queryKeys.appointments.all, normalized] as const,
     queryFn: () => apiFetchAllPost<Appointment>('/api/v1/appointments', normalized),
-    staleTime: 1 * 60 * 1000,
+    staleTime: 30 * 1000,
   });
 };
 
@@ -51,10 +52,14 @@ export const useCreateAppointment = () => {
   return useMutation({
     mutationFn: (payload: AppointmentCreatePayload) =>
       apiPost<Appointment, AppointmentCreatePayload>('/api/v1/appointments', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+    onSuccess: async (result) => {
+      const employeeId = result.records?.[0]?.employee_id ?? null;
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId,
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Запись создана' });
     },
     onError: (error: Error) => {
@@ -69,9 +74,12 @@ export const useCancelAppointment = () => {
   return useMutation({
     mutationFn: (payload: AppointmentCancelPayload) =>
       apiPatch<Appointment, AppointmentCancelPayload>('/api/v1/appointments/cancel', payload),
-    onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
+    onSuccess: async (result, payload) => {
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: payload.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Запись отменена' });
     },
     onError: (error: Error) => {
@@ -89,9 +97,12 @@ export const useArchiveAppointment = () => {
         id,
         archived: true,
       }),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
+    onSuccess: async (result) => {
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Запись архивирована' });
     },
     onError: (error: Error) => {
@@ -109,9 +120,12 @@ export const useRestoreAppointment = () => {
         id,
         archived: false,
       }),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(result.id) });
+    onSuccess: async (result) => {
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Запись восстановлена из архива' });
     },
     onError: (error: Error) => {
@@ -126,9 +140,14 @@ export const useUpdateAppointment = () => {
   return useMutation({
     mutationFn: (payload: AppointmentUpdatePayload) =>
       apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', payload),
-    onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(payload.id) });
+    onSuccess: async (result, payload) => {
+      // Сразу кладём ответ в кэш — UI обновляется без ожидания refetch
+      queryClient.setQueryData(queryKeys.appointments.detail(payload.id), result);
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: payload.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Запись обновлена' });
     },
     onError: (error: Error) => {

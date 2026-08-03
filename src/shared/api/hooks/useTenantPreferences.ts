@@ -35,8 +35,8 @@ export const useUpdateTenantPreferences = () => {
         '/api/v1/tenant-preferences',
         payload,
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    onSuccess: (result) => {
+      queryClient.setQueryData(QUERY_KEY, result);
       addNotification.success({ message: 'Настройки сохранены' });
     },
   });

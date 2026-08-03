@@ -1,8 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, apiPost, apiRequest } from '@/shared/api/client';
+import { invalidatePaymentFlow } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
-import type { Receipt, ReceiptCreatePayload } from '@/shared/api/types';
+import type { Appointment, Receipt, ReceiptCreatePayload } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
+
+const upsertAppointmentReceipt = (queryClient: ReturnType<typeof useQueryClient>, receipt: Receipt) => {
+  if (!receipt.appointment_id) return;
+  const key = [...queryKeys.appointments.detail(receipt.appointment_id), 'receipts'] as const;
+  queryClient.setQueryData<Receipt[]>(key, (prev) => {
+    const list = prev ?? [];
+    const index = list.findIndex((item) => item.id === receipt.id);
+    if (index >= 0) {
+      const next = [...list];
+      next[index] = receipt;
+      return next;
+    }
+    return [receipt, ...list];
+  });
+};
 
 export const useReceipts = () =>
   useQuery({
@@ -23,9 +39,12 @@ export const useCreateReceipt = () => {
   return useMutation({
     mutationFn: (payload: ReceiptCreatePayload) =>
       apiPost<Receipt, ReceiptCreatePayload>('/api/v1/receipts', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
+    onSuccess: async (result) => {
+      upsertAppointmentReceipt(queryClient, result);
+      if (result.id) {
+        queryClient.setQueryData(queryKeys.receipts.detail(result.id), result);
+      }
+      await invalidatePaymentFlow(queryClient, result.appointment_id);
       addNotification.success({ message: 'Чек создан' });
     },
   });
@@ -37,11 +56,22 @@ export const useCancelReceipt = () => {
   return useMutation({
     mutationFn: (id: number) =>
       apiPost<Receipt, Record<string, never>>(`/api/v1/receipts/cancel?id=${id}`, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+    onSuccess: async (result) => {
+      upsertAppointmentReceipt(queryClient, result);
+      if (result.appointment_id) {
+        queryClient.setQueryData<Appointment>(
+          queryKeys.appointments.detail(result.appointment_id),
+          (prev) => (prev ? { ...prev, paid: false } : prev),
+        );
+        queryClient.setQueriesData<Appointment[]>(
+          { queryKey: queryKeys.appointments.all },
+          (list) =>
+            list?.map((item) =>
+              item.id === result.appointment_id ? { ...item, paid: false } : item,
+            ) ?? list,
+        );
+      }
+      await invalidatePaymentFlow(queryClient, result.appointment_id);
       addNotification.success({ message: 'Чек отменён' });
     },
   });

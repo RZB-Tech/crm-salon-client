@@ -90,21 +90,30 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
   const [createdPassword, setCreatedPassword] = React.useState<string | null>(null);
 
   // Detail drawer state
-  const [selectedStaff, setSelectedStaff] = React.useState<Staff | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = React.useState<number | null>(null);
 
   // Roles modal state
-  const [editingStaff, setEditingStaff] = React.useState<Staff | null>(null);
+  const [editingStaffId, setEditingStaffId] = React.useState<number | null>(null);
   const [selectedRoleIds, setSelectedRoleIds] = React.useState<string[]>([]);
 
   // Permissions modal state
-  const [permsStaff, setPermsStaff] = React.useState<Staff | null>(null);
+  const [permsStaffId, setPermsStaffId] = React.useState<number | null>(null);
   const [selectedPerms, setSelectedPerms] = React.useState<number[]>([]);
   const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
 
   // Reset password state
-  const [resetStaff, setResetStaff] = React.useState<Staff | null>(null);
+  const [resetStaffId, setResetStaffId] = React.useState<number | null>(null);
   const [resetResult, setResetResult] = React.useState<string | null>(null);
   const [customPassword, setCustomPassword] = React.useState('');
+
+  const resolveStaff = React.useCallback(
+    (id: number | null) => (id == null ? null : (staffList ?? []).find((s) => s.id === id) ?? null),
+    [staffList],
+  );
+  const selectedStaff = resolveStaff(selectedStaffId);
+  const editingStaff = resolveStaff(editingStaffId);
+  const permsStaff = resolveStaff(permsStaffId);
+  const resetStaff = resolveStaff(resetStaffId);
 
   // ─── Permissions helpers ──────────────────────────────────────────────────
 
@@ -125,7 +134,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handleSelectStaff = React.useCallback((staff: Staff) => {
-    setSelectedStaff(staff);
+    setSelectedStaffId(staff.id);
     openDrawer();
   }, [openDrawer]);
 
@@ -147,7 +156,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
   }, [form, createStaff]);
 
   const handleOpenRoles = React.useCallback((staff: Staff) => {
-    setEditingStaff(staff);
+    setEditingStaffId(staff.id);
     setSelectedRoleIds(staff.roles.map((r) => String(r.id)));
     openRoles();
   }, [openRoles]);
@@ -156,12 +165,16 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
     if (!editingStaff) return;
     assignRoles.mutate(
       { id: editingStaff.id, role_ids: selectedRoleIds.map(Number) },
-      { onSuccess: closeRoles },
+      {
+        onSuccess: () => {
+          closeRoles();
+        },
+      },
     );
   }, [editingStaff, selectedRoleIds, assignRoles, closeRoles]);
 
   const handleOpenPerms = React.useCallback((staff: Staff) => {
-    setPermsStaff(staff);
+    setPermsStaffId(staff.id);
     setSelectedPerms([...staff.permissions]);
     setExpandedResources(new Set());
     openPerms();
@@ -171,7 +184,11 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
     if (!permsStaff) return;
     updatePermissions.mutate(
       { id: permsStaff.id, permissions: selectedPerms },
-      { onSuccess: closePerms },
+      {
+        onSuccess: () => {
+          closePerms();
+        },
+      },
     );
   }, [permsStaff, selectedPerms, updatePermissions, closePerms]);
 
@@ -217,7 +234,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
   }, [permissionsByResource]);
 
   const handleOpenReset = React.useCallback((staff: Staff) => {
-    setResetStaff(staff);
+    setResetStaffId(staff.id);
     setResetResult(null);
     setCustomPassword('');
     openReset();

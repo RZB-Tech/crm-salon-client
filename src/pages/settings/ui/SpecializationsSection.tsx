@@ -21,6 +21,7 @@ import {
 } from '@/shared/api/hooks/useSpecializations';
 import type { Specialization } from '@/shared/api/types';
 import { ConfirmModal, listPageStyles } from '@/shared/ui';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 
 export const SpecializationsSection: React.FC = () => {
   const { data: specializations } = useSpecializations();
@@ -29,18 +30,21 @@ export const SpecializationsSection: React.FC = () => {
   const archiveSpec = useArchiveSpecialization();
 
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<Specialization | null>(null);
+  const [editingId, setEditingId] = React.useState<number | null>(null);
   const [name, setName] = React.useState('');
-  const [archiveTarget, setArchiveTarget] = React.useState<Specialization | null>(null);
+  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
+
+  const editing = useResolvedById(specializations, editingId);
+  const archiveTarget = useResolvedById(specializations, archiveTargetId);
 
   const openCreate = React.useCallback(() => {
-    setEditing(null);
+    setEditingId(null);
     setName('');
     setFormOpen(true);
   }, []);
 
   const openEdit = React.useCallback((spec: Specialization) => {
-    setEditing(spec);
+    setEditingId(spec.id);
     setName(spec.name);
     setFormOpen(true);
   }, []);
@@ -109,7 +113,7 @@ export const SpecializationsSection: React.FC = () => {
                       aria-label="Архивировать"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setArchiveTarget(spec);
+                        setArchiveTargetId(spec.id);
                       }}
                     >
                       <ArchiveIcon size={18} />
@@ -156,9 +160,9 @@ export const SpecializationsSection: React.FC = () => {
         loading={archiveSpec.isPending}
         onConfirm={() =>
           archiveTarget &&
-          archiveSpec.mutate(archiveTarget.id, { onSuccess: () => setArchiveTarget(null) })
+          archiveSpec.mutate(archiveTarget.id, { onSuccess: () => setArchiveTargetId(null) })
         }
-        onClose={() => setArchiveTarget(null)}
+        onClose={() => setArchiveTargetId(null)}
       />
     </>
   );

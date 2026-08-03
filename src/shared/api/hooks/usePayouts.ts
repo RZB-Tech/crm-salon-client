@@ -23,10 +23,16 @@ export const useCreatePayout = () => {
   return useMutation({
     mutationFn: (payload: PayoutCreatePayload) =>
       apiPost<Payout, PayoutCreatePayload>('/api/v1/payouts', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payouts.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.payouts.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
+      if (result.employee_id) {
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.employees.payrolls(result.employee_id),
+        });
+      }
       addNotification.success({ message: 'Выплата проведена' });
     },
     onError: (error: Error) => {

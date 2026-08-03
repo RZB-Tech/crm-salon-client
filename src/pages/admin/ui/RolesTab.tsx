@@ -30,6 +30,7 @@ import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRo
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import type { Permission, Role, RoleCreatePayload } from '@/shared/api/types';
 
 interface RoleForm {
@@ -58,9 +59,11 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
   const updateRole = useUpdateRole();
 
   const [opened, { open, close }] = useDisclosure(false);
-  const [editingRole, setEditingRole] = React.useState<Role | null>(null);
+  const [editingRoleId, setEditingRoleId] = React.useState<number | null>(null);
   const [form, setForm] = React.useState<RoleForm>(INITIAL_FORM);
   const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
+
+  const editingRole = useResolvedById(roles, editingRoleId);
 
   const permissionsByResource = React.useMemo(() => {
     if (!permissions) return {};
@@ -83,10 +86,10 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
 
   const handleOpen = React.useCallback((role?: Role) => {
     if (role) {
-      setEditingRole(role);
-      setForm({ name: role.name, description: role.description ?? '', permissions: role.permissions });
+      setEditingRoleId(role.id);
+      setForm({ name: role.name, description: role.description ?? '', permissions: [...role.permissions] });
     } else {
-      setEditingRole(null);
+      setEditingRoleId(null);
       setForm(INITIAL_FORM);
     }
     setExpandedResources(new Set());

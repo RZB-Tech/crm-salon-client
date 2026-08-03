@@ -24,6 +24,7 @@ import type { Payroll, PayrollCreatePayload, PayrollType, PayrollUpdatePayload }
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal, DataTable, DataTableRow } from '@/shared/ui';
 import { formatDate, formatPrice, PAYROLL_TYPE_LABELS, PAYROLL_TYPE_OPTIONS } from '@/shared/lib/format';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import styles from '../employee-profile.module.css';
 
 interface PaymentsTabProps {
@@ -32,16 +33,19 @@ interface PaymentsTabProps {
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<Payroll | null>(null);
+  const [editingId, setEditingId] = React.useState<number | null>(null);
   const [payrollType, setPayrollType] = React.useState<PayrollType>('salary');
   const [amount, setAmount] = React.useState(0);
   const [notes, setNotes] = React.useState('');
-  const [deleteTarget, setDeleteTarget] = React.useState<Payroll | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(null);
 
   const { data: payrolls, isLoading } = useEmployeePayrolls(employeeId);
   const createPayroll = useCreatePayroll();
   const updatePayroll = useUpdatePayroll();
   const archivePayroll = useArchivePayroll();
+
+  const editing = useResolvedById(payrolls, editingId);
+  const deleteTarget = useResolvedById(payrolls, deleteTargetId);
 
   const total = React.useMemo(
     () => (payrolls ?? []).reduce((sum, p) => sum + p.amount, 0),
@@ -49,7 +53,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   );
 
   const openCreate = React.useCallback(() => {
-    setEditing(null);
+    setEditingId(null);
     setPayrollType('salary');
     setAmount(0);
     setNotes('');
@@ -57,7 +61,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
   }, []);
 
   const openEdit = React.useCallback((payroll: Payroll) => {
-    setEditing(payroll);
+    setEditingId(payroll.id);
     setPayrollType(payroll.type);
     setAmount(payroll.amount);
     setNotes(payroll.notes ?? '');
@@ -143,7 +147,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
                   aria-label="Архивировать"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setDeleteTarget(payroll);
+                    setDeleteTargetId(payroll.id);
                   }}
                 >
                   <ArchiveIcon size={16} />
@@ -184,8 +188,8 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
         title="Архивировать выплату"
         message="Архивировать эту выплату? Запись будет скрыта."
         loading={archivePayroll.isPending}
-        onConfirm={() => deleteTarget && archivePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
-        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && archivePayroll.mutate(deleteTarget.id, { onSuccess: () => setDeleteTargetId(null) })}
+        onClose={() => setDeleteTargetId(null)}
       />
     </Box>
   );

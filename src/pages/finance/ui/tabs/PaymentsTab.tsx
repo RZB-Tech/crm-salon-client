@@ -4,6 +4,7 @@ import type { Transaction } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { formatDateTime, formatPrice, PAYMENT_METHOD_LABELS } from '@/shared/lib/format';
 
 interface PaymentsTabProps {
@@ -11,7 +12,8 @@ interface PaymentsTabProps {
 }
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
-  const [historyPayment, setHistoryPayment] = React.useState<Transaction | null>(null);
+  const [historyPaymentId, setHistoryPaymentId] = React.useState<number | null>(null);
+  const historyPayment = useResolvedById(payments, historyPaymentId);
 
   const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(payments, {
     defaultPageSize: 20,
@@ -69,7 +71,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
                     </Text>
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
-                    <Button size="xs" variant="subtle" onClick={() => setHistoryPayment(payment)}>
+                    <Button size="xs" variant="subtle" onClick={() => setHistoryPaymentId(payment.id)}>
                       История
                     </Button>
                   </Table.Td>
@@ -90,7 +92,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
 
       <Modal
         opened={Boolean(historyPayment)}
-        onClose={() => setHistoryPayment(null)}
+        onClose={() => setHistoryPaymentId(null)}
         title={historyPayment ? `История оплаты #${historyPayment.id}` : 'История оплаты'}
         radius="md"
         size="md"

@@ -129,7 +129,7 @@ export const BoardPage: React.FC = () => {
         opened={form.formOpen}
         mode={form.formMode}
         loading={form.formLoading}
-        paid={form.editingAppointment?.paid}
+        paid={form.isPaid}
         cancelled={form.editingAppointment?.status === 'cancelled'}
         archived={form.editingAppointment?.archived}
         structureLocked={form.hasActiveReceipt}

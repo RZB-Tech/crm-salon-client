@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiDelete, apiPatch, apiPost } from '@/shared/api/client';
+import { invalidateAppointmentRelations } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type {
   Appointment,
@@ -8,14 +9,11 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
-const invalidateAppointment = (
+const cacheAppointment = (
   queryClient: ReturnType<typeof useQueryClient>,
-  appointmentId?: number,
+  result: Appointment,
 ) => {
-  queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-  if (appointmentId) {
-    queryClient.invalidateQueries({ queryKey: queryKeys.appointments.detail(appointmentId) });
-  }
+  queryClient.setQueryData(queryKeys.appointments.detail(result.id), result);
 };
 
 export const useCreateAppointmentService = () => {
@@ -27,8 +25,13 @@ export const useCreateAppointmentService = () => {
         '/api/v1/appointments-services',
         payload,
       ),
-    onSuccess: (result) => {
-      invalidateAppointment(queryClient, result.id);
+    onSuccess: async (result) => {
+      cacheAppointment(queryClient, result);
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Позиция добавлена' });
     },
     onError: (error: Error) => {
@@ -46,8 +49,13 @@ export const useUpdateAppointmentService = () => {
         '/api/v1/appointments-services',
         payload,
       ),
-    onSuccess: (result) => {
-      invalidateAppointment(queryClient, result.id);
+    onSuccess: async (result) => {
+      cacheAppointment(queryClient, result);
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result.id,
+        clientId: result.client_id ?? result.client?.id ?? null,
+        employeeId: result.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Позиция обновлена' });
     },
     onError: (error: Error) => {
@@ -60,10 +68,14 @@ export const useDeleteAppointmentService = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) =>
-      apiDelete<Appointment>(`/api/v1/appointments-services/${id}`),
-    onSuccess: (result) => {
-      invalidateAppointment(queryClient, result?.id);
+    mutationFn: (id: number) => apiDelete<Appointment>(`/api/v1/appointments-services/${id}`),
+    onSuccess: async (result) => {
+      if (result?.id) cacheAppointment(queryClient, result);
+      await invalidateAppointmentRelations(queryClient, {
+        appointmentId: result?.id,
+        clientId: result?.client_id ?? result?.client?.id ?? null,
+        employeeId: result?.records?.[0]?.employee_id ?? null,
+      });
       addNotification.success({ message: 'Позиция удалена' });
     },
     onError: (error: Error) => {

@@ -49,10 +49,13 @@ export const useCancelTransaction = () => {
         `/api/v1/transactions/${id}/cancel`,
         {},
       ),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
+    onSuccess: async (_, id) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.detail(id) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.payouts.all });
       addNotification.success({ message: 'Транзакция отменена' });
     },
     onError: (error: Error) => {

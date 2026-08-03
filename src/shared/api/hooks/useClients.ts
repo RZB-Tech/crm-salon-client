@@ -16,11 +16,29 @@ import type {
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
+const patchClientInLists = (
+  queryClient: ReturnType<typeof useQueryClient>,
+  client: Client,
+) => {
+  queryClient.setQueryData(queryKeys.clients.detail(client.id), client);
+  queryClient.setQueriesData<Client[]>(
+    { queryKey: queryKeys.clients.all },
+    (list) => {
+      if (!list) return list;
+      const index = list.findIndex((item) => item.id === client.id);
+      if (index < 0) return [client, ...list];
+      const next = [...list];
+      next[index] = client;
+      return next;
+    },
+  );
+};
+
 export const useClients = (archived = false) =>
   useQuery({
     queryKey: [...queryKeys.clients.all, { archived }],
     queryFn: () => apiFetchAllPost<Client>('/api/v1/clients', { archived }),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000,
   });
 
 export const useClient = (id: number) =>
@@ -49,8 +67,9 @@ export const useCreateClient = () => {
   return useMutation({
     mutationFn: (payload: ClientCreatePayload) =>
       apiPost<Client, ClientCreatePayload>('/api/v1/clients', payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+    onSuccess: async (created) => {
+      patchClientInLists(queryClient, created);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент создан' });
     },
   });
@@ -62,9 +81,10 @@ export const useUpdateClient = () => {
   return useMutation({
     mutationFn: (payload: ClientUpdatePayload) =>
       apiPatch<Client, ClientUpdatePayload>('/api/v1/clients', payload),
-    onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
+    onSuccess: async (result, payload) => {
+      patchClientInLists(queryClient, result);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
       addNotification.success({ message: 'Клиент обновлён' });
     },
   });
@@ -76,9 +96,11 @@ export const useUpdateClientDeposit = () => {
   return useMutation({
     mutationFn: (payload: ClientDepositPayload) =>
       apiPost<Client, ClientDepositPayload>('/api/v1/clients/update-deposit', payload),
-    onSuccess: (_, payload) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
+    onSuccess: async (result, payload) => {
+      patchClientInLists(queryClient, result);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       addNotification.success({ message: 'Депозит обновлён' });
     },
   });
@@ -89,9 +111,13 @@ export const useArchiveClient = () => {
 
   return useMutation({
     mutationFn: (id: number) =>
-      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', { id, archived: true }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', {
+        id,
+        archived: true,
+      }),
+    onSuccess: async (result) => {
+      patchClientInLists(queryClient, result);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент архивирован' });
     },
   });
@@ -102,9 +128,13 @@ export const useRestoreClient = () => {
 
   return useMutation({
     mutationFn: (id: number) =>
-      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', { id, archived: false }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+      apiPatch<Client, { id: number; archived: boolean }>('/api/v1/clients', {
+        id,
+        archived: false,
+      }),
+    onSuccess: async (result) => {
+      patchClientInLists(queryClient, result);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       addNotification.success({ message: 'Клиент восстановлен' });
     },
   });

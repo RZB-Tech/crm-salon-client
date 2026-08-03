@@ -39,6 +39,7 @@ import {
 } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { ServiceFormModal } from './ServiceFormModal';
 import { CategoryFormModal } from './CategoryFormModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -63,14 +64,17 @@ export const ServicesPage: React.FC = () => {
   const [showArchived, setShowArchived] = React.useState(false);
 
   const [serviceFormOpen, setServiceFormOpen] = React.useState(false);
-  const [editingService, setEditingService] = React.useState<Service | null>(null);
-  const [archiveServiceTarget, setArchiveServiceTarget] = React.useState<Service | null>(null);
+  const [editingServiceId, setEditingServiceId] = React.useState<number | null>(null);
+  const [archiveServiceTargetId, setArchiveServiceTargetId] = React.useState<number | null>(null);
 
   const [categoryFormOpen, setCategoryFormOpen] = React.useState(false);
   const [editingCategory] = React.useState<ServiceCategory | null>(null);
 
   const { data: services, isLoading: servicesLoading, isError: servicesError } = useServices(showArchived);
   const { data: categories, isLoading: categoriesLoading, isError: categoriesError } = useServiceCategories();
+
+  const editingService = useResolvedById(services, editingServiceId);
+  const archiveServiceTarget = useResolvedById(services, archiveServiceTargetId);
 
   const archiveService = useArchiveService();
   const restoreService = useRestoreService();
@@ -114,12 +118,12 @@ export const ServicesPage: React.FC = () => {
   }, [search, activeCategory, resetPage]);
 
   const openServiceCreate = React.useCallback(() => {
-    setEditingService(null);
+    setEditingServiceId(null);
     setServiceFormOpen(true);
   }, []);
 
   const openServiceEdit = React.useCallback((s: Service) => {
-    setEditingService(s);
+    setEditingServiceId(s.id);
     setServiceFormOpen(true);
   }, []);
 
@@ -337,7 +341,7 @@ export const ServicesPage: React.FC = () => {
                           aria-label="Архивировать"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setArchiveServiceTarget(service);
+                            setArchiveServiceTargetId(service.id);
                           }}
                         >
                           <ArchiveIcon size={18} />
@@ -372,10 +376,10 @@ export const ServicesPage: React.FC = () => {
         onConfirm={() =>
           archiveServiceTarget &&
           archiveService.mutate(archiveServiceTarget.id, {
-            onSuccess: () => setArchiveServiceTarget(null),
+            onSuccess: () => setArchiveServiceTargetId(null),
           })
         }
-        onClose={() => setArchiveServiceTarget(null)}
+        onClose={() => setArchiveServiceTargetId(null)}
       />
     </ListPageShell>
   );

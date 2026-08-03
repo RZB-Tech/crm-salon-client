@@ -29,7 +29,6 @@ import {
   useUpdateAbsence,
 } from '@/shared/api/hooks/useAbsences';
 import type {
-  Absence,
   AbsenceType,
   WorkScheduleDay,
   WorkScheduleCreatePayload,
@@ -46,6 +45,7 @@ import {
   formatTime,
   toApiTime,
 } from '@/shared/lib/format';
+import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import styles from '../employee-profile.module.css';
 import scheduleStyles from './schedule-tab.module.css';
 
@@ -64,13 +64,13 @@ const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7] as const;
 export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   const [scheduleFormOpen, setScheduleFormOpen] = React.useState(false);
   const [absenceFormOpen, setAbsenceFormOpen] = React.useState(false);
-  const [editingAbsence, setEditingAbsence] = React.useState<Absence | null>(null);
+  const [editingAbsenceId, setEditingAbsenceId] = React.useState<number | null>(null);
   const [dayEntries, setDayEntries] = React.useState<DayTimeEntry[]>([]);
   const [startDate, setStartDate] = React.useState(new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = React.useState(new Date().toISOString().slice(0, 10));
   const [absenceType, setAbsenceType] = React.useState<AbsenceType>('vacation');
   const [reason, setReason] = React.useState('');
-  const [deleteAbsenceTarget, setDeleteAbsenceTarget] = React.useState<Absence | null>(null);
+  const [deleteAbsenceTargetId, setDeleteAbsenceTargetId] = React.useState<number | null>(null);
 
   const { data, isLoading } = useEmployeeWorkSchedules(employeeId);
   const createSchedule = useCreateWorkSchedule();
@@ -82,6 +82,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
 
   const schedules: WorkScheduleDay[] = data?.work_schedules ?? [];
   const absences = data?.absences ?? [];
+  const editingAbsence = useResolvedById(absences, editingAbsenceId);
+  const deleteAbsenceTarget = useResolvedById(absences, deleteAbsenceTargetId);
 
   const hasSchedule = schedules.length > 0;
 
@@ -246,7 +248,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
       <Box>
         <Box className={styles.toolbar}>
           <Text fw={600}>Отсутствия</Text>
-          <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={() => { setEditingAbsence(null); setAbsenceFormOpen(true); }}>
+          <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={() => { setEditingAbsenceId(null); setAbsenceFormOpen(true); }}>
             Добавить
           </Button>
         </Box>
@@ -267,7 +269,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
             <DataTableRow
               key={absence.id}
               onClick={() => {
-                setEditingAbsence(absence);
+                setEditingAbsenceId(absence.id);
                 setStartDate(absence.start_date);
                 setEndDate(absence.end_date);
                 setAbsenceType(absence.absence_type);
@@ -287,7 +289,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
                   aria-label="Архивировать"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setDeleteAbsenceTarget(absence);
+                    setDeleteAbsenceTargetId(absence.id);
                   }}
                 >
                   <ArchiveIcon size={16} />
@@ -389,7 +391,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
         </Group>
       </Modal>
 
-      <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Архивировать отсутствие" message="Архивировать это отсутствие?" loading={archiveAbsence.isPending} onConfirm={() => deleteAbsenceTarget && archiveAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTarget(null) })} onClose={() => setDeleteAbsenceTarget(null)} />
+      <ConfirmModal opened={Boolean(deleteAbsenceTarget)} title="Архивировать отсутствие" message="Архивировать это отсутствие?" loading={archiveAbsence.isPending} onConfirm={() => deleteAbsenceTarget && archiveAbsence.mutate(deleteAbsenceTarget.id, { onSuccess: () => setDeleteAbsenceTargetId(null) })} onClose={() => setDeleteAbsenceTargetId(null)} />
     </Stack>
   );
 };
