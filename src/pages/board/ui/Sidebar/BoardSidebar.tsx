@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Text, TextInput } from '@mantine/core';
+import { Box, Button, ScrollArea, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import styles from './board-sidebar.module.css';
@@ -45,49 +45,51 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
 
   return (
     <aside className={styles.sidebar}>
-      <Box className={styles.clock}>{clockLabel}</Box>
+      <ScrollArea className={styles.scroll} offsetScrollbars>
+        <Box className={styles.clock}>{clockLabel}</Box>
 
-      <Box className={styles.section}>
-        <Text size='sm' fw={600} tt='capitalize' lineClamp={2}>
-          {dateLabel}
-        </Text>
-        {!isAtToday && (
-          <Button variant='light' color='gray' size='xs' fullWidth mt='xs' onClick={onGoToday}>
-            Сегодня
-          </Button>
-        )}
-      </Box>
+        <Box className={styles.section}>
+          <Text size='sm' fw={600} tt='capitalize' lineClamp={2}>
+            {dateLabel}
+          </Text>
+          {!isAtToday && (
+            <Button variant='light' color='gray' size='xs' fullWidth mt='xs' onClick={onGoToday}>
+              Сегодня
+            </Button>
+          )}
+        </Box>
 
-      <Box className={styles.section}>
-        <BoardMiniCalendar date={date} markedDates={markedDates} onDateChange={onDateChange} />
-      </Box>
+        <Box className={styles.section}>
+          <BoardMiniCalendar date={date} markedDates={markedDates} onDateChange={onDateChange} />
+        </Box>
 
-      <Box className={styles.section}>
-        <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
-          Выручка за день
-        </Text>
-        <Text size='xl' fw={700} className={styles.revenueValue}>
-          {formatPrice(dayRevenue)}
-        </Text>
-        <Text size='xs' c='dimmed' mt={4}>
-          {appointmentsCount} {appointmentsCount === 1 ? 'запись' : 'записей'}
-        </Text>
-      </Box>
+        <Box className={styles.section}>
+          <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
+            Выручка за день
+          </Text>
+          <Text size='xl' fw={700} className={styles.revenueValue}>
+            {formatPrice(dayRevenue)}
+          </Text>
+          <Text size='xs' c='dimmed' mt={4}>
+            {appointmentsCount} {appointmentsCount === 1 ? 'запись' : 'записей'}
+          </Text>
+        </Box>
 
-      <Box className={styles.section}>
-        <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
-          Клиент
-        </Text>
-        <TextInput
-          placeholder='Поиск клиента'
-          leftSection={<MagnifyingGlassIcon size={16} />}
-          size='sm'
-          disabled
-        />
-        <Text size='xs' c='dimmed' mt={6}>
-          Скоро: быстрый поиск и запись
-        </Text>
-      </Box>
+        <Box className={styles.section}>
+          <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
+            Клиент
+          </Text>
+          <TextInput
+            placeholder='Поиск клиента'
+            leftSection={<MagnifyingGlassIcon size={16} />}
+            size='sm'
+            disabled
+          />
+          <Text size='xs' c='dimmed' mt={6}>
+            Скоро: быстрый поиск и запись
+          </Text>
+        </Box>
+      </ScrollArea>
     </aside>
   );
 };

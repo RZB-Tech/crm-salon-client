@@ -95,15 +95,12 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
 
   return (
     <header className={styles.header}>
-      <Box
-        className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`}
-      >
+      <Box className={styles.left}>
         <Link to="/board" className={styles.logoLink} aria-label="На рабочий стол">
           <Image
             src={collapsed ? MiniLogoSvg : LogoSvg}
             alt="Logo"
-            className={styles.logoIcon}
-            h={collapsed ? 28 : 57}
+            className={`${styles.logoIcon} ${collapsed ? styles.logoIconCollapsed : ''}`}
             w="auto"
             fit="contain"
           />

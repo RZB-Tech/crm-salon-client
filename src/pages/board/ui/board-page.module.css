@@ -71,10 +71,6 @@
   overflow: hidden;
 }
 
-.resourceLabelText[data-compact] {
-  display: none;
-}
-
 /*
   Adaptive schedule grid.
   Mantine locks slots with flex: 0 0 var(--slot-width) + max-width.

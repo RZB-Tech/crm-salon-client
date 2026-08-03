@@ -1,6 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
-import { Alert, Avatar, Box, Text } from '@mantine/core';
+import { Alert, Avatar, Box, Text, Tooltip } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import { ResourcesDayView, type ScheduleEventData } from '@mantine/schedule';
 import type { AppointmentStatus, Employee } from '@/shared/api/types';
@@ -11,8 +11,9 @@ import styles from './board-page.module.css';
 const padTime = (v: number) => v.toString().padStart(2, '0');
 
 /** Employee column ≈ 20% of board width, clamped for readability */
-const LABEL_MIN = 144;
+const LABEL_MIN = 168;
 const LABEL_MAX = 300;
+const LABEL_TOOLTIP_BELOW = 200;
 
 interface BoardAppointment {
   id: number;
@@ -56,7 +57,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
   boardAppointments,
   employeeFilter,
   onEventClick,
-  onSlotCreate,
+  onSlotCreate
 }) => {
   const { ref: containerRef, width: containerWidth } = useElementSize();
 
@@ -69,9 +70,9 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
     () =>
       filteredEmployees.map((emp) => ({
         id: emp.id,
-        label: `${emp.firstname} ${emp.lastname ?? ''}`.trim(),
+        label: `${emp.firstname} ${emp.lastname ?? ''}`.trim()
       })),
-    [filteredEmployees],
+    [filteredEmployees]
   );
 
   const scheduleEvents: ScheduleEventData[] = React.useMemo(
@@ -82,9 +83,9 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         start: `${dateStr} ${padTime(appt.startHour)}:${padTime(appt.startMinute)}:00`,
         end: `${dateStr} ${padTime(appt.endHour)}:${padTime(appt.endMinute)}:00`,
         color: getEventColor(appt),
-        resourceId: appt.employeeId,
+        resourceId: appt.employeeId
       })),
-    [boardAppointments, dateStr],
+    [boardAppointments, dateStr]
   );
 
   const scheduleDateStr = React.useMemo(() => dayjs(date).format('YYYY-MM-DD'), [date]);
@@ -103,36 +104,52 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         onEventClick(apptId, empId);
       }
     },
-    [onEventClick],
+    [onEventClick]
   );
 
   const handleTimeSlotClick = React.useCallback(
-    ({ slotStart, slotEnd, resourceId }: { slotStart: string; slotEnd: string; resourceId?: string | number }) => {
+    ({
+      slotStart,
+      slotEnd,
+      resourceId
+    }: {
+      slotStart: string;
+      slotEnd: string;
+      resourceId?: string | number;
+    }) => {
       onSlotCreate({
         employeeId: resourceId != null ? String(resourceId) : null,
         date: dateStr,
         startTime: dayjs(slotStart).format('HH:mm'),
-        endTime: dayjs(slotEnd).format('HH:mm'),
+        endTime: dayjs(slotEnd).format('HH:mm')
       });
     },
-    [onSlotCreate, dateStr],
+    [onSlotCreate, dateStr]
   );
 
   const handleSlotDragEnd = React.useCallback(
-    ({ rangeStart, rangeEnd, resourceId }: { rangeStart: string; rangeEnd: string; resourceId?: string | number }) => {
+    ({
+      rangeStart,
+      rangeEnd,
+      resourceId
+    }: {
+      rangeStart: string;
+      rangeEnd: string;
+      resourceId?: string | number;
+    }) => {
       onSlotCreate({
         employeeId: resourceId != null ? String(resourceId) : null,
         date: dateStr,
         startTime: dayjs(rangeStart).format('HH:mm'),
-        endTime: dayjs(rangeEnd).format('HH:mm'),
+        endTime: dayjs(rangeEnd).format('HH:mm')
       });
     },
-    [onSlotCreate, dateStr],
+    [onSlotCreate, dateStr]
   );
 
   if (filteredEmployees.length === 0 && employeeFilter.size > 0) {
     return (
-      <Alert color="gray" title="Фильтр сотрудников" m="md">
+      <Alert color='gray' title='Фильтр сотрудников' m='md'>
         Выберите сотрудников в панели выше или сбросьте фильтр
       </Alert>
     );
@@ -140,7 +157,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
 
   if (boardEmployees.length === 0) {
     return (
-      <Alert color="gray" title="Нет сотрудников с графиком" m="md">
+      <Alert color='gray' title='Нет сотрудников с графиком' m='md'>
         На выбранную дату нет сотрудников с рабочим графиком
       </Alert>
     );
@@ -155,10 +172,10 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         onDateChange={handleScheduleDateChange}
         resources={resources}
         events={scheduleEvents}
-        startTime="08:00:00"
-        endTime="24:00:00"
+        startTime='08:00:00'
+        endTime='24:00:00'
         intervalMinutes={60}
-        locale="ru"
+        locale='ru'
         withCurrentTimeIndicator
         withDragSlotSelect
         withHeader={false}
@@ -167,13 +184,13 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         onEventClick={handleEventClick}
         style={
           {
-            '--resources-day-view-resource-label-width': labelWidthCss,
+            '--resources-day-view-resource-label-width': labelWidthCss
           } as React.CSSProperties
         }
         styles={{
           resourcesDayView: {
-            '--resources-day-view-resource-label-width': labelWidthCss,
-          } as React.CSSProperties,
+            '--resources-day-view-resource-label-width': labelWidthCss
+          } as React.CSSProperties
         }}
         classNames={{
           resourcesDayView: styles.scheduleView,
@@ -186,30 +203,47 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
           resourcesDayViewTimeLabel: styles.scheduleTimeSlot,
           resourcesDayViewRowSlot: styles.scheduleTimeSlot,
           resourcesDayViewResourceLabel: styles.scheduleResourceLabel,
-          resourcesDayViewCorner: styles.scheduleCorner,
+          resourcesDayViewCorner: styles.scheduleCorner
         }}
-        renderResourceLabel={(resource) => (
-          <Box className={styles.resourceLabel}>
-            <Avatar size="sm" radius="md" color="sage" style={{ flex: '0 0 auto' }}>
-              {getEmployeeInitials(
-                filteredEmployees.find((e) => e.id === resource.id) ?? {
-                  firstname: String(resource.label).charAt(0),
-                  lastname: '',
-                },
-              )}
-            </Avatar>
-            <Box className={styles.resourceLabelText} data-compact={labelWidth < 180 || undefined}>
-              <Text size="sm" fw={500} lineClamp={1}>
-                {resource.label}
-              </Text>
-              {labelWidth >= 200 && (
-                <Text size="xs" c="dimmed" lineClamp={1}>
-                  Сотрудник
+        renderResourceLabel={(resource) => {
+          const isNarrow = labelWidth < LABEL_TOOLTIP_BELOW;
+          const labelContent = (
+            <Box className={styles.resourceLabel}>
+              <Avatar
+                // size={isNarrow ? 'xs' : 'sm'}
+                size='sm'
+                radius='md'
+                color='sage'
+                style={{ flex: '0 0 auto' }}
+              >
+                {getEmployeeInitials(
+                  filteredEmployees.find((e) => e.id === resource.id) ?? {
+                    firstname: String(resource.label).charAt(0),
+                    lastname: ''
+                  }
+                )}
+              </Avatar>
+              <Box className={styles.resourceLabelText}>
+                <Text size='sm' fw={500} lineClamp={1}>
+                  {resource.label}
                 </Text>
-              )}
+                {!isNarrow && (
+                  <Text size='xs' c='dimmed' lineClamp={1}>
+                    Сотрудник
+                  </Text>
+                )}
+              </Box>
             </Box>
-          </Box>
-        )}
+          );
+
+          if (!isNarrow) return labelContent;
+
+          return (
+            <Tooltip label={resource.label} withArrow position='right' openDelay={300}>
+              {labelContent}
+            </Tooltip>
+          );
+        }}
         labels={{
           today: 'Сегодня',
           day: 'День',
@@ -217,7 +251,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
           month: 'Месяц',
           resources: 'Сотрудники',
           previous: 'Назад',
-          next: 'Вперёд',
+          next: 'Вперёд'
         }}
       />
     </Box>

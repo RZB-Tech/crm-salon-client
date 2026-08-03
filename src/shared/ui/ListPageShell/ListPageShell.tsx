@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Group, Pagination as MantinePagination, Select, Text } from '@mantine/core';
+import { Box, Group, Pagination as MantinePagination, ScrollArea, Select, Text } from '@mantine/core';
 import styles from './list-page-shell.module.css';
 
 export const LIST_PAGE_SIZE_OPTIONS = [
@@ -24,9 +24,21 @@ export const ListPageShell: React.FC<ListPageShellProps> = ({
 }) => (
   <Box className={`${styles.page}${className ? ` ${className}` : ''}`}>
     {toolbar != null && <Box className={styles.toolbar}>{toolbar}</Box>}
-    <Box className={styles.content}>{children}</Box>
+    <ScrollArea className={styles.content}>{children}</ScrollArea>
     {footer}
   </Box>
+);
+
+interface ListPanelBodyProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+/** Скроллируемое тело панели (таблицы во вкладках финансов/админки). */
+export const ListPanelBody: React.FC<ListPanelBodyProps> = ({ children, className }) => (
+  <ScrollArea className={`${styles.panelBody}${className ? ` ${className}` : ''}`}>
+    {children}
+  </ScrollArea>
 );
 
 interface ListPaginationFooterProps {

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Modal, Table, Text } from '@mantine/core';
 import type { Transaction } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { formatDateTime, formatPrice, PAYMENT_METHOD_LABELS } from '@/shared/lib/format';
 
@@ -19,7 +19,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
 
   return (
     <Box className={listPageStyles.panel}>
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -78,7 +78,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

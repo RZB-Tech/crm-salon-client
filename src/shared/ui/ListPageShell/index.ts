@@ -1,5 +1,6 @@
 export {
   ListPageShell,
+  ListPanelBody,
   ListPaginationFooter,
   LIST_PAGE_SIZE_OPTIONS,
   listPageStyles,

@@ -3,7 +3,7 @@ import { Badge, Box, Button, Group, Modal, Table, Text } from '@mantine/core';
 import type { Receipt } from '@/shared/api/types';
 import { useCancelReceipt } from '@/shared/api/hooks/useReceipts';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { ConfirmModal, ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ConfirmModal, ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatDateTime,
@@ -28,7 +28,7 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
 
   return (
     <Box className={listPageStyles.panel}>
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -120,7 +120,7 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

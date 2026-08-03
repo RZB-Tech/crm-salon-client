@@ -5,8 +5,9 @@ import { Header } from '@/widgets/header';
 import { Sidebar } from '@/widgets/sidebar';
 import styles from './app-layout.module.css';
 
-const SIDEBAR_WIDTH = 280;
-const SIDEBAR_COLLAPSED_WIDTH = 72;
+/** base — ноутбук, xl (≥88em) — большой монитор */
+const SIDEBAR_WIDTH = { base: 220, xl: 280 } as const;
+const SIDEBAR_COLLAPSED_WIDTH = { base: 60, xl: 72 } as const;
 
 export const AppLayout: React.FC = () => {
   const [collapsed, setCollapsed] = React.useState(false);
@@ -17,7 +18,7 @@ export const AppLayout: React.FC = () => {
 
   return (
     <AppShell
-      header={{ height: 64 }}
+      header={{ height: { base: 56, xl: 64 } }}
       navbar={{
         width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
         breakpoint: 'sm',

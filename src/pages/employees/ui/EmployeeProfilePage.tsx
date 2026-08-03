@@ -14,6 +14,7 @@ import {
   CopyButton,
   Tooltip,
   Box,
+  ScrollArea,
 } from '@mantine/core';
 import {
   ArchiveIcon,
@@ -215,7 +216,7 @@ export const EmployeeProfilePage: React.FC = () => {
         )}
       </Box>
 
-      <Box className={styles.pageBody}>
+      <ScrollArea className={styles.pageBody} offsetScrollbars>
         <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>
           <Tabs.List>
             <Tabs.Tab value="overview">Обзор</Tabs.Tab>
@@ -245,7 +246,7 @@ export const EmployeeProfilePage: React.FC = () => {
             <AuditLogsPanel tableName="employees" recordId={employee.id} />
           </Tabs.Panel>
         </Tabs>
-      </Box>
+      </ScrollArea>
 
       <EmployeeFormModal
         opened={editOpen}

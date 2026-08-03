@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack, Text, Tooltip } from '@mantine/core';
+import { Box, ScrollArea, Stack, Text, Tooltip } from '@mantine/core';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   ScissorsIcon,
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
           .join(' ')}
       >
         <Box component="span" className={styles.icon}>
-          <item.Icon size={20} weight={isActive ? 'fill' : 'regular'} />
+          <item.Icon size="1em" weight={isActive ? 'fill' : 'regular'} />
         </Box>
         {!collapsed && <Text span className={styles.label}>{item.label}</Text>}
       </NavLink>
@@ -137,9 +137,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
 
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''}`}>
-      <Stack gap={2} className={styles.navGroup}>
-        {visibleItems.map(renderItem)}
-      </Stack>
+      <ScrollArea className={styles.scroll} offsetScrollbars>
+        <Stack gap={2} className={styles.navGroup}>
+          {visibleItems.map(renderItem)}
+        </Stack>
+      </ScrollArea>
     </aside>
   );
 };

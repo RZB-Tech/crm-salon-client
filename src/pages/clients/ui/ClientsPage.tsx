@@ -166,11 +166,11 @@ export const ClientsPage: React.FC = () => {
       >
         <Table.Thead>
           <Table.Tr>
-            <Table.Th className={listPageStyles.headCell}>Клиенты</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={380}>Телефон</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={275}>Пол</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={310}>Депозит</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={240}>Дата рождения</Table.Th>
+            <Table.Th className={listPageStyles.headCell} miw={220}>Клиенты</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={160}>Телефон</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={110}>Пол</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={140}>Депозит</Table.Th>
+            <Table.Th className={listPageStyles.headCell} w={130}>Дата рождения</Table.Th>
             <Table.Th className={listPageStyles.headCell} w={48} />
           </Table.Tr>
         </Table.Thead>
@@ -191,12 +191,12 @@ export const ClientsPage: React.FC = () => {
                 onClick={!showArchived ? () => setDetailTarget(client) : undefined}
               >
                 <Table.Td className={listPageStyles.bodyCell}>
-                  <Group gap={8} wrap="nowrap">
-                    <Avatar radius="md" size={32} color="sage">
+                  <Group gap={8} wrap="nowrap" maw="100%">
+                    <Avatar radius="md" size={32} color="sage" style={{ flex: '0 0 auto' }}>
                       {getClientInitials(client)}
                     </Avatar>
-                    <Box>
-                      <Text size="sm" fw={400} lh="24px" c="#484848">
+                    <Box style={{ minWidth: 0, flex: 1 }}>
+                      <Text size="sm" fw={400} lh="24px" c="#484848" lineClamp={1}>
                         {getClientFullName(client)}
                       </Text>
                       <Text size="xs" lh="12px" c="rgba(72,72,72,0.4)">

@@ -1,8 +1,338 @@
-.wrapper {
-  min-height: 100vh;
+.page {
+  --login-ink: #3a2618;
+  --login-mist: #f7f1eb;
+  --login-sand: #e8ddd4;
+  --login-clay: #c8ac95;
+  --login-umber: #8b5e44;
+  --login-deep: #5c3a28;
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  /* 100% не работает: Route/#root не дают высоту; ScrollArea ещё обрезает цепочку */
+  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--login-ink);
+  background: var(--login-mist);
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.orb[data-orb='a'] {
+  width: min(48vw, 520px);
+  height: min(48vw, 520px);
+  top: -12%;
+  left: -8%;
+  background: radial-gradient(circle at 30% 30%, #d9c9ba 0%, transparent 70%);
+  animation: drift-a 18s ease-in-out infinite;
+}
+
+.orb[data-orb='b'] {
+  width: min(40vw, 420px);
+  height: min(40vw, 420px);
+  right: 8%;
+  bottom: -10%;
+  background: radial-gradient(circle at 60% 40%, #c09a7e 0%, transparent 72%);
+  animation: drift-b 22s ease-in-out infinite;
+}
+
+.orb[data-orb='c'] {
+  width: min(28vw, 280px);
+  height: min(28vw, 280px);
+  top: 42%;
+  left: 38%;
+  background: radial-gradient(circle at 50% 50%, rgba(172, 125, 99, 0.45) 0%, transparent 70%);
+  animation: drift-c 16s ease-in-out infinite;
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+.brand,
+.panel {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  padding: clamp(32px, 6vw, 80px);
+  background:
+    linear-gradient(145deg, rgba(92, 58, 40, 0.94) 0%, rgba(139, 94, 68, 0.9) 48%, rgba(172, 125, 99, 0.88) 100%);
+  color: #faf6f2;
+  overflow: hidden;
+  animation: reveal-brand 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brandGlow {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  top: -18%;
+  right: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(241, 234, 227, 0.28) 0%, transparent 68%);
+  animation: pulse-glow 8s ease-in-out infinite;
+}
+
+.logo {
+  position: relative;
+  width: min(280px, 72%);
+  height: auto;
+  filter: brightness(0) invert(1);
+  opacity: 0.96;
+  animation: rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.brandLine {
+  position: relative;
+  margin: 0;
+  max-width: 18ch;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  line-height: 1.25;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: rgba(250, 246, 242, 0.92);
+  animation: rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
+}
+
+.curve {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -28%;
+  height: 55%;
+  border-radius: 50%;
+  border: 1px solid rgba(250, 246, 242, 0.18);
+  transform: rotate(-8deg);
+  animation: curve-shift 14s ease-in-out infinite;
+}
+
+.curve::before {
+  content: '';
+  position: absolute;
+  inset: 18% 12%;
+  border-radius: 50%;
+  border: 1px solid rgba(250, 246, 242, 0.12);
+}
+
+.panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--mantine-color-gray-0);
-  padding: 24px;
+  padding: clamp(24px, 4vw, 48px);
+  animation: reveal-panel 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+}
+
+.form {
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--login-ink);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--login-ink) 58%, transparent);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.submit {
+  margin-top: 4px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.submit:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(139, 94, 68, 0.22);
+}
+
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, 6%) scale(1.06);
+  }
+}
+
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-5%, -4%) scale(1.08);
+  }
+}
+
+@keyframes drift-c {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(3%, -5%);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes curve-shift {
+  0%,
+  100% {
+    transform: rotate(-8deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-4deg) translateY(-3%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reveal-brand {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes reveal-panel {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 48em) {
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .brand {
+    min-height: 38vh;
+    padding: 36px 28px 48px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .brandLine {
+    max-width: 22ch;
+  }
+
+  .logo {
+    width: min(200px, 58%);
+  }
+
+  .curve {
+    bottom: -40%;
+    height: 70%;
+  }
+
+  .panel {
+    align-items: flex-start;
+    padding: 32px 24px 40px;
+  }
+
+  .orb[data-orb='c'] {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .brandGlow,
+  .curve,
+  .brand,
+  .panel,
+  .logo,
+  .brandLine {
+    animation: none;
+  }
+
+  .submit:not(:disabled):hover {
+    transform: none;
+  }
 }

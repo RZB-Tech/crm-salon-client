@@ -1,5 +1,16 @@
 import React from 'react';
-import { Avatar, Badge, Box, Button, Checkbox, Group, Popover, Text, TextInput } from '@mantine/core';
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Group,
+  Popover,
+  ScrollArea,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import { MagnifyingGlassIcon, Users } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
@@ -108,7 +119,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
           </Button>
         </Group>
 
-        <Box className={styles.employeeFilterList}>
+        <ScrollArea.Autosize mah={320} offsetScrollbars>
           {filteredEmployees.length === 0 ? (
             <Text size='sm' c='dimmed' className={styles.employeeFilterEmpty}>
               Ничего не найдено
@@ -148,7 +159,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
               );
             })
           )}
-        </Box>
+        </ScrollArea.Autosize>
       </Popover.Dropdown>
     </Popover>
   );

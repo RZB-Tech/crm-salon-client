@@ -2,10 +2,17 @@
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 0 20px 0 0;
+  padding: 0 12px 0 0;
   background: var(--mantine-color-white);
   border-bottom: 1px solid var(--mantine-color-gray-2);
-  gap: 12px;
+  gap: 8px;
+}
+
+@media (min-width: $mantine-breakpoint-xl) {
+  .header {
+    padding: 0 20px 0 0;
+    gap: 12px;
+  }
 }
 
 .left {
@@ -16,11 +23,8 @@
   transition: width 0.2s ease;
   border-right: 1px solid var(--mantine-color-gray-2);
   height: 100%;
-  width: 280px;
-}
-
-.leftCollapsed {
-  width: 72px;
+  /* Синхрон с AppShell navbar — адаптивная ширина на ноутбуке/ПК */
+  width: var(--app-shell-navbar-width, 280px);
 }
 
 .logoLink {
@@ -32,9 +36,25 @@
 
 .logoIcon {
   width: auto;
+  max-width: 100%;
   flex-shrink: 0;
   object-fit: contain;
   transition: height 0.2s ease;
+  height: 40px;
+}
+
+.logoIconCollapsed {
+  height: 24px;
+}
+
+@media (min-width: $mantine-breakpoint-xl) {
+  .logoIcon {
+    height: 57px;
+  }
+
+  .logoIconCollapsed {
+    height: 28px;
+  }
 }
 
 .main {

@@ -23,7 +23,7 @@ import type {
   TransactionMethod,
   TransactionType,
 } from '@/shared/api/types';
-import { ConfirmModal, ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ConfirmModal, ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import {
   formatDateTime,
@@ -238,7 +238,7 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
         </Group>
       </Box>
 
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -365,7 +365,7 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Group, Stack, Text, Title } from '@mantine/core';
+import { Box, Group, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import styles from './list-page.module.css';
 
 interface ListPageProps {
@@ -19,24 +19,21 @@ export const ListPage: React.FC<ListPageProps> = ({
   children,
   className,
 }) => (
-  <Stack
-    gap='lg'
-    p='xl'
-    h='100%'
-    className={[styles.root, className].filter(Boolean).join(' ')}
-  >
-    <Group justify='space-between' align='flex-start' wrap='wrap' gap='md'>
-      <Box>
-        <Title order={3}>{title}</Title>
-        {subtitle && (
-          <Text size='sm' c='dimmed' mt={2}>
-            {subtitle}
-          </Text>
-        )}
-      </Box>
-      {actions}
-    </Group>
-    {filters}
-    {children}
-  </Stack>
+  <ScrollArea className={[styles.root, className].filter(Boolean).join(' ')} h="100%">
+    <Stack gap="lg" p="xl">
+      <Group justify="space-between" align="flex-start" wrap="wrap" gap="md">
+        <Box>
+          <Title order={3}>{title}</Title>
+          {subtitle && (
+            <Text size="sm" c="dimmed" mt={2}>
+              {subtitle}
+            </Text>
+          )}
+        </Box>
+        {actions}
+      </Group>
+      {filters}
+      {children}
+    </Stack>
+  </ScrollArea>
 );

@@ -42,7 +42,7 @@ import {
 import { useRoles } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { useResetPassword } from '@/shared/api/hooks/useAuth';
-import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { formatDateTime } from '@/shared/lib/format';
 import type { Permission, Staff, StaffCreatePayload, StaffType } from '@/shared/api/types';
@@ -264,7 +264,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
 
   return (
     <Box className={listPageStyles.panel}>
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -317,7 +317,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

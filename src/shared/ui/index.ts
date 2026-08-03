@@ -5,6 +5,7 @@ export type { DataTableColumn } from './DataTable';
 export { ListPage } from './ListPage';
 export {
   ListPageShell,
+  ListPanelBody,
   ListPaginationFooter,
   LIST_PAGE_SIZE_OPTIONS,
   listPageStyles,

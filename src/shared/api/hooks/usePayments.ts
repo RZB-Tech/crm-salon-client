@@ -9,7 +9,8 @@ export const useCreatePayment = () => {
 
   return useMutation({
     mutationFn: (payload: PaymentCreatePayload) =>
-      apiPost<Receipt, PaymentCreatePayload>('/api/v1/transactions', payload),
+      // apiPost<Receipt, PaymentCreatePayload>('/api/v1/transactions', payload),
+      apiPost<Receipt, PaymentCreatePayload>('/api/v1/receipts/make_payment', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });

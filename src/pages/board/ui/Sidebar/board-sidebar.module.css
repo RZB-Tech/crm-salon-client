@@ -6,7 +6,13 @@
   gap: 0;
   background: var(--mantine-color-white);
   border-left: 1px solid var(--mantine-color-gray-2);
-  overflow-y: auto;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
 }
 
 .clock {

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Card, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
 import { useLogin } from '@/shared/api/hooks/useAuth';
+import LogoSvg from '@/shared/assets/logo.svg?url';
 import styles from './login-page.module.css';
 
 export const LoginPage: React.FC = () => {
@@ -10,44 +11,70 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = React.useState('');
   const loginMutation = useLogin();
 
-  const handleSubmit = React.useCallback(() => {
+  const handleSubmit = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    if (!login || !password || loginMutation.isPending) return;
+
     loginMutation.mutate(
       { login, password },
       { onSuccess: () => navigate('/board', { replace: true }) },
     );
-  }, [login, password, loginMutation, navigate]);
+  };
 
   return (
-    <Box className={styles.wrapper}>
-      <Card padding="xl" radius="lg" shadow="sm" w={400}>
-        <Stack gap="md">
-          <Box>
-            <Title order={3}>Salon CRM</Title>
-            <Text size="sm" c="dimmed" mt={4}>
-              Войдите в систему
+    <div className={styles.page}>
+      <div className={styles.atmosphere} aria-hidden>
+        <span className={styles.orb} data-orb="a" />
+        <span className={styles.orb} data-orb="b" />
+        <span className={styles.orb} data-orb="c" />
+        <span className={styles.grain} />
+      </div>
+
+      <section className={styles.brand}>
+        <div className={styles.brandGlow} aria-hidden />
+        <img src={LogoSvg} alt="Salon CRM" className={styles.logo} />
+        <p className={styles.brandLine}>Рабочее пространство салона</p>
+        <div className={styles.curve} aria-hidden />
+      </section>
+
+      <section className={styles.panel}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <header className={styles.formHeader}>
+            <Text component="h1" className={styles.title}>
+              Вход
             </Text>
-          </Box>
-          <TextInput
-            label="Логин"
-            required
-            value={login}
-            onChange={(e) => setLogin(e.currentTarget.value)}
-          />
-          <PasswordInput
-            label="Пароль"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
-          />
+            <Text className={styles.subtitle}>Введите логин и пароль, чтобы продолжить</Text>
+          </header>
+
+          <div className={styles.fields}>
+            <TextInput
+              label="Логин"
+              required
+              autoComplete="username"
+              value={login}
+              onChange={(e) => setLogin(e.currentTarget.value)}
+            />
+            <PasswordInput
+              label="Пароль"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+            />
+          </div>
+
           <Button
-            onClick={handleSubmit}
+            type="submit"
+            fullWidth
+            size="md"
+            className={styles.submit}
             loading={loginMutation.isPending}
             disabled={!login || !password}
           >
             Войти
           </Button>
-        </Stack>
-      </Card>
-    </Box>
+        </form>
+      </section>
+    </div>
   );
 };

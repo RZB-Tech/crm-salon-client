@@ -45,7 +45,6 @@ export const DataTable: React.FC<DataTableProps> = ({
       <ScrollArea.Autosize
         className={styles.scroll}
         mah={maxHeight ?? 'calc(100vh - 220px)'}
-        type="auto"
       >
         <Table
           highlightOnHover={false}

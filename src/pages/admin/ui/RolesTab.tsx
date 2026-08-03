@@ -28,7 +28,7 @@ import {
 } from '@phosphor-icons/react';
 import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRoles';
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
-import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import type { Permission, Role, RoleCreatePayload } from '@/shared/api/types';
 
@@ -180,7 +180,7 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
 
   return (
     <Box className={listPageStyles.panel}>
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -254,7 +254,7 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

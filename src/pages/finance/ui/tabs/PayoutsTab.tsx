@@ -16,7 +16,7 @@ import {
 import { useCreatePayout, usePayouts } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutCreatePayload, PayoutMethod, PayoutType } from '@/shared/api/types';
-import { ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { formatDateTime, formatPrice, getEmployeeFullName } from '@/shared/lib/format';
 
@@ -116,7 +116,7 @@ export const PayoutsTab = React.forwardRef<PayoutsTabHandle, PayoutsTabProps>(fu
 
   return (
     <Box className={listPageStyles.panel}>
-      <Box className={listPageStyles.panelBody}>
+      <ListPanelBody>
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
@@ -184,7 +184,7 @@ export const PayoutsTab = React.forwardRef<PayoutsTabHandle, PayoutsTabProps>(fu
             )}
           </Table.Tbody>
         </Table>
-      </Box>
+      </ListPanelBody>
 
       <ListPaginationFooter
         page={page}

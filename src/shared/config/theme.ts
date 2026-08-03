@@ -1,4 +1,4 @@
-import { createTheme, rem, type MantineColorsTuple } from '@mantine/core';
+import { createTheme, rem, ScrollArea, type MantineColorsTuple } from '@mantine/core';
 
 const sage: MantineColorsTuple = [
   '#F1EAE3',
@@ -22,6 +22,15 @@ export const theme = createTheme({
   },
 
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+
+  breakpoints: {
+    xs: '36em',
+    sm: '48em',
+    md: '62em',
+    lg: '75em',
+    /** 1500px — граница «ноутбук / большой монитор» для сайдбара и хедера */
+    xl: '93.75em',
+  },
 
   headings: {
     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
@@ -89,11 +98,24 @@ export const theme = createTheme({
     Paper: {
       defaultProps: { radius: 'lg', shadow: 'xs' },
     },
+    ScrollArea: {
+      defaultProps: {
+        type: 'auto',
+        scrollbarSize: 6,
+      },
+    },
     Modal: {
-      defaultProps: { radius: 'lg', padding: 'xl' },
+      defaultProps: {
+        radius: 'lg',
+        padding: 'xl',
+        scrollAreaComponent: ScrollArea.Autosize,
+      },
     },
     Drawer: {
-      defaultProps: { padding: 'xl' },
+      defaultProps: {
+        padding: 'xl',
+        scrollAreaComponent: ScrollArea.Autosize,
+      },
     },
     Notification: {
       defaultProps: { radius: 'md' },

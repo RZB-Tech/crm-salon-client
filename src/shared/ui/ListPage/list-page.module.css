@@ -1,4 +1,3 @@
 .root {
-  overflow-y: auto;
   background: var(--mantine-color-gray-0);
 }
