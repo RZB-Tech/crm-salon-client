@@ -8,6 +8,7 @@ import 'dayjs/locale/ru';
 import { theme } from '@/shared/config';
 import { addNotification } from '@/shared/lib/notifications';
 import { NotificationsWsProvider } from '@/shared/lib/notifications/NotificationsWsProvider';
+import { LoadingProvider } from '@/shared/lib/contexts/LoadingContext';
 import { ApiError } from '@/shared/api/client';
 
 import '@mantine/notifications/styles.css';
@@ -67,7 +68,9 @@ export const Providers = ({ children }: ProvidersProps) => (
       <DatesProvider settings={{ locale: 'ru', firstDayOfWeek: 1, weekendDays: [0, 6] }}>
         <Notifications position="top-right" zIndex={1000} transitionDuration={220} />
         <BrowserRouter>
-          <NotificationsWsProvider>{children}</NotificationsWsProvider>
+          <LoadingProvider>
+            <NotificationsWsProvider>{children}</NotificationsWsProvider>
+          </LoadingProvider>
         </BrowserRouter>
       </DatesProvider>
     </MantineProvider>

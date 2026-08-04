@@ -1,0 +1,17 @@
+.logo {
+  display: block;
+  background: transparent;
+  border: none;
+  outline: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Hide native media UI chrome across browsers */
+.logo::-webkit-media-controls {
+  display: none !important;
+}
+
+.logo::-webkit-media-controls-enclosure {
+  display: none !important;
+}

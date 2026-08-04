@@ -6,6 +6,7 @@ import { APPOINTMENT_CANCELLED_REASON_OPTIONS } from '@/shared/lib/format';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { ArchiveToggle } from '@/shared/ui';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useLoading } from '@/shared/lib/contexts/LoadingContext';
 import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
 import { AppointmentFormModal } from './AppointmentForm';
@@ -27,6 +28,7 @@ const BoardSkeleton: React.FC = () => (
 export const BoardPage: React.FC = () => {
   const board = useBoardData();
   const { hasPermission } = useAccess();
+  const { isLoading: globalLoading, setIsLoading } = useLoading();
   const form = useBoardForm({
     date: board.date,
     services: board.services,
@@ -36,6 +38,14 @@ export const BoardPage: React.FC = () => {
     restoreAppointment: board.restoreAppointment,
     cancelAppointment: board.cancelAppointment,
   });
+
+  // Отключаем branded loader когда критические данные загружены
+  // (минимум ~4с удерживается в LoadingContext)
+  React.useEffect(() => {
+    if (!board.isInitialLoading && globalLoading) {
+      setIsLoading(false);
+    }
+  }, [board.isInitialLoading, globalLoading, setIsLoading]);
 
   const selectedEmployee = React.useMemo(
     () => board.allEmployees.find((e) => String(e.id) === form.formValues.employeeId),
@@ -48,6 +58,8 @@ export const BoardPage: React.FC = () => {
   );
 
   if (board.isInitialLoading) {
+    // Если есть глобальный loader, не показываем скелетон
+    if (globalLoading) return null;
     return <BoardSkeleton />;
   }
 

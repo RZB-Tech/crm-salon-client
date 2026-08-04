@@ -2,11 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, PasswordInput, Text, TextInput } from '@mantine/core';
 import { useLogin } from '@/shared/api/hooks/useAuth';
+import { useLoading } from '@/shared/lib/contexts/LoadingContext';
 import LogoSvg from '@/shared/assets/logo.svg?url';
 import styles from './login-page.module.css';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { setIsLoading, setMessage } = useLoading();
   const [login, setLogin] = React.useState('');
   const [password, setPassword] = React.useState('');
   const loginMutation = useLogin();
@@ -17,7 +19,13 @@ export const LoginPage: React.FC = () => {
 
     loginMutation.mutate(
       { login, password },
-      { onSuccess: () => navigate('/board', { replace: true }) },
+      { 
+        onSuccess: () => {
+          setMessage('Загрузка данных...');
+          setIsLoading(true);
+          navigate('/board', { replace: true });
+        } 
+      },
     );
   };
 
