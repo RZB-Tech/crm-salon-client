@@ -22,7 +22,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   title,
   message,
   loading = false,
-  confirmLabel = 'Удалить',
+  confirmLabel = 'Архивировать',
   confirmDisabled = false,
   tone = 'danger',
   children,

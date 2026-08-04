@@ -1,9 +1,10 @@
 import React from 'react';
-import { Alert, Box, Button, Checkbox, Loader, Select, Skeleton, Stack, Text } from '@mantine/core';
+import { Alert, Box, Button, Group, Loader, Select, Skeleton, Stack, Text } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import type { AppointmentCancelledReason } from '@/shared/api/types';
 import { APPOINTMENT_CANCELLED_REASON_OPTIONS } from '@/shared/lib/format';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { ArchiveToggle } from '@/shared/ui';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
@@ -81,12 +82,8 @@ export const BoardPage: React.FC = () => {
               embedded
             />
           )}
-          <Checkbox
-            label="Архив"
-            checked={board.showArchived}
-            onChange={(event) => board.setShowArchived(event.currentTarget.checked)}
-            size="sm"
-          />
+        </Box>
+        <Group gap={8} wrap="nowrap">
           {hasPermission(PermissionCode.APPOINTMENT_CREATE) && (
             <Button
               leftSection={<Plus size={16} />}
@@ -97,7 +94,8 @@ export const BoardPage: React.FC = () => {
               Новая запись
             </Button>
           )}
-        </Box>
+          <ArchiveToggle active={board.showArchived} onChange={board.setShowArchived} />
+        </Group>
       </Box>
 
       <Box className={styles.body}>

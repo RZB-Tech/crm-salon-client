@@ -10,7 +10,7 @@ import {
   Textarea,
   Tooltip,
 } from '@mantine/core';
-import { Package, Plus, Scissors, Trash } from '@phosphor-icons/react';
+import { Package, Plus, Scissors, TrashIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import {
   applyServiceDuration,
@@ -268,7 +268,7 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
                         onClick={() => handleRemove(line.key)}
                         disabled={values.services.length === 1 && !isLineFilled(line)}
                       >
-                        <Trash size={16} />
+                        <TrashIcon size={16} />
                       </ActionIcon>
                     </Tooltip>
                   )}
