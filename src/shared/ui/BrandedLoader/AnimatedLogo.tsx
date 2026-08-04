@@ -1,5 +1,5 @@
 import React from 'react';
-import logoVideo from '@/shared/assets/intro.mp4';
+import logoVideo from '@/shared/assets/Intro.mp4';
 import styles from './animated-logo.module.css';
 
 export const AnimatedLogo: React.FC = () => {
