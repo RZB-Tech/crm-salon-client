@@ -1,24 +1,6 @@
 import React from 'react';
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Button,
-  Group,
-  Skeleton,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-} from '@mantine/core';
-import {
-  ArchiveIcon,
-  ArrowCounterClockwiseIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-} from '@phosphor-icons/react';
-import { useArchiveMaterial, useMaterials, useRestoreMaterial } from '@/shared/api/hooks/useMaterials';
-import type { Material } from '@/shared/api/types';
+import { Alert, Box, Button, Group, Skeleton, Stack, TextInput } from '@mantine/core';
+import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import {
   ArchiveToggle,
   ConfirmModal,
@@ -26,61 +8,36 @@ import {
   ListPaginationFooter,
   listPageStyles,
 } from '@/shared/ui';
-import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
-import { usePagination } from '@/shared/lib/hooks/usePagination';
-import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useMaterialsPage } from '../lib/useMaterialsPage';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
-import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { MaterialsTable } from './MaterialsTable';
 
 export const MaterialsPage: React.FC = () => {
   const { hasPermission } = useAccess();
-  const [search, setSearch] = React.useState('');
-  const [showArchived, setShowArchived] = React.useState(false);
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [editingId, setEditingId] = React.useState<number | null>(null);
-  const [quantityTargetId, setQuantityTargetId] = React.useState<number | null>(null);
-  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
-
-  const { data: materials, isLoading, isError } = useMaterials(showArchived);
-  const archiveMaterial = useArchiveMaterial();
-  const restoreMaterial = useRestoreMaterial();
-
-  const editing = useResolvedById(materials, editingId);
-  const quantityTarget = useResolvedById(materials, quantityTargetId);
-  const archiveTarget = useResolvedById(materials, archiveTargetId);
-
-  const filtered = React.useMemo(
-    () =>
-      (materials ?? [])
-        .filter((item) => {
-          const q = search.toLowerCase();
-          return !q || item.name.toLowerCase().includes(q) || item.article.toLowerCase().includes(q);
-        })
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    [materials, search],
-  );
-
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } =
-    usePagination(filtered, { defaultPageSize: 20 });
-
-  React.useEffect(() => {
-    resetPage();
-  }, [search, resetPage]);
-
-  const openCreate = React.useCallback(() => {
-    setEditingId(null);
-    setFormOpen(true);
-  }, []);
-  const openEdit = React.useCallback((m: Material) => {
-    setEditingId(m.id);
-    setFormOpen(true);
-  }, []);
-
-  const handleChangeQuantity = React.useCallback((m: Material) => {
-    setFormOpen(false);
-    setQuantityTargetId(m.id);
-  }, []);
+  const {
+    search,
+    setSearch,
+    showArchived,
+    setShowArchived,
+    formOpen,
+    setFormOpen,
+    editing,
+    quantityTarget,
+    setQuantityTargetId,
+    archiveTarget,
+    setArchiveTargetId,
+    isLoading,
+    isError,
+    pagination,
+    openCreate,
+    openEdit,
+    handleChangeQuantity,
+    restoreMaterial,
+    archiveMaterial,
+    confirmArchive,
+  } = useMaterialsPage();
 
   if (isLoading) {
     return (
@@ -112,6 +69,8 @@ export const MaterialsPage: React.FC = () => {
       </ListPageShell>
     );
   }
+
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = pagination;
 
   return (
     <ListPageShell
@@ -150,92 +109,19 @@ export const MaterialsPage: React.FC = () => {
         />
       }
     >
-      <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th className={listPageStyles.headCell}>Артикул</Table.Th>
-            <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={200}>Кол-во</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={200}>Цена продажи</Table.Th>
-            <Table.Th className={listPageStyles.headCell} w={48} />
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {paginatedItems.length === 0 ? (
-            <Table.Tr>
-              <Table.Td colSpan={5}>
-                <Text size="sm" c="dimmed" ta="center" py="xl">
-                  Материалы не найдены
-                </Text>
-              </Table.Td>
-            </Table.Tr>
-          ) : (
-            paginatedItems.map((material) => (
-              <Table.Tr
-                key={material.id}
-                className={`${listPageStyles.row} ${!showArchived && hasPermission(PermissionCode.MATERIAL_UPDATE) ? listPageStyles.rowClickable : ''}`}
-                onClick={
-                  !showArchived && hasPermission(PermissionCode.MATERIAL_UPDATE)
-                    ? () => openEdit(material)
-                    : undefined
-                }
-              >
-                <Table.Td className={listPageStyles.bodyCell}>
-                  <Text size="sm" ff="monospace" c="rgba(72,72,72,0.4)">
-                    {material.article}
-                  </Text>
-                </Table.Td>
-                <Table.Td className={listPageStyles.bodyCell}>
-                  <Text size="sm" fw={400} c="#484848">
-                    {material.name}
-                  </Text>
-                </Table.Td>
-                <Table.Td className={listPageStyles.bodyCell}>
-                  <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                    {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
-                  </Text>
-                </Table.Td>
-                <Table.Td className={listPageStyles.bodyCell}>
-                  <Text size="sm" fw={600} c="#484848">
-                    {formatPrice(material.sell_price)}
-                  </Text>
-                </Table.Td>
-                <Table.Td className={listPageStyles.bodyCell}>
-                  {hasPermission(PermissionCode.MATERIAL_MANAGE) && (
-                    showArchived ? (
-                      <ActionIcon
-                        variant="subtle"
-                        color="gray"
-                        size="sm"
-                        aria-label="Восстановить"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          restoreMaterial.mutate(material.id);
-                        }}
-                      >
-                        <ArrowCounterClockwiseIcon size={18} />
-                      </ActionIcon>
-                    ) : (
-                      <ActionIcon
-                        variant="subtle"
-                        color="orange"
-                        size="sm"
-                        aria-label="Архивировать"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setArchiveTargetId(material.id);
-                        }}
-                      >
-                        <ArchiveIcon size={18} />
-                      </ActionIcon>
-                    )
-                  )}
-                </Table.Td>
-              </Table.Tr>
-            ))
-          )}
-        </Table.Tbody>
-      </Table>
+      <MaterialsTable
+        items={paginatedItems}
+        showArchived={showArchived}
+        onEdit={openEdit}
+        onArchive={(e, id) => {
+          e.stopPropagation();
+          setArchiveTargetId(id);
+        }}
+        onRestore={(e, id) => {
+          e.stopPropagation();
+          restoreMaterial.mutate(id);
+        }}
+      />
 
       <MaterialFormModal
         opened={formOpen}
@@ -249,12 +135,7 @@ export const MaterialsPage: React.FC = () => {
         title="Архивировать материал"
         message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал будет скрыт из списка.`}
         loading={archiveMaterial.isPending}
-        onConfirm={() =>
-          archiveTarget &&
-          archiveMaterial.mutate(archiveTarget.id, {
-            onSuccess: () => setArchiveTargetId(null),
-          })
-        }
+        onConfirm={confirmArchive}
         onClose={() => setArchiveTargetId(null)}
       />
     </ListPageShell>

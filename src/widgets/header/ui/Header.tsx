@@ -1,35 +1,12 @@
 import React from 'react';
-import {
-  ActionIcon,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Image,
-  Indicator,
-  Menu,
-  Modal,
-  PasswordInput,
-  Popover,
-  ScrollArea,
-  Stack,
-  Text,
-  UnstyledButton,
-} from '@mantine/core';
-import { BellIcon, KeyIcon, ListIcon, SignOutIcon } from '@phosphor-icons/react';
+import { ActionIcon, Box, Group, Image, Text } from '@mantine/core';
+import { ListIcon } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import { useNotifications } from '@/shared/api/hooks/useNotifications';
-import { useLogout, useChangePassword } from '@/shared/api/hooks/useAuth';
-import { useMe } from '@/shared/api/hooks/useMe';
 import { authStorage } from '@/shared/api/client';
-import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
-import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
-import { formatDateTime } from '@/shared/lib/format';
-import { addNotification } from '@/shared/lib/notifications';
-import { AUTH_ENABLED } from '@/shared/config/env';
 import LogoSvg from '@/shared/assets/logo.svg?url';
 import MiniLogoSvg from '@/shared/assets/miniLogo.svg?url';
+import { HeaderNotifications } from './HeaderNotifications';
+import { HeaderUserMenu } from './HeaderUserMenu';
 import styles from './header.module.css';
 
 interface HeaderProps {
@@ -38,60 +15,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
-  const { connected } = useNotificationsWs();
-  const { data: notifications } = useNotifications();
-  const { data: me } = useMe();
-  const logout = useLogout();
-  const changePassword = useChangePassword();
-
-  const meInitials = React.useMemo(() => {
-    if (!me) return 'A';
-    return [me.firstname?.[0], me.lastname?.[0]].filter(Boolean).join('').toUpperCase() || me.login[0]?.toUpperCase() || 'A';
-  }, [me]);
-
-  const meDisplayName = React.useMemo(() => {
-    if (!me) return '';
-    return [me.firstname, me.lastname].filter(Boolean).join(' ') || me.login;
-  }, [me]);
-  const recent = React.useMemo(
-    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').slice(0, 5),
-    [notifications],
-  );
-  const unreadCount = React.useMemo(
-    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').length,
-    [notifications],
-  );
-
-  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false);
-  const [oldPassword, setOldPassword] = React.useState('');
-  const [newPassword, setNewPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
-
-  const handleLogout = () => {
-    logout.mutate();
-  };
-
-  const handleChangePassword = () => {
-    if (newPassword !== confirmPassword) {
-      addNotification.error({ message: 'Пароли не совпадают' });
-      return;
-    }
-    changePassword.mutate(
-      { old_password: oldPassword, new_password: newPassword },
-      {
-        onSuccess: () => {
-          setChangePasswordOpen(false);
-          setOldPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-        },
-      }
-    );
-  };
-
-  const isPasswordValid = oldPassword && newPassword && newPassword === confirmPassword && newPassword.length >= 6;
   const tenantName = authStorage.getTenantName() ?? 'Salon CRM';
-  const hasUnread = unreadCount > 0;
 
   return (
     <header className={styles.header}>
@@ -124,143 +48,10 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
         </Text>
 
         <Group gap="sm" className={styles.right}>
-          <Popover width={320} position="bottom-end" shadow="md" radius="md">
-            <Popover.Target>
-              <Indicator
-                label={hasUnread ? String(unreadCount) : undefined}
-                color="red"
-                size={16}
-                offset={4}
-                disabled={!hasUnread}
-                processing={hasUnread}
-              >
-                <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
-                  <BellIcon size={20} />
-                </ActionIcon>
-              </Indicator>
-            </Popover.Target>
-            <Popover.Dropdown p={0}>
-              <Stack gap={0}>
-                <Group justify="space-between" px="md" py="sm">
-                  <Text size="sm" fw={600}>
-                    Уведомления
-                  </Text>
-                  <Badge size="xs" variant="light" color={connected ? 'green' : 'gray'}>
-                    {connected ? 'online' : 'offline'}
-                  </Badge>
-                </Group>
-                <ScrollArea.Autosize mah={280}>
-                  {recent.length === 0 ? (
-                    <Text size="sm" c="dimmed" px="md" py="sm">
-                      Нет уведомлений
-                    </Text>
-                  ) : (
-                    recent.map((item) => (
-                      <Box key={item.id} className={styles.notificationItem}>
-                        <Text size="sm" fw={500} lineClamp={1}>
-                          {item.title ?? 'Уведомление'}
-                        </Text>
-                        <Text size="xs" c="dimmed" lineClamp={2}>
-                          {item.body}
-                        </Text>
-                        <Text size="xs" c="dimmed" mt={4}>
-                          {formatDateTime(item.scheduled_at)}
-                        </Text>
-                      </Box>
-                    ))
-                  )}
-                </ScrollArea.Autosize>
-                <Link to="/notifications" className={styles.notificationsLink}>
-                  Все уведомления
-                </Link>
-              </Stack>
-            </Popover.Dropdown>
-          </Popover>
-
-          {AUTH_ENABLED ? (
-            <Menu shadow="md" width={200} position="bottom-end" radius="md">
-              <Menu.Target>
-                <UnstyledButton className={styles.avatarTarget} aria-label="Аккаунт">
-                  <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
-                </UnstyledButton>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Label>{meDisplayName || 'Аккаунт'}</Menu.Label>
-                <Menu.Item
-                  leftSection={<KeyIcon size={14} />}
-                  onClick={() => setChangePasswordOpen(true)}
-                >
-                  Сменить пароль
-                </Menu.Item>
-                <Menu.Divider />
-                <Menu.Item
-                  leftSection={<SignOutIcon size={14} />}
-                  color="red"
-                  onClick={handleLogout}
-                  disabled={logout.isPending}
-                >
-                  {logout.isPending ? 'Выход...' : 'Выйти'}
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          ) : (
-            <Avatar size="sm" radius="md" color="sage">
-              CRM
-            </Avatar>
-          )}
+          <HeaderNotifications />
+          <HeaderUserMenu />
         </Group>
       </Box>
-
-      <Modal
-        opened={changePasswordOpen}
-        onClose={() => setChangePasswordOpen(false)}
-        title="Смена пароля"
-        radius="md"
-      >
-        <Stack gap="md">
-          <PasswordInput
-            label="Текущий пароль"
-            required
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.currentTarget.value)}
-          />
-          <PasswordInput
-            label="Новый пароль"
-            required
-            description="Минимум 6 символов"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.currentTarget.value)}
-            error={newPassword && newPassword.length < 6 ? 'Минимум 6 символов' : undefined}
-          />
-          <PasswordInput
-            label="Подтверждение пароля"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.currentTarget.value)}
-            error={
-              confirmPassword && newPassword !== confirmPassword
-                ? 'Пароли не совпадают'
-                : undefined
-            }
-          />
-          <Group justify="flex-end" mt="md">
-            <Button
-              variant="subtle"
-              color="gray"
-              onClick={() => setChangePasswordOpen(false)}
-            >
-              Отмена
-            </Button>
-            <Button
-              onClick={handleChangePassword}
-              loading={changePassword.isPending}
-              disabled={!isPasswordValid}
-            >
-              Сменить пароль
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
     </header>
   );
 };

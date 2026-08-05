@@ -1,31 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import {
-  Avatar,
-  Card,
-  Group,
-  Text,
-  Badge,
-  Button,
-  ActionIcon,
-  Tabs,
-  Skeleton,
-  Alert,
-  CopyButton,
-  Tooltip,
-  Box,
-  ScrollArea,
-} from '@mantine/core';
-import {
-  ArchiveIcon,
-  ArrowLeftIcon,
-  CakeIcon,
-  CheckIcon,
-  CopyIcon,
-  LockKeyIcon,
-  PencilSimpleIcon,
-  PhoneIcon,
-} from '@phosphor-icons/react';
+import { Alert, Box, Button, ScrollArea, Skeleton, Tabs } from '@mantine/core';
+import { ArrowLeftIcon } from '@phosphor-icons/react';
 import {
   useEmployee,
   useUpdateEmployee,
@@ -35,30 +11,24 @@ import { useResetPassword } from '@/shared/api/hooks/useAuth';
 import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-
-import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { getEmployeeFullName } from '@/shared/lib/format';
+import { isTabValue, type TabValue } from '../lib/profileTabs';
+import { EmployeeProfileHeader } from './EmployeeProfileHeader';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
 import { PaymentsTab } from './tabs/PaymentsTab';
 import { FinanceTab } from './tabs/FinanceTab';
 import { ServicesTab } from './tabs/ServicesTab';
-import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './employee-profile.module.css';
-
-const TAB_VALUES = ['overview', 'schedule', 'payments', 'finance', 'services', 'audit'] as const;
-type TabValue = (typeof TAB_VALUES)[number];
-
-const isTabValue = (value: string | null): value is TabValue =>
-  TAB_VALUES.includes(value as TabValue);
 
 export const EmployeeProfilePage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasPermission } = useAccess();
   const [searchParams, setSearchParams] = useSearchParams();
   const [editOpen, setEditOpen] = React.useState(false);
   const [archiveOpen, setArchiveOpen] = React.useState(false);
+  const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
 
   const employeeId = Number(id);
   const { data: employee, isLoading, isFetching, isError } = useEmployee(employeeId);
@@ -66,9 +36,6 @@ export const EmployeeProfilePage: React.FC = () => {
   const archiveEmployee = useArchiveEmployee();
   const resetPassword = useResetPassword();
 
-  const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
-
-  // BUG-006: Очистка результата сброса пароля при размонтировании или смене сотрудника
   React.useEffect(() => {
     return () => setResetPasswordResult(null);
   }, [employeeId]);
@@ -96,20 +63,17 @@ export const EmployeeProfilePage: React.FC = () => {
 
   const handleResetPassword = React.useCallback(() => {
     resetPassword.mutate(employeeId, {
-      onSuccess: (result) => {
-        setResetPasswordResult(result.new_password);
-      },
+      onSuccess: (result) => setResetPasswordResult(result.new_password),
     });
   }, [resetPassword, employeeId]);
-  
-  // BUG-004: Валидация ID из URL
+
   if (!id || isNaN(employeeId) || employeeId <= 0) {
     return (
       <Box className={styles.page}>
-        <Button 
-          variant="subtle" 
-          leftSection={<ArrowLeftIcon size={16} />} 
-          onClick={() => navigate('/employees')} 
+        <Button
+          variant="subtle"
+          leftSection={<ArrowLeftIcon size={16} />}
+          onClick={() => navigate('/employees')}
           w="fit-content"
         >
           К сотрудникам
@@ -121,7 +85,6 @@ export const EmployeeProfilePage: React.FC = () => {
     );
   }
 
-  // BUG-013: Показывать loading при переходе между сотрудниками
   if (isLoading || (isFetching && !employee)) {
     return (
       <Box className={styles.page}>
@@ -134,7 +97,12 @@ export const EmployeeProfilePage: React.FC = () => {
   if (isError || !employee) {
     return (
       <Box className={styles.page}>
-        <Button variant="subtle" leftSection={<ArrowLeftIcon size={16} />} onClick={() => navigate('/employees')} w="fit-content">
+        <Button
+          variant="subtle"
+          leftSection={<ArrowLeftIcon size={16} />}
+          onClick={() => navigate('/employees')}
+          w="fit-content"
+        >
           К сотрудникам
         </Button>
         <Alert color="red" title="Сотрудник не найден">
@@ -146,102 +114,16 @@ export const EmployeeProfilePage: React.FC = () => {
 
   return (
     <Box className={styles.page}>
-      <Box className={styles.pageTop}>
-        <Button variant="subtle" color="gray" leftSection={<ArrowLeftIcon size={16} />} onClick={() => navigate('/employees')} w="fit-content">
-          К сотрудникам
-        </Button>
-
-        <Card padding="md" radius="md" withBorder className={styles.headerCard}>
-          <Box className={styles.headerLeft}>
-            <Avatar radius="md" size={64} color="sage">
-              {getEmployeeInitials(employee)}
-            </Avatar>
-            <Box>
-              <Group gap={10}>
-                <Text fw={700} size="xl">
-                  {getEmployeeFullName(employee)}
-                </Text>
-                <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
-                  {employee.active ? 'Активен' : 'Неактивен'}
-                </Badge>
-              </Group>
-              <Box className={styles.contactRow}>
-                <Group gap={5}>
-                  <PhoneIcon size={14} color="var(--mantine-color-gray-5)" />
-                  <Text size="sm" c="dimmed">{employee.phone || '—'}</Text>
-                </Group>
-                <Group gap={5}>
-                  <CakeIcon size={14} color="var(--mantine-color-gray-5)" />
-                  <Text size="sm" c="dimmed">{employee.birth_date || '—'}</Text>
-                </Group>
-              </Box>
-            </Box>
-          </Box>
-
-          <Group gap="sm">
-            {hasPermission(PermissionCode.EMPLOYEE_UPDATE) && (
-              <Button variant="light" leftSection={<PencilSimpleIcon size={16} />} onClick={() => setEditOpen(true)}>
-                Редактировать
-              </Button>
-            )}
-            {hasPermission(PermissionCode.EMPLOYEE_MANAGE) && (
-              <>
-                <Button
-                  variant="light"
-                  leftSection={<LockKeyIcon size={16} />}
-                  onClick={handleResetPassword}
-                  loading={resetPassword.isPending}
-                >
-                  Сбросить пароль
-                </Button>
-                {employee.active && (
-                  <ActionIcon
-                    variant="light"
-                    color="orange"
-                    size="lg"
-                    aria-label="Архивировать"
-                    onClick={() => setArchiveOpen(true)}
-                  >
-                    <ArchiveIcon size={18} />
-                  </ActionIcon>
-                )}
-              </>
-            )}
-          </Group>
-        </Card>
-
-        {resetPasswordResult && (
-          <Alert
-            color="sage"
-            title="Пароль сброшен"
-            onClose={() => setResetPasswordResult(null)}
-            withCloseButton
-          >
-            <Group gap="sm">
-              <Text size="sm" fw={600} component="div">
-                Новый пароль: <Box component="code" style={{ fontFamily: 'monospace', background: 'var(--mantine-color-gray-1)', padding: '2px 6px', borderRadius: '4px' }}>{resetPasswordResult}</Box>
-              </Text>
-              <CopyButton value={resetPasswordResult}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Скопировано!' : 'Скопировать'} withArrow>
-                    <ActionIcon
-                      color={copied ? 'teal' : 'sage'}
-                      variant="light"
-                      onClick={copy}
-                      size="sm"
-                    >
-                      {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
-            </Group>
-            <Text size="xs" c="dimmed" mt="xs">
-              Обязательно передайте этот пароль сотруднику
-            </Text>
-          </Alert>
-        )}
-      </Box>
+      <EmployeeProfileHeader
+        employee={employee}
+        resetPasswordResult={resetPasswordResult}
+        resetPasswordPending={resetPassword.isPending}
+        onBack={() => navigate('/employees')}
+        onEdit={() => setEditOpen(true)}
+        onResetPassword={handleResetPassword}
+        onArchive={() => setArchiveOpen(true)}
+        onDismissPasswordResult={() => setResetPasswordResult(null)}
+      />
 
       <ScrollArea className={styles.pageBody} offsetScrollbars>
         <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>

@@ -2,8 +2,8 @@ import React from 'react';
 import { Button, Group } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import { ArchiveToggle, ListPageShell, ListTabs } from '@/shared/ui';
-import { StaffTab, type StaffTabHandle } from './StaffTab';
-import { RolesTab, type RolesTabHandle } from './RolesTab';
+import { StaffTab, type StaffTabHandle } from './staff';
+import { RolesTab, type RolesTabHandle } from './roles';
 
 export const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState('staff');

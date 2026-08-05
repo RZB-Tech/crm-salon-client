@@ -1,29 +1,17 @@
 import React from 'react';
-import { Alert, Box, Button, Group, Loader, Select, Skeleton, Stack, Text } from '@mantine/core';
-import { Plus } from '@phosphor-icons/react';
-import type { AppointmentCancelledReason } from '@/shared/api/types';
-import { APPOINTMENT_CANCELLED_REASON_OPTIONS } from '@/shared/lib/format';
+import { Alert, Box, Loader, Text } from '@mantine/core';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
-import { ArchiveToggle } from '@/shared/ui';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useLoading } from '@/shared/lib/contexts/LoadingContext';
 import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
 import { AppointmentFormModal } from './AppointmentForm';
-import { BoardSidebar } from './Sidebar';
+import { BoardCancelConfirmModal } from './BoardCancelConfirmModal';
 import { BoardSchedule } from './BoardSchedule';
-import { EmployeeFilterPopover } from './EmployeeFilterPopover';
+import { BoardSkeleton } from './BoardSkeleton';
+import { BoardToolbar } from './BoardToolbar';
+import { BoardSidebar } from './Sidebar';
 import styles from './board-page.module.css';
-
-const BoardSkeleton: React.FC = () => (
-  <Stack gap={0} h="100%" className={styles.skeletonRoot}>
-    <Skeleton height={56} radius={0} mb={0} />
-    <Box className={styles.skeletonBody}>
-      <Skeleton height="100%" width="100%" radius={0} />
-      <Skeleton height="100%" width={320} radius={0} />
-    </Box>
-  </Stack>
-);
 
 export const BoardPage: React.FC = () => {
   const board = useBoardData();
@@ -39,8 +27,6 @@ export const BoardPage: React.FC = () => {
     cancelAppointment: board.cancelAppointment,
   });
 
-  // Отключаем branded loader когда критические данные загружены
-  // (минимум ~4с удерживается в LoadingContext)
   React.useEffect(() => {
     if (!board.isInitialLoading && globalLoading) {
       setIsLoading(false);
@@ -58,7 +44,6 @@ export const BoardPage: React.FC = () => {
   );
 
   if (board.isInitialLoading) {
-    // Если есть глобальный loader, не показываем скелетон
     if (globalLoading) return null;
     return <BoardSkeleton />;
   }
@@ -84,31 +69,16 @@ export const BoardPage: React.FC = () => {
         </Box>
       )}
 
-      <Box className={styles.toolbar}>
-        <Box className={styles.toolbarMain}>
-          {board.boardEmployees.length > 0 && (
-            <EmployeeFilterPopover
-              employees={board.boardEmployees}
-              selectedIds={board.employeeFilter}
-              onChange={board.setEmployeeFilter}
-              embedded
-            />
-          )}
-        </Box>
-        <Group gap={8} wrap="nowrap">
-          {hasPermission(PermissionCode.APPOINTMENT_CREATE) && (
-            <Button
-              leftSection={<Plus size={16} />}
-              size="sm"
-              onClick={() => form.openCreateForm()}
-              disabled={board.employeeOptions.length === 0}
-            >
-              Новая запись
-            </Button>
-          )}
-          <ArchiveToggle active={board.showArchived} onChange={board.setShowArchived} />
-        </Group>
-      </Box>
+      <BoardToolbar
+        boardEmployees={board.boardEmployees}
+        employeeFilter={board.employeeFilter}
+        onEmployeeFilterChange={board.setEmployeeFilter}
+        showArchived={board.showArchived}
+        onShowArchivedChange={board.setShowArchived}
+        canCreateAppointment={hasPermission(PermissionCode.APPOINTMENT_CREATE)}
+        canOpenCreateForm={board.employeeOptions.length > 0}
+        onCreateAppointment={() => form.openCreateForm()}
+      />
 
       <Box className={styles.body}>
         <Box className={styles.main}>
@@ -169,31 +139,15 @@ export const BoardPage: React.FC = () => {
         onClose={() => form.setDeleteConfirmOpen(false)}
       />
 
-      <ConfirmModal
+      <BoardCancelConfirmModal
         opened={form.cancelConfirmOpen}
-        title="Отменить запись"
-        message="Отменить эту запись? Она останется в системе, но будет помечена как отменённая. Оплаченные записи и записи с активным чеком отменить нельзя — сначала отмените чек."
-        confirmLabel="Отменить запись"
         loading={board.cancelAppointment.isPending}
-        confirmDisabled={!form.cancelReason || form.hasActiveReceipt}
+        hasActiveReceipt={form.hasActiveReceipt}
+        cancelReason={form.cancelReason}
+        onCancelReasonChange={form.setCancelReason}
         onConfirm={form.handleCancel}
         onClose={() => form.setCancelConfirmOpen(false)}
-      >
-        {form.hasActiveReceipt && (
-          <Alert color="orange" mb="sm">
-            Есть активный чек. Сначала отмените его в блоке оплаты.
-          </Alert>
-        )}
-        <Select
-          label="Причина отмены"
-          data={APPOINTMENT_CANCELLED_REASON_OPTIONS}
-          value={form.cancelReason}
-          onChange={(value) => {
-            if (value) form.setCancelReason(value as AppointmentCancelledReason);
-          }}
-          allowDeselect={false}
-        />
-      </ConfirmModal>
+      />
     </Box>
   );
 };

@@ -1,19 +1,8 @@
 import React from 'react';
-import {
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  Group,
-  Popover,
-  ScrollArea,
-  Text,
-  TextInput,
-} from '@mantine/core';
-import { MagnifyingGlassIcon, Users } from '@phosphor-icons/react';
+import { Popover } from '@mantine/core';
 import type { Employee } from '@/shared/api/types';
-import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { EmployeeFilterDropdown } from './EmployeeFilterDropdown';
+import { EmployeeFilterTrigger } from './EmployeeFilterTrigger';
 
 import styles from './employee-filter-popover.module.css';
 
@@ -28,18 +17,10 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
   employees,
   selectedIds,
   onChange,
-  embedded = false
+  embedded = false,
 }) => {
   const [opened, setOpened] = React.useState(false);
   const [search, setSearch] = React.useState('');
-
-  const filteredEmployees = React.useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return employees;
-    return employees.filter((employee) =>
-      getEmployeeFullName(employee).toLowerCase().includes(query)
-    );
-  }, [employees, search]);
 
   const handleToggle = React.useCallback(
     (id: number) => {
@@ -48,7 +29,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
       else next.add(id);
       onChange(next);
     },
-    [onChange, selectedIds]
+    [onChange, selectedIds],
   );
 
   const handleSelectAll = React.useCallback(() => {
@@ -69,97 +50,30 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
     <Popover
       opened={opened}
       onChange={setOpened}
-      position='bottom-end'
+      position="bottom-end"
       width={320}
-      shadow='md'
-      radius='md'
+      shadow="md"
+      radius="md"
     >
       <Popover.Target>
-        <Button
-          variant={
-            embedded
-              ? selectedIds.size > 0
-                ? 'light'
-                : 'subtle'
-              : selectedIds.size > 0
-                ? 'light'
-                : 'default'
-          }
-          color={selectedIds.size > 0 ? 'sage' : 'gray'}
-          size='sm'
-          leftSection={<Users size={16} />}
-          rightSection={
-            selectedIds.size > 0 ? (
-              <Badge size='xs' variant='filled' circle>
-                {selectedIds.size}
-              </Badge>
-            ) : undefined
-          }
+        <EmployeeFilterTrigger
+          embedded={embedded}
+          selectedCount={selectedIds.size}
+          label={buttonLabel}
           onClick={() => setOpened((value) => !value)}
-        >
-          {buttonLabel}
-        </Button>
+        />
       </Popover.Target>
 
       <Popover.Dropdown className={styles.employeeFilterPopover}>
-        <TextInput
-          className={styles.employeeFilterSearch}
-          placeholder='Поиск сотрудника'
-          leftSection={<MagnifyingGlassIcon size={16} />}
-          value={search}
-          onChange={(event) => setSearch(event.currentTarget.value)}
+        <EmployeeFilterDropdown
+          employees={employees}
+          selectedIds={selectedIds}
+          search={search}
+          onSearchChange={setSearch}
+          onToggle={handleToggle}
+          onSelectAll={handleSelectAll}
+          onReset={handleReset}
         />
-
-        <Group className={styles.employeeFilterActions}>
-          <Button variant='subtle' size='xs' color='gray' onClick={handleSelectAll}>
-            Выбрать всех
-          </Button>
-          <Button variant='subtle' size='xs' color='gray' onClick={handleReset}>
-            Сбросить
-          </Button>
-        </Group>
-
-        <ScrollArea.Autosize mah={320} offsetScrollbars>
-          {filteredEmployees.length === 0 ? (
-            <Text size='sm' c='dimmed' className={styles.employeeFilterEmpty}>
-              Ничего не найдено
-            </Text>
-          ) : (
-            filteredEmployees.map((employee) => {
-              const checked = selectedIds.has(employee.id);
-              const name = getEmployeeFullName(employee);
-              return (
-                <Box
-                  key={employee.id}
-                  className={styles.employeeFilterRow}
-                  onClick={() => handleToggle(employee.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      handleToggle(employee.id);
-                    }
-                  }}
-                  role='checkbox'
-                  aria-checked={checked}
-                  tabIndex={0}
-                >
-                  <Checkbox
-                    checked={checked}
-                    onChange={() => handleToggle(employee.id)}
-                    onClick={(event) => event.stopPropagation()}
-                    aria-label={name}
-                  />
-                  <Avatar radius="md" size="sm" color="sage">
-                    {getEmployeeInitials(employee)}
-                  </Avatar>
-                  <Text size='sm' lineClamp={1} className={styles.employeeFilterName}>
-                    {name}
-                  </Text>
-                </Box>
-              );
-            })
-          )}
-        </ScrollArea.Autosize>
       </Popover.Dropdown>
     </Popover>
   );
