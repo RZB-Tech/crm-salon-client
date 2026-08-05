@@ -109,7 +109,7 @@ const syncServiceLines = async (
 /**
  * Порядок операций при редактировании:
  * 1. status / notes — PATCH /appointments (можно всегда, кроме cancelled)
- * 2. клиент / время — API не поддерживает; только archive + create (если нет активного чека)
+ * 2. клиент / время — API не поддерживает; только create + archive (если нет активного чека)
  * 3. сотрудник / услуги / товары — только без активного чека
  * 4. оплата — отдельно: создать чек → make_payment; правка состава — сначала cancel receipt
  */
@@ -169,15 +169,31 @@ export const syncAppointmentEdit = async ({
       );
     }
 
+    // Create first, archive only after success — otherwise a failed POST
+    // would leave the original appointment archived with no replacement.
     const createPayload = formValuesToPayload(values);
-    await apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', {
-      id: appointment.id,
-      archived: true,
-    });
     const created = await apiPost<Appointment, AppointmentCreatePayload>(
       '/api/v1/appointments',
       createPayload,
     );
+
+    try {
+      await apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', {
+        id: appointment.id,
+        archived: true,
+      });
+    } catch (archiveError) {
+      // New appointment exists; roll it back so the user is not left with duplicates.
+      try {
+        await apiPatch<Appointment, AppointmentUpdatePayload>('/api/v1/appointments', {
+          id: created.id,
+          archived: true,
+        });
+      } catch {
+        // Best-effort cleanup; rethrow the original archive failure.
+      }
+      throw archiveError;
+    }
 
     const status = editableStatus(values.status);
     if (status && status !== 'awaiting') {

@@ -118,7 +118,9 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
   }, []);
 
   const submitSchedule = React.useCallback(() => {
-    if (dayEntries.length === 0) return;
+    // Empty schedule is valid when editing (clears all working days).
+    // Creating a brand-new empty schedule is a no-op.
+    if (dayEntries.length === 0 && !hasSchedule) return;
 
     if (hasSchedule) {
       // Update existing schedule entries
@@ -135,7 +137,7 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
       const newDays = dayEntries.filter((e) => !dayScheduleMap.has(e.day));
       const removedDays = schedules.filter((s) => !dayEntries.some((e) => e.day === s.day));
 
-      // Delete removed days
+      // Delete removed days (including the case when all days were cleared)
       for (const removed of removedDays) {
         deleteSchedule.mutate(removed.id);
       }
@@ -355,8 +357,8 @@ export const ScheduleTab: React.FC<ScheduleTabProps> = ({ employeeId }) => {
           <Button variant="subtle" color="gray" onClick={() => setScheduleFormOpen(false)}>Отмена</Button>
           <Button
             onClick={submitSchedule}
-            loading={createSchedule.isPending || updateSchedule.isPending}
-            disabled={dayEntries.length === 0}
+            loading={createSchedule.isPending || updateSchedule.isPending || deleteSchedule.isPending}
+            disabled={!hasSchedule && dayEntries.length === 0}
           >
             Сохранить
           </Button>

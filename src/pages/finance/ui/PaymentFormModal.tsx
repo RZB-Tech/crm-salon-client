@@ -39,6 +39,17 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     setAddChangeToDeposit(false);
   });
 
+  const handleReceiptChange = React.useCallback(
+    (value: string | null) => {
+      setReceiptId(value);
+      const receipt = value != null
+        ? (receipts ?? []).find((r) => String(r.id) === value)
+        : null;
+      setAmount(receipt?.remaining_amount ?? 0);
+    },
+    [receipts],
+  );
+
   const handleSubmit = React.useCallback(() => {
     if (!receiptId) return;
     createPayment.mutate(
@@ -54,7 +65,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
 
   return (
     <Modal opened={opened} onClose={onClose} title="Провести оплату" radius="md">
-      <Select label="Чек" searchable mb="md" data={pendingReceiptOptions} value={receiptId} onChange={setReceiptId} />
+      <Select label="Чек" searchable mb="md" data={pendingReceiptOptions} value={receiptId} onChange={handleReceiptChange} />
       <NumberInput
         label="Сумма"
         min={1}

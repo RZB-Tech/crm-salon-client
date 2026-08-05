@@ -55,6 +55,7 @@ export const FinancePage: React.FC = () => {
       );
     }
     if (tab === 'transactions') {
+      if (!hasPermission(PermissionCode.TRANSACTION_CREATE)) return null;
       return (
         <Button
           color="sage.7"
@@ -67,6 +68,7 @@ export const FinancePage: React.FC = () => {
       );
     }
     if (tab === 'payouts') {
+      if (!hasPermission(PermissionCode.PAYOUT_CREATE)) return null;
       return (
         <Button
           color="sage.7"
