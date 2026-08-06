@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button, Group, Modal, Stack } from '@mantine/core';
+import { UserIcon } from '@phosphor-icons/react';
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { Employee, EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { FormModal, FormModalFooter } from '@/shared/ui';
 import {
   emptyEmployeeForm,
   employeeToForm,
@@ -49,6 +50,9 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const errors = React.useMemo(() => validateEmployeeForm(form), [form]);
   const isValid = Object.keys(errors).length === 0;
 
+  const initials =
+    [form.firstname[0], form.lastname[0]].filter(Boolean).join('').toUpperCase() || null;
+
   const handleSubmit = React.useCallback(() => {
     if (!isValid) return;
     if (employee) {
@@ -59,33 +63,34 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   }, [form, employee, onSubmit, isValid]);
 
   return (
-    <Modal
+    <FormModal
       opened={opened}
       onClose={onClose}
       title={employee ? 'Редактировать сотрудника' : 'Новый сотрудник'}
-      radius="md"
+      subtitle="Личные данные, услуги и зарплата"
+      initials={initials}
+      icon={<UserIcon size={22} />}
       size="lg"
-    >
-      <Stack gap="md">
-        <EmployeePersonalFields
-          form={form}
-          errors={errors}
-          serviceOptions={serviceOptions}
-          specializationOptions={specializationOptions}
-          servicesLoading={servicesLoading}
-          specializationsLoading={specializationsLoading}
-          onChange={setForm}
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={employee ? 'Сохранить' : 'Создать'}
+          onSubmit={handleSubmit}
+          submitDisabled={!isValid}
+          loading={loading}
         />
-        <EmployeeSalaryFields form={form} onChange={setForm} />
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={onClose}>
-            Отмена
-          </Button>
-          <Button onClick={handleSubmit} loading={loading} disabled={!isValid}>
-            {employee ? 'Сохранить' : 'Создать'}
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+      }
+    >
+      <EmployeePersonalFields
+        form={form}
+        errors={errors}
+        serviceOptions={serviceOptions}
+        specializationOptions={specializationOptions}
+        servicesLoading={servicesLoading}
+        specializationsLoading={specializationsLoading}
+        onChange={setForm}
+      />
+      <EmployeeSalaryFields form={form} onChange={setForm} />
+    </FormModal>
   );
 };

@@ -1,17 +1,7 @@
-import {
-  ActionIcon,
-  Alert,
-  Button,
-  CopyButton,
-  Group,
-  Modal,
-  Paper,
-  PasswordInput,
-  Stack,
-  Text,
-  Tooltip,
-} from '@mantine/core';
-import { Check, Copy } from '@phosphor-icons/react';
+import { PasswordInput, Stack, Text } from '@mantine/core';
+import { KeyIcon } from '@phosphor-icons/react';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { PasswordResultAlert } from './PasswordResultAlert';
 
 interface ResetPasswordModalProps {
   opened: boolean;
@@ -34,58 +24,54 @@ export function ResetPasswordModal({
   onResetRandom,
   isPending,
 }: ResetPasswordModalProps) {
+  const tooShort = customPassword.length > 0 && customPassword.length < 6;
+
   return (
-    <Modal opened={opened} onClose={onClose} title={`Сброс пароля — ${staffLogin}`} size="sm">
-      <Stack gap="sm">
-        {!resetResult ? (
-          <>
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Сброс пароля"
+      subtitle={staffLogin}
+      icon={<KeyIcon size={22} />}
+      tone="warning"
+      size="md"
+      footer={
+        <FormModalFooter
+          cancelLabel={resetResult ? 'Закрыть' : 'Отмена'}
+          onCancel={onClose}
+          submitLabel={
+            resetResult ? undefined : customPassword ? 'Задать пароль' : 'Сгенерировать случайный'
+          }
+          onSubmit={resetResult ? undefined : onResetRandom}
+          submitDisabled={tooShort}
+          loading={isPending}
+        />
+      }
+    >
+      {resetResult ? (
+        <PasswordResultAlert
+          title="Пароль установлен"
+          label="Новый пароль:"
+          password={resetResult}
+        />
+      ) : (
+        <FormSection title="Новый пароль" hint="Оставьте пустым для генерации случайного">
+          <Stack gap="xs">
             <PasswordInput
-              label="Новый пароль"
-              description="Оставьте пустым для генерации случайного"
               value={customPassword}
               onChange={(e) => onCustomPasswordChange(e.currentTarget.value)}
               placeholder="Мин. 6 символов"
+              error={tooShort ? 'Минимум 6 символов' : undefined}
             />
-            {customPassword && customPassword.length < 6 && (
-              <Text size="xs" c="red">
-                Минимум 6 символов
-              </Text>
-            )}
-            <Button
-              onClick={onResetRandom}
-              loading={isPending}
-              disabled={customPassword.length > 0 && customPassword.length < 6}
-            >
-              {customPassword ? 'Задать пароль' : 'Сгенерировать случайный'}
-            </Button>
             {customPassword && (
-              <Paper p="xs" withBorder>
-                <Text size="xs" c="dimmed">
-                  Пользовательский пароль пока не поддерживается бэкендом. Будет сгенерирован случайный.
-                </Text>
-              </Paper>
-            )}
-          </>
-        ) : (
-          <Alert color="green" title="Пароль установлен">
-            <Group gap="xs">
-              <Text size="sm">Новый пароль:</Text>
-              <Text size="sm" fw={600} ff="monospace">
-                {resetResult}
+              <Text size="xs" c="dimmed">
+                Пользовательский пароль пока не поддерживается бэкендом — будет сгенерирован
+                случайный.
               </Text>
-              <CopyButton value={resetResult}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? 'Скопировано' : 'Копировать'}>
-                    <ActionIcon variant="subtle" size="sm" onClick={copy}>
-                      {copied ? <Check size={14} /> : <Copy size={14} />}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
-            </Group>
-          </Alert>
-        )}
-      </Stack>
-    </Modal>
+            )}
+          </Stack>
+        </FormSection>
+      )}
+    </FormModal>
   );
 }

@@ -25,7 +25,7 @@ export function useStaffTab() {
   const [rolesOpened, { open: openRoles, close: closeRoles }] = useDisclosure(false);
   const [permsOpened, { open: openPerms, close: closePerms }] = useDisclosure(false);
   const [resetOpened, { open: openReset, close: closeReset }] = useDisclosure(false);
-  const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
+  const [detailOpened, { open: openDetail, close: closeDetail }] = useDisclosure(false);
 
   const [form, setForm] = React.useState<CreateForm>(INITIAL_FORM);
   const [createdPassword, setCreatedPassword] = React.useState<string | null>(null);
@@ -51,9 +51,9 @@ export function useStaffTab() {
   const handleSelectStaff = React.useCallback(
     (staff: Staff) => {
       setSelectedStaffId(staff.id);
-      openDrawer();
+      openDetail();
     },
-    [openDrawer],
+    [openDetail],
   );
 
   const handleCreate = React.useCallback(() => {
@@ -153,8 +153,8 @@ export function useStaffTab() {
     closePerms,
     resetOpened,
     closeReset,
-    drawerOpened,
-    closeDrawer,
+    detailOpened,
+    closeDetail,
     form,
     setForm,
     createdPassword,

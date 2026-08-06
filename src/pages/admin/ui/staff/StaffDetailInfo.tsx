@@ -1,5 +1,6 @@
-import { Divider, Group, Paper, Stack, Text } from '@mantine/core';
+import { Text } from '@mantine/core';
 import { formatDateTime } from '@/shared/lib/format';
+import { FormFieldGrid, FormSection } from '@/shared/ui';
 import type { Staff } from '@/shared/api/types';
 
 interface StaffDetailInfoProps {
@@ -22,22 +23,19 @@ const infoRows: { label: string; value: (staff: Staff) => string }[] = [
 
 export function StaffDetailInfo({ staff }: StaffDetailInfoProps) {
   return (
-    <Paper p="md" withBorder>
-      <Stack gap="xs">
-        {infoRows.map((row, index) => (
+    <FormSection title="Учётная запись">
+      <FormFieldGrid cols={2}>
+        {infoRows.map((row) => (
           <div key={row.label}>
-            {index > 0 && <Divider />}
-            <Group justify="space-between">
-              <Text size="sm" c="dimmed">
-                {row.label}
-              </Text>
-              <Text size="sm" fw={500}>
-                {row.value(staff)}
-              </Text>
-            </Group>
+            <Text size="xs" c="dimmed">
+              {row.label}
+            </Text>
+            <Text size="sm" fw={500}>
+              {row.value(staff)}
+            </Text>
           </div>
         ))}
-      </Stack>
-    </Paper>
+      </FormFieldGrid>
+    </FormSection>
   );
 }

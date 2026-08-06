@@ -1,4 +1,5 @@
-import { Badge, Button, Group, Paper, ScrollArea, Stack, Text } from '@mantine/core';
+import { Button, Group, ScrollArea, Stack, Text } from '@mantine/core';
+import { FormSection, formModalStyles } from '@/shared/ui';
 import type { Permission, Staff } from '@/shared/api/types';
 
 interface StaffPermissionsSectionProps {
@@ -13,35 +14,32 @@ export function StaffPermissionsSection({
   onEdit,
 }: StaffPermissionsSectionProps) {
   return (
-    <Paper p="md" withBorder>
-      <Group justify="space-between" mb="xs">
-        <Group gap="xs">
-          <Text size="sm" fw={600}>
-            Индивидуальные разрешения
-          </Text>
-          <Badge size="sm" variant="light" color={staff.permissions.length > 0 ? 'teal' : 'gray'}>
-            {staff.permissions.length}
-          </Badge>
-        </Group>
-        <Button variant="subtle" size="xs" onClick={() => onEdit(staff)}>
+    <FormSection
+      title={`Индивидуальные разрешения · ${staff.permissions.length}`}
+      hint="Добавляются к правам, полученным через роли"
+    >
+      <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {staff.permissions.length > 0 ? (
+            <ScrollArea.Autosize mah={150} type="auto">
+              <Stack gap={4}>
+                {getPermissionNames(staff.permissions).map((permission) => (
+                  <Text key={permission.code} size="xs" c="dimmed">
+                    {permission.resource} → {permission.name}
+                  </Text>
+                ))}
+              </Stack>
+            </ScrollArea.Autosize>
+          ) : (
+            <div className={formModalStyles.emptyState}>
+              Нет прямых разрешений — доступ только через роли
+            </div>
+          )}
+        </div>
+        <Button variant="subtle" size="compact-xs" onClick={() => onEdit(staff)}>
           Изменить
         </Button>
       </Group>
-      {staff.permissions.length > 0 ? (
-        <ScrollArea.Autosize mah={150} type="auto">
-          <Stack gap={4}>
-            {getPermissionNames(staff.permissions).map((p) => (
-              <Text key={p.code} size="xs" c="dimmed">
-                {p.resource} → {p.name}
-              </Text>
-            ))}
-          </Stack>
-        </ScrollArea.Autosize>
-      ) : (
-        <Text size="sm" c="dimmed">
-          Нет прямых разрешений (только через роли)
-        </Text>
-      )}
-    </Paper>
+    </FormSection>
   );
 }

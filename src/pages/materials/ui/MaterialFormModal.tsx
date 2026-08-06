@@ -1,29 +1,15 @@
 import React from 'react';
-import { Button, Group, Modal, NumberInput, Select, Text, Textarea, TextInput } from '@mantine/core';
+import { Badge, Button } from '@mantine/core';
+import { PackageIcon } from '@phosphor-icons/react';
 import { useCreateMaterial, useUpdateMaterial } from '@/shared/api/hooks/useMaterials';
-import type { Material, MaterialCreatePayload, MaterialUpdatePayload, MeasurementUnit } from '@/shared/api/types';
+import type { Material, MaterialCreatePayload, MaterialUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
-
-const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({ value, label }));
-
-interface MaterialFormState {
-  article: string;
-  name: string;
-  description: string;
-  quantity: number;
-  measurement_unit: MeasurementUnit;
-  volume: number;
-  sell_price: number;
-}
-
-const emptyForm = (): MaterialFormState => ({ article: '', name: '', description: '', quantity: 0, measurement_unit: 'piece', volume: 0, sell_price: 0 });
-
-const materialToForm = (m: Material): MaterialFormState => ({
-  article: m.article, name: m.name, description: m.description ?? '', quantity: m.quantity, measurement_unit: m.measurement_unit, volume: m.volume, sell_price: m.sell_price,
-});
+import { emptyMaterialForm, materialToForm, type MaterialFormState } from '../lib/materialForm';
+import { MaterialFormFields } from './MaterialFormFields';
 
 interface MaterialFormModalProps {
   opened: boolean;
@@ -36,68 +22,84 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
   opened,
   material,
   onClose,
-  onChangeQuantity,
+  onChangeQuantity
 }) => {
   const { hasPermission } = useAccess();
-  const [form, setForm] = React.useState<MaterialFormState>(emptyForm);
+  const [form, setForm] = React.useState<MaterialFormState>(emptyMaterialForm);
   const createMaterial = useCreateMaterial();
   const updateMaterial = useUpdateMaterial();
 
-  useResetOnOpen(opened, () => setForm(material ? materialToForm(material) : emptyForm()));
+  useResetOnOpen(opened, () => setForm(material ? materialToForm(material) : emptyMaterialForm()));
 
   const handleSubmit = React.useCallback(() => {
     if (material) {
-      const payload: MaterialUpdatePayload = { id: material.id, article: form.article, name: form.name, description: form.description || null, measurement_unit: form.measurement_unit, volume: form.volume, sell_price: form.sell_price };
+      const payload: MaterialUpdatePayload = {
+        id: material.id,
+        article: form.article,
+        name: form.name,
+        description: form.description || null,
+        measurement_unit: form.measurement_unit,
+        volume: form.volume,
+        sell_price: form.sell_price
+      };
       updateMaterial.mutate(payload, { onSuccess: onClose });
       return;
     }
-    const payload: MaterialCreatePayload = { article: form.article, name: form.name, description: form.description || null, quantity: form.quantity, measurement_unit: form.measurement_unit, volume: form.volume, sell_price: form.sell_price };
+    const payload: MaterialCreatePayload = {
+      article: form.article,
+      name: form.name,
+      description: form.description || null,
+      quantity: form.quantity,
+      measurement_unit: form.measurement_unit,
+      volume: form.volume,
+      sell_price: form.sell_price
+    };
     createMaterial.mutate(payload, { onSuccess: onClose });
   }, [material, form, createMaterial, updateMaterial, onClose]);
 
   const canChangeQuantity =
-    Boolean(material && onChangeQuantity) &&
-    hasPermission(PermissionCode.MATERIAL_UPDATE_QUANTITY);
+    Boolean(material && onChangeQuantity) && hasPermission(PermissionCode.MATERIAL_UPDATE_QUANTITY);
 
   return (
-    <Modal opened={opened} onClose={onClose} title={material ? 'Редактировать материал' : 'Новый материал'} radius="md" size="lg">
-      {canChangeQuantity && material && (
-        <Group mb="md">
-          <Button
-            variant="light"
-            size="sm"
-            onClick={() => onChangeQuantity?.(material)}
-          >
-            Изменить количество
-          </Button>
-          <Text size="sm" c="dimmed">
-            Сейчас: {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
-          </Text>
-        </Group>
-      )}
-      <Group grow mb="md">
-        <TextInput label="Артикул" required value={form.article} onChange={(e) => setForm({ ...form, article: e.currentTarget.value })} />
-        <TextInput label="Название" required value={form.name} onChange={(e) => setForm({ ...form, name: e.currentTarget.value })} />
-      </Group>
-      <Textarea label="Описание" mb="md" value={form.description} onChange={(e) => setForm({ ...form, description: e.currentTarget.value })} />
-      <Group grow mb="md">
-        {!material && <NumberInput label="Начальное количество" min={0} value={form.quantity} onChange={(v) => setForm({ ...form, quantity: Number(v) || 0 })} />}
-        <Select label="Единица измерения" data={MEASUREMENT_OPTIONS} value={form.measurement_unit} onChange={(v) => setForm({ ...form, measurement_unit: (v as MeasurementUnit) ?? 'piece' })} />
-        <NumberInput label="Объём" min={0} value={form.volume} onChange={(v) => setForm({ ...form, volume: Number(v) || 0 })} />
-      </Group>
-      <Group grow mb="md">
-        <NumberInput label="Цена продажи" min={0} value={form.sell_price} onChange={(v) => setForm({ ...form, sell_price: Number(v) || 0 })} />
-      </Group>
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title={material ? 'Редактировать материал' : 'Новый материал'}
+      subtitle={material ? material.article : 'Карточка складской позиции'}
+      icon={<PackageIcon size={22} />}
+      headerAside={
+        material ? (
+          <Badge variant='light' color='sage' size='lg' radius='sm'>
+            {material.quantity} {MEASUREMENT_UNIT_LABELS[material.measurement_unit]}
+          </Badge>
+        ) : undefined
+      }
+      size='lg'
+      footer={
+        <FormModalFooter
+          metaLabel='Цена продажи'
+          metaValue={formatPrice(form.sell_price)}
+          onCancel={onClose}
+          submitLabel={material ? 'Сохранить' : 'Создать'}
+          onSubmit={handleSubmit}
+          submitDisabled={!form.article || !form.name}
+          loading={createMaterial.isPending || updateMaterial.isPending}
+        >
+          {canChangeQuantity && material && (
+            <Button variant='light' size='sm' onClick={() => onChangeQuantity?.(material)}>
+              Изменить количество
+            </Button>
+          )}
+        </FormModalFooter>
+      }
+    >
+      <MaterialFormFields form={form} isEdit={Boolean(material)} onChange={setForm} />
+
       {material && (
-        <>
-          <Text size="sm" fw={600} mb="xs">История изменений</Text>
-          <AuditLogsPanel tableName="materials" recordId={material.id} />
-        </>
+        <FormSection title='История изменений' muted>
+          <AuditLogsPanel tableName='materials' recordId={material.id} />
+        </FormSection>
       )}
-      <Group justify="flex-end" mt={material ? 'md' : undefined}>
-        <Button variant="subtle" color="gray" onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSubmit} loading={createMaterial.isPending || updateMaterial.isPending} disabled={!form.article || !form.name}>{material ? 'Сохранить' : 'Создать'}</Button>
-      </Group>
-    </Modal>
+    </FormModal>
   );
 };

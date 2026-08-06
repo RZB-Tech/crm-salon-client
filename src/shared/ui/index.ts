@@ -2,6 +2,15 @@ export { AuditLogsPanel } from './AuditLogsPanel';
 export { ConfirmModal } from './ConfirmModal';
 export { DataTable, DataTableRow } from './DataTable';
 export type { DataTableColumn } from './DataTable';
+export {
+  FormModal,
+  FormModalFooter,
+  FormModalHeader,
+  FormSection,
+  FormFieldGrid,
+  formModalStyles,
+} from './FormModal';
+export type { FormModalProps, FormModalFooterProps, FormModalTone } from './FormModal';
 export { ListPage } from './ListPage';
 export {
   ListPageShell,

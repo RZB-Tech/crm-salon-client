@@ -1,8 +1,16 @@
 import React from 'react';
-import { Button, Group, Modal, NumberInput, Select } from '@mantine/core';
+import { Badge, NumberInput, Select, Stack } from '@mantine/core';
+import { CurrencyCircleDollarIcon } from '@phosphor-icons/react';
 import { useUpdateClientDeposit } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
+import { formatPrice, getClientFullName } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+
+const OPERATION_OPTIONS = [
+  { value: '1', label: 'Пополнить' },
+  { value: '-1', label: 'Списать' }
+];
 
 interface DepositModalProps {
   client: Client | null;
@@ -21,17 +29,60 @@ export const DepositModal: React.FC<DepositModalProps> = ({ client, onClose }) =
 
   const handleSubmit = React.useCallback(() => {
     if (!client || amount <= 0) return;
-    updateDeposit.mutate({ id: client.id, operation: Number(operation) as 1 | -1, amount }, { onSuccess: onClose });
+    updateDeposit.mutate(
+      { id: client.id, operation: Number(operation) as 1 | -1, amount },
+      { onSuccess: onClose }
+    );
   }, [client, amount, operation, updateDeposit, onClose]);
 
+  const nextBalance = (client?.deposit ?? 0) + Number(operation) * amount;
+
   return (
-    <Modal opened={Boolean(client)} onClose={onClose} title="Изменить депозит" radius="md">
-      <Select label="Операция" mb="md" data={[{ value: '1', label: 'Пополнить' }, { value: '-1', label: 'Списать' }]} value={operation} onChange={(v) => setOperation((v as '1' | '-1') ?? '1')} />
-      <NumberInput label="Сумма" required min={1} mb="lg" value={amount} onChange={(v) => setAmount(Number(v) || 0)} />
-      <Group justify="flex-end">
-        <Button variant="subtle" color="gray" onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSubmit} loading={updateDeposit.isPending} disabled={amount <= 0}>Применить</Button>
-      </Group>
-    </Modal>
+    <FormModal
+      opened={Boolean(client)}
+      onClose={onClose}
+      title='Изменить депозит'
+      subtitle={client ? getClientFullName(client) : undefined}
+      icon={<CurrencyCircleDollarIcon size={22} />}
+      headerAside={
+        client ? (
+          <Badge variant='light' color='sage' size='lg' radius='sm'>
+            {formatPrice(client.deposit)}
+          </Badge>
+        ) : undefined
+      }
+      size='md'
+      footer={
+        <FormModalFooter
+          metaLabel='Баланс после операции'
+          metaValue={formatPrice(nextBalance)}
+          onCancel={onClose}
+          submitLabel='Применить'
+          onSubmit={handleSubmit}
+          submitDisabled={amount <= 0}
+          loading={updateDeposit.isPending}
+        />
+      }
+    >
+      <FormSection title='Операция'>
+        <Stack gap='sm'>
+          <Select
+            label='Тип операции'
+            data={OPERATION_OPTIONS}
+            value={operation}
+            onChange={(v) => setOperation((v as '1' | '-1') ?? '1')}
+          />
+          <NumberInput
+            label='Сумма'
+            required
+            min={1}
+            value={amount}
+            onChange={(v) => setAmount(Number(v) || 0)}
+            thousandSeparator=' '
+            suffix=' сум'
+          />
+        </Stack>
+      </FormSection>
+    </FormModal>
   );
 };

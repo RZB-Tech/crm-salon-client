@@ -1,9 +1,11 @@
 import React from 'react';
-import { Button, Group, Modal, Select, Text, TextInput } from '@mantine/core';
+import { Select, Stack, TextInput } from '@mantine/core';
+import { AirplaneTakeoffIcon } from '@phosphor-icons/react';
 import { DateInput } from '@mantine/dates';
 import type { Absence, AbsenceType } from '@/shared/api/types';
-import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ABSENCE_TYPE_OPTIONS } from '@/shared/lib/format';
+import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 export interface AbsenceFormModalProps {
   opened: boolean;
@@ -36,47 +38,57 @@ export const AbsenceFormModal: React.FC<AbsenceFormModalProps> = ({
   onEndDateChange,
   onReasonChange,
 }) => (
-  <Modal
+  <FormModal
     opened={opened}
     onClose={onClose}
     title={editingAbsence ? 'Редактировать отсутствие' : 'Новое отсутствие'}
-    radius="md"
+    subtitle="Тип, период и причина"
+    icon={<AirplaneTakeoffIcon size={22} />}
+    size="lg"
+    footer={
+      <FormModalFooter
+        onCancel={onClose}
+        submitLabel="Сохранить"
+        onSubmit={onSubmit}
+        loading={loading}
+      />
+    }
   >
-    <Select
-      label="Тип"
-      data={ABSENCE_TYPE_OPTIONS}
-      mb="md"
-      value={absenceType}
-      onChange={(v) => onAbsenceTypeChange((v as AbsenceType) ?? 'vacation')}
-    />
-    <Group grow mb="md">
-      <DateInput
-        label="С"
-        value={startDate || null}
-        onChange={(value) => onStartDateChange(value ?? '')}
+    <FormSection title="Период">
+      <Stack gap="sm">
+        <Select
+          label="Тип"
+          data={ABSENCE_TYPE_OPTIONS}
+          value={absenceType}
+          onChange={(v) => onAbsenceTypeChange((v as AbsenceType) ?? 'vacation')}
+        />
+        <FormFieldGrid>
+          <DateInput
+            label="С"
+            value={startDate || null}
+            onChange={(value) => onStartDateChange(value ?? '')}
+          />
+          <DateInput
+            label="По"
+            value={endDate || null}
+            onChange={(value) => onEndDateChange(value ?? '')}
+          />
+        </FormFieldGrid>
+      </Stack>
+    </FormSection>
+
+    <FormSection title="Комментарий">
+      <TextInput
+        label="Причина"
+        value={reason}
+        onChange={(e) => onReasonChange(e.currentTarget.value)}
       />
-      <DateInput
-        label="По"
-        value={endDate || null}
-        onChange={(value) => onEndDateChange(value ?? '')}
-      />
-    </Group>
-    <TextInput label="Причина" mb="lg" value={reason} onChange={(e) => onReasonChange(e.currentTarget.value)} />
+    </FormSection>
+
     {editingAbsence && (
-      <>
-        <Text size="sm" fw={600} mb="xs">
-          История изменений
-        </Text>
+      <FormSection title="История изменений" muted>
         <AuditLogsPanel tableName="employee_absences" recordId={editingAbsence.id} />
-      </>
+      </FormSection>
     )}
-    <Group justify="flex-end" mt="md">
-      <Button variant="subtle" color="gray" onClick={onClose}>
-        Отмена
-      </Button>
-      <Button onClick={onSubmit} loading={loading}>
-        Сохранить
-      </Button>
-    </Group>
-  </Modal>
+  </FormModal>
 );

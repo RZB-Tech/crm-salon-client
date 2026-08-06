@@ -1,7 +1,9 @@
 import React from 'react';
-import { Modal, Text } from '@mantine/core';
+import { Badge } from '@mantine/core';
+import { ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Receipt } from '@/shared/api/types';
-import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { formatPrice, RECEIPT_STATUS_LABELS } from '@/shared/lib/format';
+import { AuditLogsPanel, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface ReceiptHistoryModalProps {
   receipt: Receipt | null;
@@ -9,28 +11,40 @@ interface ReceiptHistoryModalProps {
 }
 
 export const ReceiptHistoryModal: React.FC<ReceiptHistoryModalProps> = ({ receipt, onClose }) => (
-  <Modal
+  <FormModal
     opened={Boolean(receipt)}
     onClose={onClose}
     title={receipt ? `История чека #${receipt.id}` : 'История чека'}
-    radius="md"
+    subtitle="Аудит изменений чека и его позиций"
+    icon={<ClockCounterClockwiseIcon size={22} />}
+    headerAside={
+      receipt ? (
+        <Badge variant="light" color={receipt.status === 'paid' ? 'teal' : 'orange'} radius="sm">
+          {RECEIPT_STATUS_LABELS[receipt.status] ?? receipt.status}
+        </Badge>
+      ) : undefined
+    }
     size="lg"
+    footer={
+      <FormModalFooter
+        metaLabel={receipt ? 'Сумма чека' : undefined}
+        metaValue={receipt ? formatPrice(receipt.total_amount) : undefined}
+        cancelLabel="Закрыть"
+        onCancel={onClose}
+      />
+    }
   >
     {receipt && (
       <>
-        <Text size="sm" fw={600} mb="xs">
-          Чек
-        </Text>
-        <AuditLogsPanel tableName="receipts" recordId={receipt.id} />
+        <FormSection title="История изменений" muted>
+          <AuditLogsPanel tableName="receipts" recordId={receipt.id} />
+        </FormSection>
         {receipt.items.map((item) => (
-          <React.Fragment key={item.id}>
-            <Text size="sm" fw={600} mt="md" mb="xs">
-              Позиция #{item.id}
-            </Text>
+          <FormSection key={item.id} title={`Позиция #${item.id}`} muted>
             <AuditLogsPanel tableName="receipt_items" recordId={item.id} />
-          </React.Fragment>
+          </FormSection>
         ))}
       </>
     )}
-  </Modal>
+  </FormModal>
 );

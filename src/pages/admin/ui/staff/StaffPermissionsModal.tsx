@@ -1,5 +1,6 @@
-import { Badge, Button, Group, Modal, Paper, Stack, Text } from '@mantine/core';
+import { ShieldCheckIcon } from '@phosphor-icons/react';
 import type { Permission } from '@/shared/api/types';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
   groupPermissionsByResource,
   toggleCodeInList,
@@ -7,6 +8,7 @@ import {
   toggleResourceCodes,
 } from '../../lib/groupPermissions';
 import { PermissionsResourceTree } from '../PermissionsResourceTree';
+import { PermissionsTreeToolbar } from '../PermissionsTreeToolbar';
 
 interface StaffPermissionsModalProps {
   opened: boolean;
@@ -39,14 +41,6 @@ export function StaffPermissionsModal({
     allPermissionCodes.length > 0 && allPermissionCodes.every((c) => selectedPerms.includes(c));
   const allResources = Object.keys(permissionsByResource);
 
-  const handleTogglePermission = (code: number) => {
-    onSelectedPermsChange(toggleCodeInList(selectedPerms, code));
-  };
-
-  const handleToggleResource = (_resource: string, codes: number[]) => {
-    onSelectedPermsChange(toggleResourceCodes(selectedPerms, codes));
-  };
-
   const handleToggleExpanded = (resource: string) => {
     onExpandedResourcesChange(toggleExpandedResource(expandedResources, resource));
   };
@@ -58,59 +52,49 @@ export function StaffPermissionsModal({
   };
 
   const handleSelectAllPerms = () => {
-    const allSelected =
-      allPermissionCodes.length > 0 && allPermissionCodes.every((c) => selectedPerms.includes(c));
-    onSelectedPermsChange(allSelected ? [] : [...allPermissionCodes]);
+    onSelectedPermsChange(isAllPermsSelected ? [] : [...allPermissionCodes]);
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={`Разрешения — ${staffLogin}`} size="lg">
-      <Stack gap="sm">
-        <Group justify="space-between">
-          <Group gap="xs">
-            <Text fw={500} size="sm">
-              Индивидуальные разрешения
-            </Text>
-            <Badge size="sm" variant="light" color={isAllPermsSelected ? 'green' : 'gray'}>
-              {selectedPerms.length} / {allPermissionCodes.length}
-            </Badge>
-          </Group>
-          <Group gap="xs">
-            <Button variant="subtle" size="xs" onClick={handleExpandAll}>
-              {expandedResources.size === allResources.length ? 'Свернуть все' : 'Развернуть все'}
-            </Button>
-            <Button
-              variant="light"
-              size="xs"
-              color={isAllPermsSelected ? 'red' : 'green'}
-              onClick={handleSelectAllPerms}
-            >
-              {isAllPermsSelected ? 'Снять все' : 'Выбрать все'}
-            </Button>
-          </Group>
-        </Group>
-
-        <Paper p="xs" withBorder>
-          <Text size="xs" c="dimmed">
-            Эти разрешения добавляются к правам, полученным через роли
-          </Text>
-        </Paper>
-
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Разрешения"
+      subtitle={staffLogin}
+      icon={<ShieldCheckIcon size={22} />}
+      size="lg"
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel="Сохранить"
+          onSubmit={onSave}
+          loading={isPending}
+        />
+      }
+    >
+      <FormSection
+        title="Индивидуальные разрешения"
+        hint="Эти разрешения добавляются к правам, полученным через роли"
+      >
+        <PermissionsTreeToolbar
+          selectedCount={selectedPerms.length}
+          totalCount={allPermissionCodes.length}
+          allSelected={isAllPermsSelected}
+          allExpanded={expandedResources.size === allResources.length}
+          onToggleExpandAll={handleExpandAll}
+          onToggleSelectAll={handleSelectAllPerms}
+        />
         <PermissionsResourceTree
           permissionsByResource={permissionsByResource}
           selectedPerms={selectedPerms}
           expandedResources={expandedResources}
-          onTogglePermission={handleTogglePermission}
-          onToggleResource={handleToggleResource}
+          onTogglePermission={(code) => onSelectedPermsChange(toggleCodeInList(selectedPerms, code))}
+          onToggleResource={(_resource, codes) =>
+            onSelectedPermsChange(toggleResourceCodes(selectedPerms, codes))
+          }
           onToggleExpanded={handleToggleExpanded}
         />
-
-        <Group justify="flex-end" mt="md">
-          <Button onClick={onSave} loading={isPending}>
-            Сохранить
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+      </FormSection>
+    </FormModal>
   );
 }

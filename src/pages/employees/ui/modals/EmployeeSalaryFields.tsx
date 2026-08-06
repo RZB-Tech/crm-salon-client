@@ -1,5 +1,6 @@
 import React from 'react';
-import { Group, NumberInput, Text } from '@mantine/core';
+import { NumberInput, Stack } from '@mantine/core';
+import { FormFieldGrid, FormSection } from '@/shared/ui';
 import type { EmployeeFormState } from './employeeFormState';
 
 interface EmployeeSalaryFieldsProps {
@@ -8,31 +9,30 @@ interface EmployeeSalaryFieldsProps {
 }
 
 export const EmployeeSalaryFields: React.FC<EmployeeSalaryFieldsProps> = ({ form, onChange }) => (
-  <>
-    <Text size="sm" fw={600}>
-      Зарплата
-    </Text>
-    <Group grow>
+  <FormSection title="Зарплата">
+    <Stack gap="sm">
+      <FormFieldGrid>
+        <NumberInput
+          label="Фиксированная"
+          min={0}
+          value={form.salary_fixed}
+          onChange={(v) => onChange({ ...form, salary_fixed: Number(v) || 0 })}
+        />
+        <NumberInput
+          label="% от услуг"
+          min={0}
+          max={100}
+          value={form.percent_from_services}
+          onChange={(v) => onChange({ ...form, percent_from_services: Number(v) || 0 })}
+        />
+      </FormFieldGrid>
       <NumberInput
-        label="Фиксированная"
-        min={0}
-        value={form.salary_fixed}
-        onChange={(v) => onChange({ ...form, salary_fixed: Number(v) || 0 })}
-      />
-      <NumberInput
-        label="% от услуг"
+        label="% от продаж"
         min={0}
         max={100}
-        value={form.percent_from_services}
-        onChange={(v) => onChange({ ...form, percent_from_services: Number(v) || 0 })}
+        value={form.percent_from_sales}
+        onChange={(v) => onChange({ ...form, percent_from_sales: Number(v) || 0 })}
       />
-    </Group>
-    <NumberInput
-      label="% от продаж"
-      min={0}
-      max={100}
-      value={form.percent_from_sales}
-      onChange={(v) => onChange({ ...form, percent_from_sales: Number(v) || 0 })}
-    />
-  </>
+    </Stack>
+  </FormSection>
 );

@@ -1,15 +1,18 @@
 import React from 'react';
-import { Button, Group, Modal, NumberInput, Select, Stack, Textarea } from '@mantine/core';
+import { Badge, NumberInput, Select, Stack, Textarea } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { HandCoinsIcon } from '@phosphor-icons/react';
 import { useCreatePayout } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutMethod, PayoutType } from '@/shared/api/types';
-import { getEmployeeFullName } from '@/shared/lib/format';
+import { formatPrice, getEmployeeFullName } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
   buildPayoutPayload,
   DEFAULT_PAYOUT_FORM,
   PAYOUT_METHOD_OPTIONS,
+  PAYOUT_TYPE_LABELS,
   PAYOUT_TYPE_OPTIONS,
   type PayoutFormState,
 } from '../lib/payoutHelpers';
@@ -42,43 +45,73 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const isAdvance = form.payoutType === 'advance salary';
+
   return (
-    <Modal opened={opened} onClose={onClose} title="Новая выплата" radius="md" size="md">
-      <Stack gap="md">
-        <Select
-          label="Сотрудник"
-          required
-          searchable
-          data={employeeOptions}
-          value={form.employeeId}
-          onChange={(value) => setField('employeeId', value)}
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Новая выплата"
+      subtitle="Зарплата, аванс или прочие выплаты сотруднику"
+      icon={<HandCoinsIcon size={22} />}
+      headerAside={
+        <Badge variant="light" color="sage" radius="sm">
+          {PAYOUT_TYPE_LABELS[form.payoutType]}
+        </Badge>
+      }
+      size="lg"
+      footer={
+        <FormModalFooter
+          metaLabel={isAdvance ? 'Сумма аванса' : undefined}
+          metaValue={isAdvance ? formatPrice(form.amount) : undefined}
+          onCancel={onClose}
+          submitLabel="Провести выплату"
+          onSubmit={handleSubmit}
+          submitDisabled={!form.employeeId}
+          loading={createPayout.isPending}
         />
-        <Select
-          label="Тип выплаты"
-          data={PAYOUT_TYPE_OPTIONS}
-          value={form.payoutType}
-          onChange={(v) => setField('payoutType', (v as PayoutType) ?? 'other')}
-        />
-        <Select
-          label="Способ"
-          data={PAYOUT_METHOD_OPTIONS}
-          value={form.method}
-          onChange={(v) => setField('method', (v as PayoutMethod) ?? 'cash')}
-        />
-
-        {form.payoutType === 'advance salary' && (
-          <NumberInput
-            label="Сумма аванса"
-            min={1}
-            value={form.amount}
-            onChange={(v) => setField('amount', Number(v) || 0)}
-            thousandSeparator=" "
-            suffix=" сум"
+      }
+    >
+      <FormSection title="Выплата">
+        <Stack gap="sm">
+          <Select
+            label="Сотрудник"
+            required
+            searchable
+            data={employeeOptions}
+            value={form.employeeId}
+            onChange={(value) => setField('employeeId', value)}
           />
-        )}
+          <FormFieldGrid cols={2}>
+            <Select
+              label="Тип выплаты"
+              data={PAYOUT_TYPE_OPTIONS}
+              value={form.payoutType}
+              onChange={(v) => setField('payoutType', (v as PayoutType) ?? 'other')}
+            />
+            <Select
+              label="Способ"
+              data={PAYOUT_METHOD_OPTIONS}
+              value={form.method}
+              onChange={(v) => setField('method', (v as PayoutMethod) ?? 'cash')}
+            />
+          </FormFieldGrid>
+          {isAdvance && (
+            <NumberInput
+              label="Сумма аванса"
+              min={1}
+              value={form.amount}
+              onChange={(v) => setField('amount', Number(v) || 0)}
+              thousandSeparator=" "
+              suffix=" сум"
+            />
+          )}
+        </Stack>
+      </FormSection>
 
-        {form.payoutType === 'other' && (
-          <Group grow>
+      {form.payoutType === 'other' && (
+        <FormSection title="Период" hint="Сумма рассчитывается по начислениям за выбранный период">
+          <FormFieldGrid cols={2}>
             <DateInput
               label="Начало периода"
               clearable
@@ -91,28 +124,19 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
               value={form.endDate || null}
               onChange={(value) => setField('endDate', value ?? '')}
             />
-          </Group>
-        )}
+          </FormFieldGrid>
+        </FormSection>
+      )}
 
+      <FormSection title="Комментарий" muted>
         <Textarea
-          label="Примечание"
+          placeholder="Основание выплаты, детали расчёта…"
+          autosize
+          minRows={2}
           value={form.notes}
           onChange={(e) => setField('notes', e.currentTarget.value)}
         />
-
-        <Group justify="flex-end">
-          <Button variant="subtle" color="gray" onClick={onClose}>
-            Отмена
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            loading={createPayout.isPending}
-            disabled={!form.employeeId}
-          >
-            Провести выплату
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+      </FormSection>
+    </FormModal>
   );
 };

@@ -1,4 +1,6 @@
-import { Button, Modal, MultiSelect, Paper, Stack, Text } from '@mantine/core';
+import { MultiSelect } from '@mantine/core';
+import { UsersThreeIcon } from '@phosphor-icons/react';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface AssignRolesModalProps {
   opened: boolean;
@@ -22,25 +24,34 @@ export function AssignRolesModal({
   isPending,
 }: AssignRolesModalProps) {
   return (
-    <Modal opened={opened} onClose={onClose} title={`Роли — ${staffLogin}`} size="sm">
-      <Stack gap="sm">
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Роли"
+      subtitle={staffLogin}
+      icon={<UsersThreeIcon size={22} />}
+      size="md"
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel="Сохранить"
+          onSubmit={onSave}
+          loading={isPending}
+        />
+      }
+    >
+      <FormSection
+        title="Назначенные роли"
+        hint="Права ролей будут применены после сохранения"
+      >
         <MultiSelect
-          label="Назначенные роли"
           data={rolesOptions}
           value={selectedRoleIds}
           onChange={onSelectedRoleIdsChange}
           searchable
           placeholder="Выберите роли"
         />
-        <Paper p="xs" withBorder>
-          <Text size="xs" c="dimmed">
-            Текущие права через роли будут применены после сохранения
-          </Text>
-        </Paper>
-        <Button onClick={onSave} loading={isPending}>
-          Сохранить
-        </Button>
-      </Stack>
-    </Modal>
+      </FormSection>
+    </FormModal>
   );
 }

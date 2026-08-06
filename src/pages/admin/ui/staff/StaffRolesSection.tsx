@@ -1,4 +1,5 @@
-import { Badge, Button, Group, Paper, Text } from '@mantine/core';
+import { Button, Group, Stack, Text } from '@mantine/core';
+import { FormSection, formModalStyles } from '@/shared/ui';
 import type { Staff } from '@/shared/api/types';
 
 interface StaffRolesSectionProps {
@@ -8,28 +9,29 @@ interface StaffRolesSectionProps {
 
 export function StaffRolesSection({ staff, onEdit }: StaffRolesSectionProps) {
   return (
-    <Paper p="md" withBorder>
-      <Group justify="space-between" mb="xs">
-        <Text size="sm" fw={600}>
-          Роли
-        </Text>
-        <Button variant="subtle" size="xs" onClick={() => onEdit(staff)}>
+    <FormSection title="Роли">
+      <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
+        <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
+          {staff.roles.length > 0 ? (
+            staff.roles.map((role) => (
+              <Text key={role.id} size="sm" fw={500}>
+                {role.name}
+                {role.description && (
+                  <Text span size="xs" c="dimmed" fw={400}>
+                    {' '}
+                    — {role.description}
+                  </Text>
+                )}
+              </Text>
+            ))
+          ) : (
+            <div className={formModalStyles.emptyState}>Нет назначенных ролей</div>
+          )}
+        </Stack>
+        <Button variant="subtle" size="compact-xs" onClick={() => onEdit(staff)}>
           Изменить
         </Button>
       </Group>
-      {staff.roles.length > 0 ? (
-        <Group gap="xs">
-          {staff.roles.map((r) => (
-            <Badge key={r.id} variant="light" color="blue">
-              {r.name}
-            </Badge>
-          ))}
-        </Group>
-      ) : (
-        <Text size="sm" c="dimmed">
-          Нет назначенных ролей
-        </Text>
-      )}
-    </Paper>
+    </FormSection>
   );
 }

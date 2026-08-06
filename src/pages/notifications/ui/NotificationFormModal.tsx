@@ -1,9 +1,11 @@
 import React from 'react';
-import { Button, Group, Modal, Select, Textarea, TextInput } from '@mantine/core';
+import { Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { BellRingingIcon } from '@phosphor-icons/react';
 import { DateTimePicker } from '@mantine/dates';
 import { useCreateNotification } from '@/shared/api/hooks/useNotifications';
 import type { SalonNotificationType } from '@/shared/api/types';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface NotificationFormModalProps {
   opened: boolean;
@@ -45,47 +47,60 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
   }, [title, body, type, scheduledAt, createNotification, onClose]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Новое уведомление" radius="md">
-      <Select
-        label="Тип"
-        mb="md"
-        data={[
-          { value: 'reminder', label: 'Напоминание' },
-          { value: 'other', label: 'Другое' },
-        ]}
-        value={type}
-        onChange={(v) => setType((v as SalonNotificationType) ?? 'reminder')}
-      />
-      <TextInput
-        label="Заголовок"
-        mb="md"
-        value={title}
-        onChange={(e) => setTitle(e.currentTarget.value)}
-      />
-      <Textarea
-        label="Текст"
-        required
-        mb="md"
-        minRows={3}
-        value={body}
-        onChange={(e) => setBody(e.currentTarget.value)}
-      />
-      <DateTimePicker
-        label="Запланировать на"
-        clearable
-        mb="lg"
-        value={scheduledAt}
-        onChange={setScheduledAt}
-        placeholder="Сейчас"
-      />
-      <Group justify="flex-end">
-        <Button variant="subtle" color="gray" onClick={onClose}>
-          Отмена
-        </Button>
-        <Button onClick={handleSubmit} loading={createNotification.isPending} disabled={!body}>
-          Создать
-        </Button>
-      </Group>
-    </Modal>
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Новое уведомление"
+      subtitle="Текст и время отправки"
+      icon={<BellRingingIcon size={22} />}
+      size="lg"
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel="Создать"
+          onSubmit={handleSubmit}
+          submitDisabled={!body}
+          loading={createNotification.isPending}
+        />
+      }
+    >
+      <FormSection title="Текст уведомления">
+        <Stack gap="sm">
+          <FormFieldGrid>
+            <Select
+              label="Тип"
+              data={[
+                { value: 'reminder', label: 'Напоминание' },
+                { value: 'other', label: 'Другое' },
+              ]}
+              value={type}
+              onChange={(v) => setType((v as SalonNotificationType) ?? 'reminder')}
+            />
+            <TextInput
+              label="Заголовок"
+              value={title}
+              onChange={(e) => setTitle(e.currentTarget.value)}
+            />
+          </FormFieldGrid>
+          <Textarea
+            label="Текст"
+            required
+            minRows={3}
+            value={body}
+            onChange={(e) => setBody(e.currentTarget.value)}
+          />
+        </Stack>
+      </FormSection>
+
+      <FormSection title="Период">
+        <DateTimePicker
+          label="Запланировать на"
+          clearable
+          value={scheduledAt}
+          onChange={setScheduledAt}
+          placeholder="Сейчас"
+        />
+      </FormSection>
+    </FormModal>
   );
 };

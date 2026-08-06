@@ -1,6 +1,8 @@
 import React from 'react';
-import { Button, Group, Modal, TextInput } from '@mantine/core';
+import { TextInput } from '@mantine/core';
+import { TagIcon } from '@phosphor-icons/react';
 import type { Specialization } from '@/shared/api/types';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface SpecializationFormModalProps {
   opened: boolean;
@@ -21,26 +23,30 @@ export const SpecializationFormModal: React.FC<SpecializationFormModalProps> = (
   onSubmit,
   onNameChange,
 }) => (
-  <Modal
+  <FormModal
     opened={opened}
     onClose={onClose}
     title={editing ? 'Редактировать специализацию' : 'Новая специализация'}
-    radius="md"
+    subtitle={editing ? editing.name : 'Направление работы мастера'}
+    icon={<TagIcon size={22} />}
+    size="md"
+    footer={
+      <FormModalFooter
+        onCancel={onClose}
+        submitLabel={editing ? 'Сохранить' : 'Создать'}
+        onSubmit={onSubmit}
+        submitDisabled={!name}
+        loading={loading}
+      />
+    }
   >
-    <TextInput
-      label="Название"
-      required
-      mb="lg"
-      value={name}
-      onChange={(e) => onNameChange(e.currentTarget.value)}
-    />
-    <Group justify="flex-end">
-      <Button variant="subtle" color="gray" onClick={onClose}>
-        Отмена
-      </Button>
-      <Button onClick={onSubmit} loading={loading} disabled={!name}>
-        {editing ? 'Сохранить' : 'Создать'}
-      </Button>
-    </Group>
-  </Modal>
+    <FormSection title="Основное">
+      <TextInput
+        label="Название"
+        required
+        value={name}
+        onChange={(e) => onNameChange(e.currentTarget.value)}
+      />
+    </FormSection>
+  </FormModal>
 );

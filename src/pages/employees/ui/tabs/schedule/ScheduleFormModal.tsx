@@ -1,10 +1,11 @@
 import React from 'react';
-import { Button, Chip, Group, Modal, Stack, Text } from '@mantine/core';
-import { TimePicker } from '@mantine/dates';
-import { DAY_OF_WEEK_LABELS, DAY_OF_WEEK_OPTIONS } from '@/shared/lib/format';
+import { Chip, Group } from '@mantine/core';
+import { CalendarBlankIcon } from '@phosphor-icons/react';
+import { DAY_OF_WEEK_OPTIONS } from '@/shared/lib/format';
+import { FormModal, FormModalFooter, FormSection, formModalStyles } from '@/shared/ui';
 import type { DayTimeEntry } from '../../../lib/scheduleHelpers';
-import { syncDayEntriesFromChipSelection, updateDayEntryTime } from '../../../lib/scheduleHelpers';
-import scheduleStyles from '../schedule-tab.module.css';
+import { syncDayEntriesFromChipSelection } from '../../../lib/scheduleHelpers';
+import { ScheduleDayTimeRows } from './ScheduleDayTimeRows';
 
 export interface ScheduleFormModalProps {
   opened: boolean;
@@ -25,70 +26,47 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
   onSubmit,
   onDayEntriesChange,
 }) => (
-  <Modal
+  <FormModal
     opened={opened}
     onClose={onClose}
     title={hasSchedule ? 'Редактировать график' : 'Новый график'}
-    radius="md"
+    subtitle="Рабочие дни и время смен"
+    icon={<CalendarBlankIcon size={22} />}
     size="lg"
+    footer={
+      <FormModalFooter
+        onCancel={onClose}
+        submitLabel="Сохранить"
+        onSubmit={onSubmit}
+        submitDisabled={!hasSchedule && dayEntries.length === 0}
+        loading={loading}
+      />
+    }
   >
-    <Text size="sm" fw={500} mb={6}>
-      Выберите рабочие дни и задайте время
-    </Text>
-    <Chip.Group
-      multiple
-      value={dayEntries.map((e) => String(e.day))}
-      onChange={(values) => {
-        onDayEntriesChange(syncDayEntriesFromChipSelection(dayEntries, values.map(Number)));
-      }}
-    >
-      <Group gap="xs" mb="md">
-        {DAY_OF_WEEK_OPTIONS.map((opt) => (
-          <Chip key={opt.value} value={opt.value} radius="md" size="sm">
-            {opt.label}
-          </Chip>
-        ))}
-      </Group>
-    </Chip.Group>
+    <FormSection title="Рабочие дни" hint="Выберите дни недели, в которые сотрудник работает">
+      <Chip.Group
+        multiple
+        value={dayEntries.map((e) => String(e.day))}
+        onChange={(values) => {
+          onDayEntriesChange(syncDayEntriesFromChipSelection(dayEntries, values.map(Number)));
+        }}
+      >
+        <Group gap="xs">
+          {DAY_OF_WEEK_OPTIONS.map((opt) => (
+            <Chip key={opt.value} value={opt.value} radius="md" size="sm">
+              {opt.label}
+            </Chip>
+          ))}
+        </Group>
+      </Chip.Group>
+    </FormSection>
 
-    {dayEntries.length > 0 && (
-      <Stack gap="xs" mb="lg">
-        {dayEntries.map((entry) => (
-          <Group key={entry.day} grow align="center">
-            <Text size="sm" fw={500} className={scheduleStyles.dayName}>
-              {DAY_OF_WEEK_LABELS[entry.day]}
-            </Text>
-            <TimePicker
-              size="xs"
-              minutesStep={15}
-              value={entry.startTime}
-              onChange={(value) =>
-                onDayEntriesChange(updateDayEntryTime(dayEntries, entry.day, 'startTime', value))
-              }
-            />
-            <Text size="xs" c="dimmed" ta="center">
-              —
-            </Text>
-            <TimePicker
-              size="xs"
-              minutesStep={15}
-              value={entry.endTime}
-              onChange={(value) =>
-                onDayEntriesChange(updateDayEntryTime(dayEntries, entry.day, 'endTime', value))
-              }
-            />
-          </Group>
-        ))}
-      </Stack>
-    )}
-
-    <Group justify="flex-end" mt="md">
-      <Button variant="subtle" color="gray" onClick={onClose}>
-        Отмена
-      </Button>
-      <Button onClick={onSubmit} loading={loading} disabled={!hasSchedule && dayEntries.length === 0}>
-        Сохранить
-      </Button>
-    </Group>
-  </Modal>
+    <FormSection title="График">
+      {dayEntries.length > 0 ? (
+        <ScheduleDayTimeRows dayEntries={dayEntries} onDayEntriesChange={onDayEntriesChange} />
+      ) : (
+        <div className={formModalStyles.emptyState}>Отметьте рабочие дни, чтобы задать время</div>
+      )}
+    </FormSection>
+  </FormModal>
 );

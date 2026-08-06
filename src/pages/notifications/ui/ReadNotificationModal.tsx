@@ -1,5 +1,7 @@
 import React from 'react';
-import { Button, Group, Modal, Textarea } from '@mantine/core';
+import { Textarea } from '@mantine/core';
+import { CheckCircleIcon } from '@phosphor-icons/react';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface ReadNotificationModalProps {
   opened: boolean;
@@ -18,23 +20,31 @@ export const ReadNotificationModal: React.FC<ReadNotificationModalProps> = ({
   onClose,
   onConfirm,
 }) => (
-  <Modal opened={opened} onClose={onClose} title="Отметить прочитанным" radius="md" size="sm">
-    <Textarea
-      label="Комментарий"
-      required
-      placeholder="Введите комментарий"
-      minRows={2}
-      mb="md"
-      value={comment}
-      onChange={(e) => onCommentChange(e.currentTarget.value)}
-    />
-    <Group justify="flex-end">
-      <Button variant="subtle" color="gray" onClick={onClose}>
-        Отмена
-      </Button>
-      <Button onClick={onConfirm} loading={loading} disabled={!comment.trim()}>
-        Прочитано
-      </Button>
-    </Group>
-  </Modal>
+  <FormModal
+    opened={opened}
+    onClose={onClose}
+    title="Отметить прочитанным"
+    subtitle="Оставьте комментарий к уведомлению"
+    icon={<CheckCircleIcon size={22} />}
+    size="md"
+    footer={
+      <FormModalFooter
+        onCancel={onClose}
+        submitLabel="Прочитано"
+        onSubmit={onConfirm}
+        submitDisabled={!comment.trim()}
+        loading={loading}
+      />
+    }
+  >
+    <FormSection title="Комментарий">
+      <Textarea
+        required
+        placeholder="Введите комментарий"
+        minRows={2}
+        value={comment}
+        onChange={(e) => onCommentChange(e.currentTarget.value)}
+      />
+    </FormSection>
+  </FormModal>
 );

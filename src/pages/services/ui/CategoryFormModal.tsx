@@ -1,8 +1,14 @@
 import React from 'react';
-import { Button, Group, Modal, Text, TextInput } from '@mantine/core';
+import { TextInput } from '@mantine/core';
+import { FolderIcon } from '@phosphor-icons/react';
 import { useCreateServiceCategory, useUpdateServiceCategory } from '@/shared/api/hooks/useServices';
-import type { ServiceCategory, ServiceCategoryCreatePayload, ServiceCategoryUpdatePayload } from '@/shared/api/types';
+import type {
+  ServiceCategory,
+  ServiceCategoryCreatePayload,
+  ServiceCategoryUpdatePayload
+} from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 interface CategoryFormModalProps {
@@ -11,7 +17,11 @@ interface CategoryFormModalProps {
   onClose: () => void;
 }
 
-export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ opened, category, onClose }) => {
+export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
+  opened,
+  category,
+  onClose
+}) => {
   const [name, setName] = React.useState('');
   const createCategory = useCreateServiceCategory();
   const updateCategory = useUpdateServiceCategory();
@@ -29,20 +39,37 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ opened, ca
   }, [name, category, createCategory, updateCategory, onClose]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title={category ? 'Редактировать категорию' : 'Новая категория'} radius="md">
-      <TextInput label="Название" required mb="lg" value={name} onChange={(e) => setName(e.currentTarget.value)} />
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title={category ? 'Редактировать категорию' : 'Новая категория'}
+      subtitle='Группировка услуг в прайсе'
+      icon={<FolderIcon size={22} />}
+      size='md'
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={category ? 'Сохранить' : 'Создать'}
+          onSubmit={handleSubmit}
+          submitDisabled={!name}
+          loading={createCategory.isPending || updateCategory.isPending}
+        />
+      }
+    >
+      <FormSection title='Основное'>
+        <TextInput
+          label='Название'
+          required
+          value={name}
+          onChange={(e) => setName(e.currentTarget.value)}
+        />
+      </FormSection>
+
       {category && (
-        <>
-          <Text size="sm" fw={600} mb="xs">История изменений</Text>
-          <AuditLogsPanel tableName="service_categories" recordId={category.id} />
-        </>
+        <FormSection title='История изменений' muted>
+          <AuditLogsPanel tableName='service_categories' recordId={category.id} />
+        </FormSection>
       )}
-      <Group justify="flex-end" mt={category ? 'md' : undefined}>
-        <Button variant="subtle" color="gray" onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSubmit} loading={createCategory.isPending || updateCategory.isPending} disabled={!name}>
-          {category ? 'Сохранить' : 'Создать'}
-        </Button>
-      </Group>
-    </Modal>
+    </FormModal>
   );
 };

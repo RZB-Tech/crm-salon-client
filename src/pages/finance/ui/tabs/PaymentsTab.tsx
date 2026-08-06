@@ -1,11 +1,11 @@
 import React from 'react';
-import { Box, Button, Modal, Table, Text } from '@mantine/core';
+import { Box, Button, Table, Text } from '@mantine/core';
 import type { Transaction } from '@/shared/api/types';
-import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { formatDateTime, formatPrice, PAYMENT_METHOD_LABELS } from '@/shared/lib/format';
+import { PaymentHistoryModal } from './PaymentHistoryModal';
 
 interface PaymentsTabProps {
   payments: Transaction[];
@@ -90,15 +90,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
         onPageSizeChange={setPageSize}
       />
 
-      <Modal
-        opened={Boolean(historyPayment)}
-        onClose={() => setHistoryPaymentId(null)}
-        title={historyPayment ? `История оплаты #${historyPayment.id}` : 'История оплаты'}
-        radius="md"
-        size="md"
-      >
-        {historyPayment && <AuditLogsPanel tableName="payments" recordId={historyPayment.id} />}
-      </Modal>
+      <PaymentHistoryModal payment={historyPayment} onClose={() => setHistoryPaymentId(null)} />
     </Box>
   );
 };

@@ -1,47 +1,18 @@
 import React from 'react';
-import { Button, Group, Modal, NumberInput, Select, Textarea, TextInput } from '@mantine/core';
+import { Badge, NumberInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { UserPlusIcon } from '@phosphor-icons/react';
 import { useCreateClient, useUpdateClient } from '@/shared/api/hooks/useClients';
-import type { Client, ClientCreatePayload, ClientUpdatePayload, Sex } from '@/shared/api/types';
-import { SEX_OPTIONS } from '@/shared/lib/format';
+import type { Client, ClientUpdatePayload, Sex } from '@/shared/api/types';
+import { formatPrice, getClientInitials, SEX_OPTIONS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
-
-interface ClientFormState {
-  firstname: string;
-  lastname: string;
-  middlename: string;
-  sex: Sex;
-  phone: string;
-  birth_date: string;
-  deposit: number;
-  notes: string;
-}
-
-const emptyForm = (): ClientFormState => ({
-  firstname: '', lastname: '', middlename: '', sex: 'female', phone: '', birth_date: '', deposit: 0, notes: '',
-});
-
-const clientToForm = (client: Client): ClientFormState => ({
-  firstname: client.firstname,
-  lastname: client.lastname ?? '',
-  middlename: client.middlename ?? '',
-  sex: client.sex,
-  phone: client.phone ?? '',
-  birth_date: client.birth_date ?? '',
-  deposit: client.deposit,
-  notes: client.notes ?? '',
-});
-
-const formToPayload = (form: ClientFormState): ClientCreatePayload => ({
-  firstname: form.firstname,
-  lastname: form.lastname || null,
-  middlename: form.middlename || null,
-  sex: form.sex,
-  phone: form.phone || null,
-  birth_date: form.birth_date || null,
-  deposit: form.deposit,
-  notes: form.notes || null,
-});
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import {
+  clientFormToPayload,
+  clientToForm,
+  emptyClientForm,
+  type ClientFormState
+} from '../lib/clientForm';
 
 interface ClientFormModalProps {
   opened: boolean;
@@ -50,50 +21,119 @@ interface ClientFormModalProps {
 }
 
 export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client, onClose }) => {
-  const [form, setForm] = React.useState<ClientFormState>(emptyForm);
+  const [form, setForm] = React.useState<ClientFormState>(emptyClientForm);
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
 
-  useResetOnOpen(opened, () => setForm(client ? clientToForm(client) : emptyForm()));
+  useResetOnOpen(opened, () => setForm(client ? clientToForm(client) : emptyClientForm()));
 
   const handleSubmit = React.useCallback(() => {
     if (client) {
-      const payload: ClientUpdatePayload = { id: client.id, ...formToPayload(form) };
+      const payload: ClientUpdatePayload = { id: client.id, ...clientFormToPayload(form) };
       updateClient.mutate(payload, { onSuccess: onClose });
     } else {
-      createClient.mutate(formToPayload(form), { onSuccess: onClose });
+      createClient.mutate(clientFormToPayload(form), { onSuccess: onClose });
     }
   }, [form, client, createClient, updateClient, onClose]);
 
   const isSaving = createClient.isPending || updateClient.isPending;
 
   return (
-    <Modal opened={opened} onClose={onClose} title={client ? 'Редактировать клиента' : 'Новый клиент'} radius="md" size="lg">
-      <Group grow mb="md">
-        <TextInput label="Имя" required value={form.firstname} onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })} />
-        <TextInput label="Фамилия" value={form.lastname} onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })} />
-      </Group>
-      <Group grow mb="md">
-        <TextInput label="Отчество" value={form.middlename} onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })} />
-        <Select label="Пол" required data={[...SEX_OPTIONS]} value={form.sex} onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })} />
-      </Group>
-      <Group grow mb="md">
-        <TextInput label="Телефон" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })} />
-        <DateInput
-          label="Дата рождения"
-          clearable
-          value={form.birth_date || null}
-          onChange={(value) => setForm({ ...form, birth_date: value ?? '' })}
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title={client ? 'Редактировать клиента' : 'Новый клиент'}
+      subtitle={client ? 'Контактные данные и заметки' : 'Заполните контактные данные'}
+      initials={client ? getClientInitials(client) : null}
+      icon={<UserPlusIcon size={22} />}
+      headerAside={
+        client ? (
+          <Badge variant='light' color='sage' size='lg' radius='sm'>
+            {formatPrice(client.deposit)}
+          </Badge>
+        ) : undefined
+      }
+      size='lg'
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={client ? 'Сохранить' : 'Создать'}
+          onSubmit={handleSubmit}
+          submitDisabled={!form.firstname}
+          loading={isSaving}
         />
-      </Group>
+      }
+    >
+      <FormSection title='Основное'>
+        <Stack gap='sm'>
+          <FormFieldGrid>
+            <TextInput
+              label='Имя'
+              required
+              value={form.firstname}
+              onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })}
+            />
+            <TextInput
+              label='Фамилия'
+              value={form.lastname}
+              onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })}
+            />
+          </FormFieldGrid>
+          <FormFieldGrid>
+            <TextInput
+              label='Отчество'
+              value={form.middlename}
+              onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })}
+            />
+            <Select
+              label='Пол'
+              required
+              data={[...SEX_OPTIONS]}
+              value={form.sex}
+              onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })}
+            />
+          </FormFieldGrid>
+        </Stack>
+      </FormSection>
+
+      <FormSection title='Контакты'>
+        <FormFieldGrid>
+          <TextInput
+            label='Телефон'
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })}
+          />
+          <DateInput
+            label='Дата рождения'
+            clearable
+            value={form.birth_date || null}
+            onChange={(value) => setForm({ ...form, birth_date: value ?? '' })}
+          />
+        </FormFieldGrid>
+      </FormSection>
+
       {!client && (
-        <NumberInput label="Начальный депозит" mb="md" min={0} value={form.deposit} onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })} />
+        <FormSection title='Депозит' hint='Стартовый баланс клиента на счёте салона'>
+          <NumberInput
+            label='Начальный депозит'
+            min={0}
+            value={form.deposit}
+            onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })}
+            thousandSeparator=' '
+            suffix=' сум'
+          />
+        </FormSection>
       )}
-      <Textarea label="Заметки" mb="lg" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })} />
-      <Group justify="flex-end">
-        <Button variant="subtle" color="gray" onClick={onClose}>Отмена</Button>
-        <Button onClick={handleSubmit} loading={isSaving} disabled={!form.firstname}>{client ? 'Сохранить' : 'Создать'}</Button>
-      </Group>
-    </Modal>
+
+      <FormSection title='Заметки' muted>
+        <Textarea
+          autosize
+          minRows={3}
+          placeholder='Предпочтения, аллергии, договорённости'
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
+        />
+      </FormSection>
+    </FormModal>
   );
 };

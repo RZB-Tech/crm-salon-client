@@ -1,10 +1,12 @@
 import React from 'react';
-import { Button, Checkbox, Group, Modal, NumberInput, Select } from '@mantine/core';
+import { Badge, Checkbox, NumberInput, Select, Stack } from '@mantine/core';
+import { CurrencyCircleDollarIcon } from '@phosphor-icons/react';
 import { useCreatePayment } from '@/shared/api/hooks/usePayments';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
 import type { PaymentMethod } from '@/shared/api/types';
 import { formatPrice, PAYMENT_METHOD_OPTIONS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface PaymentFormModalProps {
   opened: boolean;
@@ -39,6 +41,11 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     setAddChangeToDeposit(false);
   });
 
+  const selectedReceipt = React.useMemo(
+    () => (receipts ?? []).find((r) => String(r.id) === receiptId) ?? null,
+    [receipts, receiptId],
+  );
+
   const handleReceiptChange = React.useCallback(
     (value: string | null) => {
       setReceiptId(value);
@@ -64,38 +71,68 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
   }, [receiptId, amount, method, addChangeToDeposit, createPayment, onClose]);
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Провести оплату" radius="md">
-      <Select label="Чек" searchable mb="md" data={pendingReceiptOptions} value={receiptId} onChange={handleReceiptChange} />
-      <NumberInput
-        label="Сумма"
-        min={1}
-        mb="md"
-        value={amount}
-        onChange={(value) => setAmount(Number(value) || 0)}
-        thousandSeparator=" "
-        suffix=" сум"
-      />
-      <Select
-        label="Способ оплаты"
-        mb="md"
-        data={PAYMENT_METHOD_OPTIONS}
-        value={method}
-        onChange={(value) => setMethod((value as PaymentMethod) ?? 'cash')}
-      />
-      <Checkbox
-        label="Сдачу на депозит клиента"
-        mb="lg"
-        checked={addChangeToDeposit}
-        onChange={(event) => setAddChangeToDeposit(event.currentTarget.checked)}
-      />
-      <Group justify="flex-end">
-        <Button variant="subtle" color="gray" onClick={onClose}>
-          Отмена
-        </Button>
-        <Button onClick={handleSubmit} loading={createPayment.isPending} disabled={!receiptId || amount <= 0}>
-          Оплатить
-        </Button>
-      </Group>
-    </Modal>
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title="Провести оплату"
+      subtitle={
+        selectedReceipt
+          ? `Чек #${selectedReceipt.id} · всего ${formatPrice(selectedReceipt.total_amount)}`
+          : 'Выберите чек, ожидающий оплаты'
+      }
+      icon={<CurrencyCircleDollarIcon size={22} />}
+      headerAside={
+        selectedReceipt ? (
+          <Badge variant="light" color="orange" radius="sm">
+            Остаток {formatPrice(selectedReceipt.remaining_amount)}
+          </Badge>
+        ) : undefined
+      }
+      size="lg"
+      footer={
+        <FormModalFooter
+          metaLabel="Сумма оплаты"
+          metaValue={formatPrice(amount)}
+          onCancel={onClose}
+          submitLabel="Оплатить"
+          onSubmit={handleSubmit}
+          submitDisabled={!receiptId || amount <= 0}
+          loading={createPayment.isPending}
+        />
+      }
+    >
+      <FormSection title="Оплата">
+        <Stack gap="sm">
+          <Select
+            label="Чек"
+            searchable
+            data={pendingReceiptOptions}
+            value={receiptId}
+            onChange={handleReceiptChange}
+          />
+          <FormFieldGrid cols={2}>
+            <NumberInput
+              label="Сумма"
+              min={1}
+              value={amount}
+              onChange={(value) => setAmount(Number(value) || 0)}
+              thousandSeparator=" "
+              suffix=" сум"
+            />
+            <Select
+              label="Способ оплаты"
+              data={PAYMENT_METHOD_OPTIONS}
+              value={method}
+              onChange={(value) => setMethod((value as PaymentMethod) ?? 'cash')}
+            />
+          </FormFieldGrid>
+          <Checkbox
+            label="Сдачу на депозит клиента"
+            checked={addChangeToDeposit}
+            onChange={(event) => setAddChangeToDeposit(event.currentTarget.checked)}
+          />
+        </Stack>
+      </FormSection>
+    </FormModal>
   );
 };

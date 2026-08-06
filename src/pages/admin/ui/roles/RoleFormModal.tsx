@@ -1,22 +1,11 @@
 import React from 'react';
-import {
-  Badge,
-  Button,
-  Group,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-  Textarea,
-} from '@mantine/core';
+import { Stack, TextInput, Textarea } from '@mantine/core';
+import { ShieldStarIcon } from '@phosphor-icons/react';
 import type { Permission, Role } from '@/shared/api/types';
-import {
-  groupPermissionsByResource,
-  toggleCodeInList,
-  toggleExpandedResource,
-  toggleResourceCodes,
-} from '../../lib/groupPermissions';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { PermissionsResourceTree } from '../PermissionsResourceTree';
+import { PermissionsTreeToolbar } from '../PermissionsTreeToolbar';
+import { useRolePermissions } from './useRolePermissions';
 import type { RoleForm } from './types';
 
 interface RoleFormModalProps {
@@ -40,126 +29,70 @@ export function RoleFormModal({
   onSave,
   isSaving,
 }: RoleFormModalProps) {
-  const [expandedResources, setExpandedResources] = React.useState<Set<string>>(new Set());
-
-  React.useEffect(() => {
-    if (opened) setExpandedResources(new Set());
-  }, [opened, editingRole?.id]);
-
-  const permissionsByResource = React.useMemo(
-    () => groupPermissionsByResource(permissions),
-    [permissions],
-  );
-
-  const allPermissionCodes = React.useMemo(
-    () => (permissions ?? []).map((p) => p.code),
-    [permissions],
-  );
-
-  const isAllSelected =
-    allPermissionCodes.length > 0 && allPermissionCodes.every((c) => form.permissions.includes(c));
-
-  const handleTogglePermission = React.useCallback(
-    (code: number) => {
-      onFormChange((prev) => ({
-        ...prev,
-        permissions: toggleCodeInList(prev.permissions, code),
-      }));
-    },
-    [onFormChange],
-  );
-
-  const handleToggleResource = React.useCallback(
-    (_resource: string, codes: number[]) => {
-      onFormChange((prev) => ({
-        ...prev,
-        permissions: toggleResourceCodes(prev.permissions, codes),
-      }));
-    },
-    [onFormChange],
-  );
-
-  const handleSelectAll = React.useCallback(() => {
-    onFormChange((prev) => ({
-      ...prev,
-      permissions:
-        allPermissionCodes.length > 0 && allPermissionCodes.every((c) => prev.permissions.includes(c))
-          ? []
-          : [...allPermissionCodes],
-    }));
-  }, [allPermissionCodes, onFormChange]);
-
-  const handleToggleExpanded = React.useCallback((resource: string) => {
-    setExpandedResources((prev) => toggleExpandedResource(prev, resource));
-  }, []);
-
-  const handleExpandAll = React.useCallback(() => {
-    setExpandedResources((prev) => {
-      const allResources = Object.keys(permissionsByResource);
-      if (prev.size === allResources.length) return new Set();
-      return new Set(allResources);
-    });
-  }, [permissionsByResource]);
+  const perms = useRolePermissions({
+    opened,
+    editingRole,
+    permissions,
+    selectedPerms: form.permissions,
+    onFormChange,
+  });
 
   return (
-    <Modal
+    <FormModal
       opened={opened}
       onClose={onClose}
       title={editingRole ? 'Редактирование роли' : 'Новая роль'}
+      subtitle={editingRole ? editingRole.name : 'Название, описание и права доступа'}
+      icon={<ShieldStarIcon size={22} />}
       size="lg"
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={editingRole ? 'Сохранить' : 'Создать'}
+          onSubmit={onSave}
+          submitDisabled={!form.name}
+          loading={isSaving}
+        />
+      }
     >
-      <Stack gap="sm">
-        <TextInput
-          label="Название"
-          required
-          value={form.name}
-          onChange={(e) => onFormChange((prev) => ({ ...prev, name: e.currentTarget.value }))}
-        />
-        <Textarea
-          label="Описание"
-          value={form.description}
-          onChange={(e) => onFormChange((prev) => ({ ...prev, description: e.currentTarget.value }))}
-          autosize
-          minRows={2}
-        />
+      <FormSection title="Основное">
+        <Stack gap="sm">
+          <TextInput
+            label="Название"
+            required
+            value={form.name}
+            onChange={(e) => onFormChange((prev) => ({ ...prev, name: e.currentTarget.value }))}
+          />
+          <Textarea
+            label="Описание"
+            autosize
+            minRows={2}
+            value={form.description}
+            onChange={(e) =>
+              onFormChange((prev) => ({ ...prev, description: e.currentTarget.value }))
+            }
+          />
+        </Stack>
+      </FormSection>
 
-        <Group justify="space-between" mt="sm">
-          <Group gap="xs">
-            <Text fw={500} size="sm">Разрешения</Text>
-            <Badge size="sm" variant="light" color={isAllSelected ? 'green' : 'gray'}>
-              {form.permissions.length} / {allPermissionCodes.length}
-            </Badge>
-          </Group>
-          <Group gap="xs">
-            <Button variant="subtle" size="xs" onClick={handleExpandAll}>
-              {expandedResources.size === Object.keys(permissionsByResource).length ? 'Свернуть все' : 'Развернуть все'}
-            </Button>
-            <Button
-              variant="light"
-              size="xs"
-              color={isAllSelected ? 'red' : 'green'}
-              onClick={handleSelectAll}
-            >
-              {isAllSelected ? 'Снять все' : 'Выбрать все'}
-            </Button>
-          </Group>
-        </Group>
-
+      <FormSection title="Разрешения" hint="Отметьте доступы, которые получит роль">
+        <PermissionsTreeToolbar
+          selectedCount={form.permissions.length}
+          totalCount={perms.totalCount}
+          allSelected={perms.isAllSelected}
+          allExpanded={perms.isAllExpanded}
+          onToggleExpandAll={perms.toggleExpandAll}
+          onToggleSelectAll={perms.toggleSelectAll}
+        />
         <PermissionsResourceTree
-          permissionsByResource={permissionsByResource}
+          permissionsByResource={perms.permissionsByResource}
           selectedPerms={form.permissions}
-          expandedResources={expandedResources}
-          onTogglePermission={handleTogglePermission}
-          onToggleResource={handleToggleResource}
-          onToggleExpanded={handleToggleExpanded}
+          expandedResources={perms.expandedResources}
+          onTogglePermission={perms.togglePermission}
+          onToggleResource={perms.toggleResource}
+          onToggleExpanded={perms.toggleExpanded}
         />
-
-        <Group justify="flex-end" mt="md">
-          <Button onClick={onSave} loading={isSaving} disabled={!form.name}>
-            {editingRole ? 'Сохранить' : 'Создать'}
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+      </FormSection>
+    </FormModal>
   );
 }

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Button, Group, Modal, NumberInput, Select, Text, TextInput } from '@mantine/core';
+import { NumberInput, Select, TextInput } from '@mantine/core';
+import { MoneyIcon } from '@phosphor-icons/react';
 import type { Payroll, PayrollType } from '@/shared/api/types';
+import { formatPrice, PAYROLL_TYPE_OPTIONS } from '@/shared/lib/format';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { PAYROLL_TYPE_OPTIONS } from '@/shared/lib/format';
+import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface PayrollFormModalProps {
   opened: boolean;
@@ -31,49 +33,56 @@ export const PayrollFormModal: React.FC<PayrollFormModalProps> = ({
   onAmountChange,
   onNotesChange,
 }) => (
-  <Modal
+  <FormModal
     opened={opened}
     onClose={onClose}
     title={editing ? 'Редактировать выплату' : 'Новая выплата'}
-    radius="md"
+    subtitle="Тип, сумма и заметка"
+    icon={<MoneyIcon size={22} />}
+    size="lg"
+    footer={
+      <FormModalFooter
+        metaLabel="Сумма выплаты"
+        metaValue={formatPrice(amount)}
+        onCancel={onClose}
+        submitLabel="Сохранить"
+        onSubmit={onSubmit}
+        submitDisabled={amount <= 0}
+        loading={loading}
+      />
+    }
   >
-    <Select
-      label="Тип выплаты"
-      required
-      data={PAYROLL_TYPE_OPTIONS}
-      mb="md"
-      value={payrollType}
-      onChange={(v) => onPayrollTypeChange((v as PayrollType) ?? 'salary')}
-    />
-    <NumberInput
-      label="Сумма"
-      required
-      min={1}
-      mb="md"
-      value={amount}
-      onChange={(v) => onAmountChange(Number(v) || 0)}
-    />
-    <TextInput
-      label="Заметка"
-      mb="lg"
-      value={notes}
-      onChange={(e) => onNotesChange(e.currentTarget.value)}
-    />
+    <FormSection title="Выплата">
+      <FormFieldGrid>
+        <Select
+          label="Тип выплаты"
+          required
+          data={PAYROLL_TYPE_OPTIONS}
+          value={payrollType}
+          onChange={(v) => onPayrollTypeChange((v as PayrollType) ?? 'salary')}
+        />
+        <NumberInput
+          label="Сумма"
+          required
+          min={1}
+          value={amount}
+          onChange={(v) => onAmountChange(Number(v) || 0)}
+        />
+      </FormFieldGrid>
+    </FormSection>
+
+    <FormSection title="Комментарий" muted>
+      <TextInput
+        placeholder="Например: аванс за первую половину месяца"
+        value={notes}
+        onChange={(e) => onNotesChange(e.currentTarget.value)}
+      />
+    </FormSection>
+
     {editing && (
-      <>
-        <Text size="sm" fw={600} mb="xs">
-          История изменений
-        </Text>
+      <FormSection title="История изменений" muted>
         <AuditLogsPanel tableName="payrolls" recordId={editing.id} />
-      </>
+      </FormSection>
     )}
-    <Group justify="flex-end" mt={editing ? 'md' : undefined}>
-      <Button variant="subtle" color="gray" onClick={onClose}>
-        Отмена
-      </Button>
-      <Button onClick={onSubmit} loading={loading} disabled={amount <= 0}>
-        Сохранить
-      </Button>
-    </Group>
-  </Modal>
+  </FormModal>
 );
