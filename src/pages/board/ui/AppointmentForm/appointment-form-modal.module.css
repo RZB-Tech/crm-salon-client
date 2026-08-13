@@ -171,6 +171,26 @@
   text-align: right;
 }
 
+.promoRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.priceStruck {
+  font-size: 13px;
+  color: var(--mantine-color-gray-5);
+  text-decoration: line-through;
+}
+
+.priceFinal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mantine-color-sage-9);
+}
+
 .totalBar {
   display: flex;
   align-items: center;

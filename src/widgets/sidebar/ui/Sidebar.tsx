@@ -3,6 +3,7 @@ import { Box, ScrollArea, Stack, Text, Tooltip } from '@mantine/core';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   ScissorsIcon,
+  TagIcon,
   UserListIcon,
   SquaresFourIcon,
   UsersIcon,
@@ -55,6 +56,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Услуги',
     Icon: ScissorsIcon,
     permissions: [PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE],
+  },
+  {
+    path: '/promotions',
+    label: 'Акции',
+    Icon: TagIcon,
+    permissions: [PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE],
   },
   {
     path: '/employees',

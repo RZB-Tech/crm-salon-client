@@ -1,5 +1,5 @@
 import type { Appointment } from '@/shared/api/types';
-import { isLineFilled, type AppointmentFormValues } from '../appointmentForm';
+import { isLineFilled, getNestedBasePrice, type AppointmentFormValues } from '../appointmentForm';
 
 export const detectStructureTouched = (
   record: NonNullable<Appointment['records']>[number] | undefined,
@@ -13,7 +13,7 @@ export const detectStructureTouched = (
       item.service_id,
       item.material_id,
       item.quantity,
-      item.price,
+      getNestedBasePrice(item),
       item.notes ?? '',
       item.price_changed_reason ?? '',
     ].join('|'),

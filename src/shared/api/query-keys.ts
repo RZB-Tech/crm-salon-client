@@ -50,6 +50,10 @@ export const queryKeys = {
     all: ['materials'] as const,
     detail: (id: number) => ['materials', id] as const,
   },
+  promotions: {
+    all: ['promotions'] as const,
+    detail: (id: number) => ['promotions', id] as const,
+  },
   receipts: {
     all: ['receipts'] as const,
     detail: (id: number) => ['receipts', id] as const,

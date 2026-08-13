@@ -8,6 +8,7 @@ import {
   formLinesToCreatePayloads,
   getLineReason,
   isLineFilled,
+  mapNestedToLinePrices,
   type AppointmentServiceLine,
 } from '../appointmentForm';
 
@@ -90,8 +91,7 @@ export const mapRecordToLines = (
     serviceId: item.service_id != null ? String(item.service_id) : null,
     materialId: item.material_id != null ? String(item.material_id) : null,
     quantity: item.quantity,
-    price: item.price,
-    catalogPrice: item.price,
+    ...mapNestedToLinePrices(item, 0),
     priceChangedReason: item.price_changed_reason ?? '',
     notes: item.notes ?? '',
   }));

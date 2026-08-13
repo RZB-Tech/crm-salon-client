@@ -20,6 +20,8 @@ export function useNotificationsWs() {
   const alertQueue = useNotificationAlertQueue();
   const isAuthenticated = authStorage.isAuthenticated();
 
+  const showAlert = alertQueue.showAlert;
+
   const handleIncoming = React.useCallback(
     (payload: SalonNotificationWsPayload) => {
       queryClient.setQueryData<SalonNotification[]>(queryKeys.notifications.all, (old) => {
@@ -31,9 +33,9 @@ export function useNotificationsWs() {
         return [item, ...old];
       });
 
-      alertQueue.showAlert(payload);
+      showAlert(payload);
     },
-    [queryClient, alertQueue],
+    [queryClient, showAlert],
   );
 
   const { contextValue, connected } = useNotificationsSse(isAuthenticated, handleIncoming);
@@ -45,20 +47,22 @@ export function useNotificationsWs() {
     refetchInterval: connected ? false : POLL_INTERVAL_MS,
   });
 
+  const { shownIdsRef, scheduleTimersRef, clearScheduleTimer, scheduleAlert } = alertQueue;
+
   React.useEffect(() => {
     if (!notifications) return;
 
     const activeIds = new Set(notifications.map((item) => item.id));
-    for (const [id] of alertQueue.scheduleTimersRef.current) {
+    for (const [id] of scheduleTimersRef.current) {
       if (!activeIds.has(id)) {
-        alertQueue.clearScheduleTimer(id);
+        clearScheduleTimer(id);
       }
     }
 
     const nowMs = Date.now();
 
     for (const notification of notifications) {
-      if (!shouldShowNotification(notification, alertQueue.shownIdsRef.current, nowMs)) {
+      if (!shouldShowNotification(notification, shownIdsRef.current, nowMs)) {
         const status = notification.status;
         if (
           status !== 'read' &&
@@ -66,7 +70,7 @@ export function useNotificationsWs() {
           !notification.delivered_at &&
           getNotificationDelayMs(notification, nowMs) > 0
         ) {
-          alertQueue.scheduleAlert(
+          scheduleAlert(
             notification.id,
             getNotificationDelayMs(notification, nowMs),
             toNotificationWsPayload(notification),
@@ -75,9 +79,9 @@ export function useNotificationsWs() {
         continue;
       }
 
-      alertQueue.showAlert(toNotificationWsPayload(notification));
+      showAlert(toNotificationWsPayload(notification));
     }
-  }, [notifications, alertQueue]);
+  }, [notifications, shownIdsRef, scheduleTimersRef, clearScheduleTimer, scheduleAlert, showAlert]);
 
   React.useEffect(() => {
     const unlock = () => unlockNotificationAudio();

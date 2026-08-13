@@ -1,11 +1,19 @@
 import React from 'react';
 import { NumberInput, Textarea } from '@mantine/core';
+import type { Promotion } from '@/shared/api/types';
 import { formatPrice } from '@/shared/lib/format';
-import { isLineFilled, isPriceChanged, type AppointmentServiceLine } from '../../lib/appointmentForm';
+import {
+  getLinePromoView,
+  isLineFilled,
+  isPriceChanged,
+  type AppointmentServiceLine,
+} from '../../lib/appointmentForm';
+import { ServiceLinePromo } from './ServiceLinePromo';
 import styles from './appointment-form-modal.module.css';
 
 interface ServiceLineMetricsProps {
   line: AppointmentServiceLine;
+  promotions: Promotion[];
   readOnly: boolean;
   onQuantityChange: (quantity: number) => void;
   onPriceChange: (price: number) => void;
@@ -14,13 +22,16 @@ interface ServiceLineMetricsProps {
 
 export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
   line,
+  promotions,
   readOnly,
   onQuantityChange,
   onPriceChange,
   onReasonChange,
 }) => {
   const changed = isPriceChanged(line);
+  const promo = getLinePromoView(line, promotions);
   const showExtras = changed || Boolean(line.priceChangedReason.trim()) || !readOnly;
+  const unitFinal = promo.final;
 
   return (
     <>
@@ -43,9 +54,11 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
         />
       </div>
 
+      <ServiceLinePromo view={promo} />
+
       {isLineFilled(line) && (
         <div className={styles.lineSubtotal}>
-          Сумма позиции: {formatPrice(line.quantity * line.price)}
+          Сумма позиции: {formatPrice(line.quantity * unitFinal)}
           {changed && ' · цена изменена'}
         </div>
       )}

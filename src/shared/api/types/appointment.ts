@@ -7,7 +7,12 @@ export interface AppointmentServiceNested {
   service: { id: number; name: string } | null;
   material_id: number | null;
   quantity: number;
-  price: number;
+  /** Устаревшее поле; актуальная цена — `final_price ?? price`. */
+  price?: number;
+  base_price?: number;
+  final_price?: number;
+  discount_amount?: number;
+  promotion_id?: number | null;
   price_changed_reason: string | null;
   notes: string | null;
 }
@@ -82,7 +87,11 @@ export interface AppointmentServiceRecord extends BaseEntity {
   service: { id: number; name: string } | null;
   material_id: number | null;
   quantity: number;
-  price: number;
+  price?: number;
+  base_price?: number;
+  final_price?: number;
+  discount_amount?: number;
+  promotion_id?: number | null;
   price_changed_reason: string | null;
   notes: string | null;
 }

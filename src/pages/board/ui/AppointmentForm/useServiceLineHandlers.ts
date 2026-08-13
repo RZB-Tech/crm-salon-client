@@ -42,6 +42,9 @@ export const useServiceLineHandlers = ({
               materialId: null,
               price: 0,
               catalogPrice: 0,
+              promotionId: null,
+              basePrice: undefined,
+              finalPrice: undefined,
               priceChangedReason: '',
             }
           : line,
@@ -62,6 +65,9 @@ export const useServiceLineHandlers = ({
               materialId: null,
               price: option?.price ?? line.price,
               catalogPrice: option?.price ?? 0,
+              promotionId: null,
+              basePrice: undefined,
+              finalPrice: undefined,
               priceChangedReason: '',
             }
           : line,
@@ -82,6 +88,9 @@ export const useServiceLineHandlers = ({
               serviceId: null,
               price: option?.price ?? line.price,
               catalogPrice: option?.price ?? 0,
+              promotionId: null,
+              basePrice: undefined,
+              finalPrice: undefined,
               priceChangedReason: '',
             }
           : line,

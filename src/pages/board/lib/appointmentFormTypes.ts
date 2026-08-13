@@ -9,8 +9,13 @@ export interface AppointmentServiceLine {
   serviceId: string | null;
   materialId: string | null;
   quantity: number;
+  /** База, которую отправляем в API; скидку считает сервер. */
   price: number;
   catalogPrice: number;
+  basePrice?: number;
+  finalPrice?: number;
+  discountAmount?: number;
+  promotionId?: number | null;
   priceChangedReason: string;
   notes: string;
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group } from '@mantine/core';
 import { Package, Plus, Scissors } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
+import type { Promotion } from '@/shared/api/types';
 import {
   calcServicesTotal,
   isLineFilled,
@@ -17,6 +18,7 @@ interface ServiceLinesTableProps {
   values: AppointmentFormValues;
   serviceOptions: ServiceOption[];
   materialOptions: MaterialOption[];
+  promotions: Promotion[];
   onChange: (values: AppointmentFormValues) => void;
   readOnly?: boolean;
 }
@@ -25,10 +27,14 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
   values,
   serviceOptions,
   materialOptions,
+  promotions,
   onChange,
   readOnly = false,
 }) => {
-  const total = React.useMemo(() => calcServicesTotal(values.services), [values.services]);
+  const total = React.useMemo(
+    () => calcServicesTotal(values.services, promotions),
+    [values.services, promotions],
+  );
   const filledCount = values.services.filter(isLineFilled).length;
 
   const {
@@ -101,6 +107,7 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
               line={line}
               serviceOptions={serviceOptions}
               materialOptions={materialOptions}
+              promotions={promotions}
               readOnly={readOnly}
               canRemove={!(values.services.length === 1 && !isLineFilled(line))}
               onKindChange={handleKindChange}

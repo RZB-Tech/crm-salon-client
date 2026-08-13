@@ -1,6 +1,6 @@
 import { API_BASE_URL, AUTH_ENABLED } from '@/shared/config/env';
 import { authStorage } from '@/shared/api/authStorage';
-import { ApiError, parseErrorMessage } from '@/shared/api/apiError';
+import { ApiError, parseApiError } from '@/shared/api/apiError';
 
 export { API_BASE_URL };
 
@@ -26,7 +26,8 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
     }
 
     if (!response.ok) {
-      throw new ApiError(response.status, await parseErrorMessage(response));
+      const parsed = await parseApiError(response);
+      throw new ApiError(response.status, parsed.message, parsed.errorCode);
     }
 
     if (response.status === 204) {
@@ -59,7 +60,8 @@ export async function apiPostFormData<T>(path: string, formData: FormData): Prom
   }
 
   if (!response.ok) {
-    throw new ApiError(response.status, await parseErrorMessage(response));
+    const parsed = await parseApiError(response);
+    throw new ApiError(response.status, parsed.message, parsed.errorCode);
   }
 
   return response.json() as Promise<T>;

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Client } from '@/shared/api/types';
+import type { Client, Promotion } from '@/shared/api/types';
 import { getClientFullName } from '@/shared/lib/format';
 import {
   calcServicesTotal,
@@ -11,6 +11,7 @@ interface UseAppointmentFormMetaParams {
   mode: 'create' | 'edit';
   values: AppointmentFormValues;
   clients: Client[];
+  promotions: Promotion[];
   cancelled: boolean;
   archived: boolean;
   structureLocked: boolean;
@@ -20,6 +21,7 @@ export const useAppointmentFormMeta = ({
   mode,
   values,
   clients,
+  promotions,
   cancelled,
   archived,
   structureLocked,
@@ -29,7 +31,10 @@ export const useAppointmentFormMeta = ({
     [clients, values.clientId],
   );
 
-  const total = React.useMemo(() => calcServicesTotal(values.services), [values.services]);
+  const total = React.useMemo(
+    () => calcServicesTotal(values.services, promotions),
+    [values.services, promotions],
+  );
   const isValid = isAppointmentFormValid(values);
   const fieldsLocked = cancelled || archived || structureLocked;
 

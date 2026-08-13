@@ -17,6 +17,7 @@ import {
   FinancePage,
   MaterialsPage,
   NotificationsPage,
+  PromotionsPage,
   ServicesPage,
   SettingsPage,
 } from './lazyPages';
@@ -65,6 +66,16 @@ export const AppRouter: React.FC = () => (
             <Suspense fallback={<PageLoader />}>
               <PermissionGuard permissions={[PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE]}>
                 <ServicesPage />
+              </PermissionGuard>
+            </Suspense>
+          }
+        />
+        <Route
+          path="/promotions"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <PermissionGuard permissions={[PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE]}>
+                <PromotionsPage />
               </PermissionGuard>
             </Suspense>
           }

@@ -15,6 +15,7 @@ const ROUTE_PRIORITY: RouteEntry[] = [
   { path: '/appointments', permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE] },
   { path: '/clients', permissions: [PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE] },
   { path: '/services', permissions: [PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE] },
+  { path: '/promotions', permissions: [PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE] },
   { path: '/employees', permissions: [PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE] },
   { path: '/materials', permissions: [PermissionCode.MATERIAL_READ, PermissionCode.MATERIAL_MANAGE] },
   { path: '/finance', permissions: [PermissionCode.RECEIPT_READ, PermissionCode.RECEIPT_MANAGE, PermissionCode.PAYROLL_READ, PermissionCode.TRANSACTION_READ] },

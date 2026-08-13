@@ -1,7 +1,9 @@
 import React from 'react';
 import { CalendarPlus } from '@phosphor-icons/react';
 import type { Appointment, Client, Receipt } from '@/shared/api/types';
+import { usePromotions } from '@/shared/api/hooks/usePromotions';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { FormModal } from '@/shared/ui';
 import type { AppointmentFormValues, MaterialOption, ServiceOption } from '../../lib/appointmentForm';
 import { AppointmentPaidBadge, AppointmentStateBadges } from './AppointmentFormBadges';
@@ -66,10 +68,15 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
 
   useResetOnOpen(opened ? `${mode}:${appointment?.id ?? 'new'}` : false, () => setTab('main'));
 
+  const { isAdmin, hasPermission } = useAccess();
+  const canReadPromos = isAdmin || hasPermission(PermissionCode.PROMOTION_GET);
+  const { data: promotions } = usePromotions(false, canReadPromos);
+
   const { title, subtitle, avatarInitials, total, isValid, fieldsLocked } = useAppointmentFormMeta({
     mode,
     values,
     clients,
+    promotions: promotions ?? [],
     cancelled,
     archived,
     structureLocked,
@@ -97,6 +104,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
           values={values}
           serviceOptions={serviceOptions}
           materialOptions={materialOptions}
+          promotions={promotions ?? []}
           onChange={onChange}
           readOnly={fieldsLocked}
         />

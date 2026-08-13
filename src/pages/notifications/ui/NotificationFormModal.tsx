@@ -13,8 +13,11 @@ interface NotificationFormModalProps {
 }
 
 /** Mantine DateTimePicker value → ISO for API */
-const toScheduledIso = (value: string | null): string => {
+const toScheduledIso = (value: string | Date | null): string => {
   if (!value) return new Date().toISOString();
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString();
+  }
   const normalized = value.includes('T') ? value : value.replace(' ', 'T');
   const parsed = new Date(normalized);
   return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
@@ -24,7 +27,7 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
   const [title, setTitle] = React.useState('');
   const [body, setBody] = React.useState('');
   const [type, setType] = React.useState<SalonNotificationType>('reminder');
-  const [scheduledAt, setScheduledAt] = React.useState<string | null>(null);
+  const [scheduledAt, setScheduledAt] = React.useState<string | Date | null>(null);
   const createNotification = useCreateNotification();
 
   useResetOnOpen(opened, () => {

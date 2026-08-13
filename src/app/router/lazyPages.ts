@@ -27,6 +27,9 @@ export const NotificationsPage = lazy(() =>
 export const SettingsPage = lazy(() =>
   import('@/pages/settings').then((m) => ({ default: m.SettingsPage })),
 );
+export const PromotionsPage = lazy(() =>
+  import('@/pages/promotions').then((m) => ({ default: m.PromotionsPage })),
+);
 export const AdminPage = lazy(() =>
   import('@/pages/admin').then((m) => ({ default: m.AdminPage })),
 );

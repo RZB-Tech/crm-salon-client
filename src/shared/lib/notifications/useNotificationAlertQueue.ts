@@ -71,15 +71,18 @@ export const useNotificationAlertQueue = () => {
     [],
   );
 
-  return {
-    alertQueue,
-    alertQueueLength: alertQueue.length,
-    currentAlert,
-    shownIdsRef,
-    scheduleTimersRef,
-    showAlert,
-    dismissAlert,
-    clearScheduleTimer,
-    scheduleAlert,
-  };
+  return React.useMemo(
+    () => ({
+      alertQueue,
+      alertQueueLength: alertQueue.length,
+      currentAlert,
+      shownIdsRef,
+      scheduleTimersRef,
+      showAlert,
+      dismissAlert,
+      clearScheduleTimer,
+      scheduleAlert,
+    }),
+    [alertQueue, currentAlert, showAlert, dismissAlert, clearScheduleTimer, scheduleAlert],
+  );
 };

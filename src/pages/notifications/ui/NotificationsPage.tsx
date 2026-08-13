@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Badge, Box, Button, Group, Skeleton, Stack } from '@mantine/core';
+import { Alert, Box, Button, Skeleton, Stack } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import { ListPageShell, ListPaginationFooter, ListTabs } from '@/shared/ui';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -7,7 +7,6 @@ import { useNotificationsPage } from '../lib/useNotificationsPage';
 import { NotificationFormModal } from './NotificationFormModal';
 import { NotificationsTable } from './NotificationsTable';
 import { ReadNotificationModal } from './ReadNotificationModal';
-import styles from './notifications-page.module.css';
 
 export const NotificationsPage: React.FC = () => {
   const { hasPermission } = useAccess();
@@ -19,7 +18,6 @@ export const NotificationsPage: React.FC = () => {
     readTarget,
     readComment,
     setReadComment,
-    connected,
     notifications,
     pendingCount,
     isLoading,
@@ -69,30 +67,16 @@ export const NotificationsPage: React.FC = () => {
     <ListPageShell
       toolbar={
         <>
-          <Group gap={8}>
-            <ListTabs
-              value={statusFilter}
-              onChange={setStatusFilter}
-              data={[
-                { value: 'all', label: `Все (${(notifications ?? []).length})` },
-                { value: 'pending', label: `Новые (${pendingCount})` },
-                { value: 'read', label: 'Прочитанные' },
-                { value: 'cancelled', label: 'Отменённые' },
-              ]}
-            />
-            <Badge
-              variant="light"
-              color={connected ? 'green' : 'gray'}
-              leftSection={
-                <Box
-                  component="span"
-                  className={`${styles.statusDot} ${connected ? styles.statusDot_online : styles.statusDot_offline}`}
-                />
-              }
-            >
-              {connected ? 'online' : 'offline'}
-            </Badge>
-          </Group>
+          <ListTabs
+            value={statusFilter}
+            onChange={setStatusFilter}
+            data={[
+              { value: 'all', label: `Все (${(notifications ?? []).length})` },
+              { value: 'pending', label: `Новые (${pendingCount})` },
+              { value: 'read', label: 'Прочитанные' },
+              { value: 'cancelled', label: 'Отменённые' },
+            ]}
+          />
           {hasPermission(PermissionCode.NOTIFICATION_CREATE) && (
             <Button
               color="sage.7"

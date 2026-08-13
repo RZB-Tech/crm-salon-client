@@ -5,13 +5,19 @@ export type {
   MaterialOption,
   ServiceOption,
 } from './appointmentFormTypes';
+export type { LinePromoView } from './appointmentFormLineUtils';
 
 export {
   calcServicesTotal,
   createEmptyServiceLine,
+  getLinePromoView,
   getLineReason,
+  getLineUnitFinal,
+  getNestedBasePrice,
+  getNestedFinalPrice,
   isLineFilled,
   isPriceChanged,
+  mapNestedToLinePrices,
 } from './appointmentFormLineUtils';
 
 export {

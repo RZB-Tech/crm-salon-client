@@ -9,67 +9,78 @@ export const useNotificationsSse = (
 ) => {
   const [connected, setConnected] = React.useState(false);
   const [liveNotifications, setLiveNotifications] = React.useState<SalonNotificationWsPayload[]>([]);
-  const eventSourceRef = React.useRef<EventSource | null>(null);
-  const reconnectTimerRef = React.useRef<number | null>(null);
-
-  const handleIncoming = React.useCallback(
-    (payload: SalonNotificationWsPayload) => {
-      setLiveNotifications((prev) => [payload, ...prev].slice(0, 50));
-      onNotification(payload);
-    },
-    [onNotification],
-  );
+  const onNotificationRef = React.useRef(onNotification);
+  onNotificationRef.current = onNotification;
 
   React.useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setConnected(false);
+      return;
+    }
+
+    let cancelled = false;
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: number | null = null;
+
+    const clearReconnect = () => {
+      if (reconnectTimer != null) {
+        window.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+    };
 
     const connect = () => {
-      if (eventSourceRef.current?.readyState === EventSource.OPEN) return;
+      if (cancelled) return;
+      if (
+        eventSource?.readyState === EventSource.OPEN ||
+        eventSource?.readyState === EventSource.CONNECTING
+      ) {
+        return;
+      }
 
-      const eventSource = new EventSource(`${API_BASE_URL}/api/v1/notifications/stream`, {
+      eventSource?.close();
+      eventSource = new EventSource(`${API_BASE_URL}/api/v1/notifications/stream`, {
         withCredentials: true,
       });
-      eventSourceRef.current = eventSource;
 
       eventSource.onopen = () => {
-        setConnected(true);
+        if (!cancelled) setConnected(true);
       };
 
       eventSource.addEventListener('connected', () => {
-        setConnected(true);
+        if (!cancelled) setConnected(true);
       });
 
       eventSource.addEventListener('notification', (event) => {
         try {
           const payload = JSON.parse(event.data) as SalonNotificationWsPayload;
-          handleIncoming(payload);
+          setLiveNotifications((prev) => [payload, ...prev].slice(0, 50));
+          onNotificationRef.current(payload);
         } catch (err) {
           console.error('Ошибка обработки SSE уведомления:', err);
         }
       });
 
       eventSource.onerror = () => {
+        if (cancelled) return;
         setConnected(false);
-        eventSource.close();
-        eventSourceRef.current = null;
-
-        if (authStorage.isAuthenticated()) {
-          reconnectTimerRef.current = window.setTimeout(connect, RECONNECT_DELAY_MS);
-        }
+        eventSource?.close();
+        eventSource = null;
+        if (!authStorage.isAuthenticated()) return;
+        clearReconnect();
+        reconnectTimer = window.setTimeout(connect, RECONNECT_DELAY_MS);
       };
     };
 
     connect();
 
     return () => {
-      if (reconnectTimerRef.current != null) {
-        window.clearTimeout(reconnectTimerRef.current);
-      }
-      eventSourceRef.current?.close();
-      eventSourceRef.current = null;
-      setConnected(false);
+      cancelled = true;
+      clearReconnect();
+      eventSource?.close();
+      eventSource = null;
     };
-  }, [handleIncoming, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const contextValue = React.useMemo(
     () => ({ connected, liveNotifications }),

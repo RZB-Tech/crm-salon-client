@@ -1,6 +1,5 @@
 import React from 'react';
 import { useCancelNotification, useNotifications, useReadNotification } from '@/shared/api/hooks/useNotifications';
-import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 
@@ -10,7 +9,6 @@ export function useNotificationsPage() {
   const [readTarget, setReadTarget] = React.useState<number | null>(null);
   const [readComment, setReadComment] = React.useState('');
 
-  const { connected } = useNotificationsWs();
   const { data: notifications, isLoading, isError } = useNotifications();
   const readNotification = useReadNotification();
   const cancelNotification = useCancelNotification();
@@ -60,7 +58,6 @@ export function useNotificationsPage() {
     readTarget,
     readComment,
     setReadComment,
-    connected,
     notifications,
     pendingCount,
     isLoading,

@@ -10,7 +10,7 @@ import type {
   MaterialOption,
   ServiceOption,
 } from './appointmentFormTypes';
-import { createEmptyServiceLine } from './appointmentFormLineUtils';
+import { createEmptyServiceLine, mapNestedToLinePrices } from './appointmentFormLineUtils';
 
 export const emptyAppointmentForm = (date: Date = new Date()): AppointmentFormValues => ({
   clientId: null,
@@ -64,8 +64,8 @@ export const appointmentToFormValues = (
     record?.services.map((item, index) => {
       const isMaterial = item.material_id != null;
       const catalogPrice = isMaterial
-        ? (materialPriceMap.get(item.material_id!) ?? item.price)
-        : (servicePriceMap.get(item.service_id ?? 0) ?? item.price);
+        ? (materialPriceMap.get(item.material_id!) ?? 0)
+        : (servicePriceMap.get(item.service_id ?? 0) ?? 0);
 
       return {
         key: String(item.id ?? index),
@@ -74,8 +74,7 @@ export const appointmentToFormValues = (
         serviceId: item.service_id != null ? String(item.service_id) : null,
         materialId: item.material_id != null ? String(item.material_id) : null,
         quantity: item.quantity,
-        price: item.price,
-        catalogPrice,
+        ...mapNestedToLinePrices(item, catalogPrice),
         priceChangedReason: item.price_changed_reason ?? '',
         notes: item.notes ?? '',
       };

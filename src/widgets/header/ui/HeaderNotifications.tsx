@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   ActionIcon,
-  Badge,
   Box,
   Group,
   Indicator,
@@ -13,13 +12,11 @@ import {
 import { BellIcon } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
-import { useNotificationsWs } from '@/shared/lib/notifications/NotificationsWsContext';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime } from '@/shared/lib/format';
 import styles from './header.module.css';
 
 export const HeaderNotifications: React.FC = () => {
-  const { connected } = useNotificationsWs();
   const { data: notifications } = useNotifications();
 
   const recent = React.useMemo(
@@ -54,9 +51,6 @@ export const HeaderNotifications: React.FC = () => {
             <Text size="sm" fw={600}>
               Уведомления
             </Text>
-            <Badge size="xs" variant="light" color={connected ? 'green' : 'gray'}>
-              {connected ? 'online' : 'offline'}
-            </Badge>
           </Group>
           <ScrollArea.Autosize mah={280}>
             {recent.length === 0 ? (

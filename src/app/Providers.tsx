@@ -10,12 +10,16 @@ import { addNotification } from '@/shared/lib/notifications';
 import { NotificationsWsProvider } from '@/shared/lib/notifications/NotificationsWsProvider';
 import { LoadingProvider } from '@/shared/lib/contexts/LoadingContext';
 import { ApiError } from '@/shared/api/client';
+import { API_ERROR_MESSAGES } from '@/shared/api/apiError';
 
 import '@mantine/notifications/styles.css';
 
 /** Человекочитаемое сообщение из ошибки API */
 const getErrorMessage = (error: Error): string => {
   if (error instanceof ApiError) {
+    if (error.errorCode && API_ERROR_MESSAGES[error.errorCode]) {
+      return API_ERROR_MESSAGES[error.errorCode];
+    }
     if (error.status === 403) return 'Нет доступа';
     if (error.status === 404) return 'Ресурс не найден';
     if (error.status >= 500) return 'Ошибка сервера. Попробуйте позже';

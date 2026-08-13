@@ -2,6 +2,7 @@ export * from './common';
 export * from './service';
 export * from './employee';
 export * from './appointment';
+export * from './promotion';
 export * from './material';
 export * from './finance';
 export * from './client';

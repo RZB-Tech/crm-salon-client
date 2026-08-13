@@ -34,7 +34,7 @@ export const getAppointmentServicesLabel = (appointment: Appointment): string =>
         service.service?.name ??
         (service.material_id != null ? `Товар #${service.material_id}` : `Позиция #${service.id}`);
       const qty = service.quantity > 1 ? ` ×${service.quantity}` : '';
-      return `${name}${qty} (${formatPrice(service.price)})`;
+      return `${name}${qty} (${formatPrice(service.final_price ?? service.price ?? 0)})`;
     }),
   );
   return lines.length > 0 ? lines.join('; ') : '—';
