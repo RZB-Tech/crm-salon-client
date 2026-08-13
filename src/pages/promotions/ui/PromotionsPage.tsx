@@ -13,6 +13,7 @@ export const PromotionsPage: React.FC = () => {
     filter,
     setFilter,
     showArchived,
+    setShowArchived,
     formOpen,
     setFormOpen,
     editing,
@@ -69,8 +70,10 @@ export const PromotionsPage: React.FC = () => {
         <PromotionsToolbar
           search={search}
           filter={filter}
+          showArchived={showArchived}
           onSearchChange={setSearch}
           onFilterChange={setFilter}
+          onShowArchivedChange={setShowArchived}
           onCreate={openCreate}
         />
       }

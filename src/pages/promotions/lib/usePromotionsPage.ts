@@ -11,16 +11,16 @@ import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { getPromotionStatus } from './promotionHelpers';
 
-export type PromotionsFilter = 'all' | 'active' | 'archive';
+export type PromotionsFilter = 'all' | 'active';
 
 export function usePromotionsPage() {
   const [search, setSearch] = React.useState('');
   const [filter, setFilter] = React.useState<PromotionsFilter>('all');
+  const [showArchived, setShowArchived] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
 
-  const showArchived = filter === 'archive';
   const { data: promotions, isLoading, isError } = usePromotions(showArchived);
   const { data: services } = useServices(false);
   const { data: materials } = useMaterials(false);
@@ -47,7 +47,7 @@ export function usePromotionsPage() {
     const query = search.trim().toLowerCase();
     return (promotions ?? [])
       .filter((item) => {
-        if (filter === 'active' && getPromotionStatus(item) !== 'active') return false;
+        if (!showArchived && filter === 'active' && getPromotionStatus(item) !== 'active') return false;
         if (!query) return true;
         const targetName =
           item.service_id != null
@@ -58,13 +58,13 @@ export function usePromotionsPage() {
         return item.name.toLowerCase().includes(query) || targetName.toLowerCase().includes(query);
       })
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [promotions, filter, search, serviceNameMap, materialNameMap]);
+  }, [promotions, filter, showArchived, search, serviceNameMap, materialNameMap]);
 
   const pagination = usePagination(filtered, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [search, filter, pagination.resetPage]);
+  }, [search, filter, showArchived, pagination.resetPage]);
 
   const openCreate = React.useCallback(() => {
     setEditingId(null);
@@ -89,6 +89,7 @@ export function usePromotionsPage() {
     filter,
     setFilter,
     showArchived,
+    setShowArchived,
     formOpen,
     setFormOpen,
     editing,
