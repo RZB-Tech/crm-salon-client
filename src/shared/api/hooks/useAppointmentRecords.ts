@@ -8,6 +8,7 @@ import { addNotification } from '@/shared/lib/notifications';
 export const useCreateAppointmentRecord = () => {
   const queryClient = useQueryClient();
 
+  
   return useMutation({
     mutationFn: (payload: AppointmentRecordCreatePayload) =>
       apiPost<Appointment, AppointmentRecordCreatePayload>(
