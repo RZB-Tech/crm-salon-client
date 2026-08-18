@@ -1,0 +1,23 @@
+.title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 32px;
+  color: #484848;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+h1.title {
+  cursor: default;
+}
+
+.iconActive {
+  --ai-bg: #f1eae3;
+  --ai-hover: #e8ddd4;
+}

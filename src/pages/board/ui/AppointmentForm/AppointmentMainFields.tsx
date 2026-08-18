@@ -40,57 +40,59 @@ export const AppointmentMainFields: React.FC<AppointmentMainFieldsProps> = ({
   archived,
   servicesSlot,
   onChange,
-}) => (
-  <>
-    {structureLocked && (
-      <Alert
-        className={styles.lockAlert}
-        color="yellow"
-        variant="light"
-        title="Состав заблокирован чеком"
-      >
-        Чек{activeReceipt ? ` #${activeReceipt.id}` : ''} активен. Отмените его во вкладке
-        «Оплата», чтобы менять клиента, время или услуги.
-      </Alert>
-    )}
-
-    <div className={styles.sectionCard}>
-      <p className={styles.sectionTitle}>Визит</p>
-
-      {mode === 'edit' && !cancelled && (
-        <AppointmentStatusField values={values} archived={archived} onChange={onChange} />
+}) => {
+  const body = (
+    <>
+      {structureLocked && (
+        <Alert
+          className={styles.lockAlert}
+          color="yellow"
+          variant="light"
+          title="Состав заблокирован чеком"
+        >
+          Чек{activeReceipt ? ` #${activeReceipt.id}` : ''} активен. Отмените его во вкладке
+          «Оплата», чтобы менять клиента, время или услуги.
+        </Alert>
       )}
 
-      <AppointmentClientFields
-        opened={opened}
-        values={values}
-        clientOptions={clientOptions}
-        clients={clients}
-        fieldsLocked={fieldsLocked}
-        onChange={onChange}
-      />
+      <div className={styles.sectionCard}>
+        <p className={styles.sectionTitle}>Персональные данные</p>
 
-      <AppointmentScheduleFields
-        values={values}
-        employeeOptions={employeeOptions}
-        serviceOptions={serviceOptions}
-        fieldsLocked={fieldsLocked}
-        onChange={onChange}
-      />
-    </div>
+        {mode === 'edit' && !cancelled && (
+          <AppointmentStatusField values={values} archived={archived} onChange={onChange} />
+        )}
 
-    {servicesSlot}
+        <AppointmentClientFields
+          opened={opened}
+          values={values}
+          clientOptions={clientOptions}
+          clients={clients}
+          fieldsLocked={fieldsLocked}
+          onChange={onChange}
+        />
 
-    <div className={styles.sectionCardMuted}>
-      <p className={styles.sectionTitleMuted}>Комментарий</p>
+        <AppointmentScheduleFields
+          values={values}
+          employeeOptions={employeeOptions}
+          serviceOptions={serviceOptions}
+          fieldsLocked={fieldsLocked}
+          onChange={onChange}
+        />
+      </div>
+
+      {servicesSlot}
+
       <Textarea
-        placeholder="Пожелания клиента, детали визита…"
+        label="Комментарий"
+        placeholder="Добавьте комментарий"
         minRows={2}
         autosize
         value={values.notes}
         onChange={(event) => onChange({ ...values, notes: event.currentTarget.value })}
         disabled={cancelled || archived}
       />
-    </div>
-  </>
-);
+    </>
+  );
+
+  return mode === 'create' ? <div className={styles.createLayout}>{body}</div> : body;
+};

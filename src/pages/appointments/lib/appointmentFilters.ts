@@ -32,6 +32,9 @@ export const emptyAppointmentFilterForm = (): AppointmentFilterFormState => ({
   archived: false,
 });
 
+export const isAppointmentDrawerFilterActive = (form: AppointmentFilterFormState): boolean =>
+  Boolean(form.clientId || form.status || form.paid || form.dateFrom || form.dateTo);
+
 /** Собирает filters для POST /appointments/get-all по схеме бэкенда */
 export const buildAppointmentListFilters = (
   form: AppointmentFilterFormState,

@@ -1,10 +1,9 @@
 import React from 'react';
-import { NumberInput, Textarea } from '@mantine/core';
+import { NumberInput, TextInput } from '@mantine/core';
 import type { Promotion } from '@/shared/api/types';
 import { formatPrice } from '@/shared/lib/format';
 import {
   getLinePromoView,
-  isLineFilled,
   isPriceChanged,
   type AppointmentServiceLine,
 } from '../../lib/appointmentForm';
@@ -30,15 +29,15 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
 }) => {
   const changed = isPriceChanged(line);
   const promo = getLinePromoView(line, promotions);
-  const showExtras = changed || Boolean(line.priceChangedReason.trim()) || !readOnly;
   const unitFinal = promo.final;
 
   return (
     <>
-      <div className={styles.lineMetrics} style={{ marginTop: 8 }}>
+      <div className={styles.lineMetrics}>
         <NumberInput
-          label="Кол-во"
+          label="Количество"
           min={1}
+          placeholder="1"
           value={line.quantity}
           onChange={(value) => onQuantityChange(Number(value) || 1)}
           disabled={readOnly}
@@ -46,7 +45,8 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
         <NumberInput
           label="Цена"
           min={0}
-          value={line.price}
+          placeholder="200 000 сум"
+          value={line.price || ''}
           onChange={(value) => onPriceChange(Number(value) || 0)}
           thousandSeparator=" "
           suffix=" сум"
@@ -56,34 +56,24 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
 
       <ServiceLinePromo view={promo} />
 
-      {isLineFilled(line) && (
-        <div className={styles.lineSubtotal}>
-          Сумма позиции: {formatPrice(line.quantity * unitFinal)}
-          {changed && ' · цена изменена'}
-        </div>
-      )}
+      <TextInput
+        label="Заметка"
+        placeholder="Добавьте заметку"
+        description={changed ? undefined : 'Необязательно'}
+        required={changed}
+        value={line.priceChangedReason}
+        onChange={(event) => onReasonChange(event.currentTarget.value)}
+        disabled={readOnly}
+        error={
+          changed &&
+          line.priceChangedReason.trim().length > 0 &&
+          line.priceChangedReason.trim().length < 5
+            ? 'Слишком коротко'
+            : undefined
+        }
+      />
 
-      {showExtras && (
-        <div className={styles.lineExtras}>
-          <Textarea
-            label="Заметка"
-            placeholder={changed ? 'Обязательно, минимум 5 символов' : 'Необязательно'}
-            required={changed}
-            minRows={1}
-            autosize
-            value={line.priceChangedReason}
-            onChange={(event) => onReasonChange(event.currentTarget.value)}
-            disabled={readOnly}
-            error={
-              changed &&
-              line.priceChangedReason.trim().length > 0 &&
-              line.priceChangedReason.trim().length < 5
-                ? 'Слишком коротко'
-                : undefined
-            }
-          />
-        </div>
-      )}
+      <p className={styles.lineSubtotal}>Итого: {formatPrice(line.quantity * unitFinal)}</p>
     </>
   );
 };

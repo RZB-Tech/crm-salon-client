@@ -1,6 +1,6 @@
 import React from 'react';
-import { Center, SegmentedControl, Tooltip } from '@mantine/core';
-import { Package, Scissors } from '@phosphor-icons/react';
+import { SegmentedControl } from '@mantine/core';
+import { PackageIcon, ScissorsIcon } from '@phosphor-icons/react';
 import type { LineKind } from '../../lib/appointmentForm';
 import styles from './appointment-form-modal.module.css';
 
@@ -10,36 +10,29 @@ interface ServiceLineKindToggleProps {
   onKindChange: (kind: LineKind) => void;
 }
 
+const kindItem = (icon: React.ReactNode, label: string) => (
+  <span className={styles.kindItem}>
+    {icon}
+    {label}
+  </span>
+);
+
 export const ServiceLineKindToggle: React.FC<ServiceLineKindToggleProps> = ({
   kind,
   readOnly,
   onKindChange,
 }) => (
   <SegmentedControl
-    size="sm"
-    radius="md"
-    className={styles.kindToggle}
+    size="xs"
+    radius="xs"
+    classNames={{
+      root: styles.kindToggle,
+      indicator: styles.kindIndicator,
+      label: styles.kindLabel,
+    }}
     data={[
-      {
-        value: 'service',
-        label: (
-          <Tooltip label="Услуга" openDelay={300}>
-            <Center h={20}>
-              <Scissors size={16} />
-            </Center>
-          </Tooltip>
-        ),
-      },
-      {
-        value: 'material',
-        label: (
-          <Tooltip label="Товар" openDelay={300}>
-            <Center h={20}>
-              <Package size={16} />
-            </Center>
-          </Tooltip>
-        ),
-      },
+      { value: 'service', label: kindItem(<ScissorsIcon size={12} />, 'Услуга') },
+      { value: 'material', label: kindItem(<PackageIcon size={12} />, 'Товар') },
     ]}
     value={kind}
     onChange={(value) => onKindChange(value as LineKind)}

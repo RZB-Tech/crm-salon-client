@@ -39,6 +39,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
 }) => {
   const onMainTab = mode === 'create' || tab === 'main';
   const canSubmit = onMainTab && !cancelled && !archived;
+  const showVisitTotal = mode === 'edit' && onMainTab;
 
   const dangerActions =
     mode === 'edit' && tab === 'main' ? (
@@ -92,11 +93,11 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
           </Button>
         )
       }
-      metaLabel={onMainTab ? 'Сумма визита' : undefined}
-      metaValue={onMainTab ? formatPrice(total) : undefined}
+      metaLabel={showVisitTotal ? 'Сумма визита' : undefined}
+      metaValue={showVisitTotal ? formatPrice(total) : undefined}
       dangerActions={dangerActions}
       onCancel={mode === 'create' ? onClose : undefined}
-      submitLabel={canSubmit ? (mode === 'edit' ? 'Сохранить' : 'Создать запись') : undefined}
+      submitLabel={canSubmit ? (mode === 'edit' ? 'Сохранить' : 'Добавить запись') : undefined}
       onSubmit={canSubmit ? onSubmit : undefined}
       submitDisabled={!isValid}
       loading={loading}

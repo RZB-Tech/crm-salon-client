@@ -1,5 +1,5 @@
 import React from 'react';
-import { CalendarPlus } from '@phosphor-icons/react';
+import { UserCheckIcon } from '@phosphor-icons/react';
 import type { Appointment, Client, Receipt } from '@/shared/api/types';
 import { usePromotions } from '@/shared/api/hooks/usePromotions';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
@@ -118,9 +118,10 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
       opened={opened}
       onClose={onClose}
       title={title}
-      subtitle={subtitle}
-      initials={avatarInitials}
-      icon={<CalendarPlus size={22} />}
+      subtitle={mode === 'create' ? undefined : subtitle}
+      initials={mode === 'create' ? undefined : avatarInitials}
+      icon={<UserCheckIcon />}
+      size={mode === 'create' ? 567 : 'lg'}
       headerAside={mode === 'edit' ? <AppointmentPaidBadge paid={paid} /> : undefined}
       badges={
         hasStateBadges ? (

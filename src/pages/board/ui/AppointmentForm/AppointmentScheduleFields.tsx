@@ -34,10 +34,11 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
 
   return (
     <>
-      <div className={styles.scheduleGrid} style={{ marginTop: 12 }}>
+      <div className={styles.scheduleGrid}>
         <DateInput
           label="Дата"
           required
+          placeholder="ДД.ММ.ГГГГ"
           value={values.date || null}
           onChange={(value) => onChange({ ...values, date: value ?? '' })}
           disabled={fieldsLocked}
@@ -71,14 +72,12 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
 
       <Select
         label="Сотрудник"
-        required
         searchable
-        mt="sm"
         data={employeeOptions}
         value={values.employeeId}
         onChange={handleEmployeeChange}
         disabled={fieldsLocked}
-        placeholder="Кто принимает"
+        placeholder="Выберите сотрудника"
       />
     </>
   );

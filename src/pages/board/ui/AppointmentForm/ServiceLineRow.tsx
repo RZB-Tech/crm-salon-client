@@ -45,6 +45,7 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
   onRemove,
 }) => {
   const changed = isPriceChanged(line);
+  const isService = line.kind === 'service';
 
   return (
     <div className={`${styles.lineCard} ${changed ? styles.lineCardChanged : ''}`}>
@@ -54,35 +55,13 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
           readOnly={readOnly}
           onKindChange={(kind) => onKindChange(line.key, kind)}
         />
-
-        {line.kind === 'service' ? (
-          <Select
-            searchable
-            placeholder="Выберите услугу"
-            data={serviceOptions}
-            value={line.serviceId}
-            onChange={(value) => onServiceSelect(line.key, value)}
-            nothingFoundMessage="Нет услуг у сотрудника"
-            disabled={readOnly}
-          />
-        ) : (
-          <Select
-            searchable
-            placeholder="Выберите товар"
-            data={materialOptions}
-            value={line.materialId}
-            onChange={(value) => onMaterialSelect(line.key, value)}
-            nothingFoundMessage="Нет товаров"
-            disabled={readOnly}
-          />
-        )}
-
         {!readOnly && (
           <Tooltip label="Удалить позицию" openDelay={300}>
             <ActionIcon
-              variant="light"
-              color="red"
-              size="lg"
+              className={styles.lineTrash}
+              variant="outline"
+              color="gray"
+              size={32}
               radius="md"
               aria-label="Удалить позицию"
               onClick={() => onRemove(line.key)}
@@ -93,6 +72,30 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
           </Tooltip>
         )}
       </div>
+
+      {isService ? (
+        <Select
+          label="Услуга"
+          searchable
+          placeholder="Выберите услугу"
+          data={serviceOptions}
+          value={line.serviceId}
+          onChange={(value) => onServiceSelect(line.key, value)}
+          nothingFoundMessage="Нет услуг у сотрудника"
+          disabled={readOnly}
+        />
+      ) : (
+        <Select
+          label="Товар"
+          searchable
+          placeholder="Выберите товар"
+          data={materialOptions}
+          value={line.materialId}
+          onChange={(value) => onMaterialSelect(line.key, value)}
+          nothingFoundMessage="Нет товаров"
+          disabled={readOnly}
+        />
+      )}
 
       <ServiceLineMetrics
         line={line}

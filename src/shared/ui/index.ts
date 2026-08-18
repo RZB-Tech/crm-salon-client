@@ -23,6 +23,7 @@ export {
   ViewModeToggle,
 } from './ListPageShell';
 export type { ListViewMode } from './ListPageShell';
+export { FilterDrawer, FilterDrawerFooter } from './FilterDrawer';
 export { PageTransition } from './PageTransition';
 export { Pagination } from './Pagination';
 export { PayAppointmentPanel } from './PayAppointmentPanel';

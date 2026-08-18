@@ -1,0 +1,38 @@
+.panel {
+  overflow: hidden;
+  border-radius: 16px 0 0 16px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #fbf8f7;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footer :global(.mantine-Button-root) {
+  width: 100%;
+}

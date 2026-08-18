@@ -4,7 +4,7 @@ import { ListPageShell, ListPaginationFooter } from '@/shared/ui';
 import { PermissionCode } from '@/shared/lib/permissions';
 import { AppointmentFormModal } from '@/pages/board/ui/AppointmentForm';
 import { useAppointmentsPage } from '../lib/useAppointmentsPage';
-import { AppointmentsFilters } from './AppointmentsFilters';
+import { AppointmentsToolbar } from './AppointmentsToolbar';
 import { AppointmentsTable } from './AppointmentsTable';
 import { AppointmentsConfirmModals } from './AppointmentsConfirmModals';
 
@@ -37,7 +37,7 @@ export const AppointmentsPage: React.FC = () => {
   } = useAppointmentsPage();
 
   const filterToolbar = (
-    <AppointmentsFilters
+    <AppointmentsToolbar
       filterForm={filterForm}
       patchFilter={patchFilter}
       hasFilterField={hasFilterField}

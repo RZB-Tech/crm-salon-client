@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, Group } from '@mantine/core';
-import { Package, Plus, Scissors } from '@phosphor-icons/react';
+import { ActionIcon } from '@mantine/core';
+import { TrashIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import type { Promotion } from '@/shared/api/types';
 import {
@@ -10,8 +10,10 @@ import {
   type MaterialOption,
   type ServiceOption,
 } from '../../lib/appointmentForm';
+import { ServiceLineKindToggle } from './ServiceLineKindToggle';
 import { ServiceLineRow } from './ServiceLineRow';
 import { useServiceLineHandlers } from './useServiceLineHandlers';
+import { VisitAddButton } from './VisitAddButton';
 import styles from './appointment-form-modal.module.css';
 
 interface ServiceLinesTableProps {
@@ -35,7 +37,6 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
     () => calcServicesTotal(values.services, promotions),
     [values.services, promotions],
   );
-  const filledCount = values.services.filter(isLineFilled).length;
 
   const {
     updateLine,
@@ -47,85 +48,77 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
     handleAdd,
   } = useServiceLineHandlers({ values, serviceOptions, materialOptions, onChange });
 
-  const countLabel =
-    filledCount === 0
-      ? 'Добавьте услуги или товары'
-      : filledCount === 1
-        ? '1 позиция'
-        : filledCount < 5
-          ? `${filledCount} позиции`
-          : `${filledCount} позиций`;
+  const hasEmployee = Boolean(values.employeeId);
 
   return (
-    <div className={styles.sectionCard}>
-      <div className={styles.servicesHeader}>
-        <div>
-          <p className={styles.sectionTitle}>Состав визита</p>
-          <p className={styles.sectionHint} style={{ margin: 0 }}>
-            {countLabel}
-          </p>
+    <div className={styles.visitBlock}>
+      <div className={styles.visitHeader}>
+        <div className={styles.visitHeading}>
+          <p className={styles.visitTitle}>Детали визита</p>
+          <p className={styles.sectionHint}>Добавьте услуги или товары</p>
         </div>
         {!readOnly && (
-          <Group gap={6}>
-            <Button
-              variant="light"
-              color="sage"
-              size="xs"
-              radius="xl"
-              leftSection={<Plus size={13} weight="bold" />}
-              rightSection={<Scissors size={14} />}
+          <div className={styles.visitActions}>
+            <VisitAddButton
+              label="Услуга"
               onClick={() => handleAdd('service')}
-              disabled={!values.employeeId}
-            >
-              Услуга
-            </Button>
-            <Button
-              variant="light"
-              color="sage"
-              size="xs"
-              radius="xl"
-              leftSection={<Plus size={13} weight="bold" />}
-              rightSection={<Package size={14} />}
+              disabled={!hasEmployee}
+            />
+            <VisitAddButton
+              label="Товар"
               onClick={() => handleAdd('material')}
-              disabled={!values.employeeId}
-            >
-              Товар
-            </Button>
-          </Group>
+              disabled={!hasEmployee}
+            />
+          </div>
         )}
       </div>
 
-      {!values.employeeId && (
-        <div className={styles.emptyLines}>Сначала выберите сотрудника — появятся его услуги</div>
-      )}
-
-      {values.employeeId && (
-        <div className={styles.lineList}>
-          {values.services.map((line) => (
-            <ServiceLineRow
-              key={line.key}
-              line={line}
-              serviceOptions={serviceOptions}
-              materialOptions={materialOptions}
-              promotions={promotions}
-              readOnly={readOnly}
-              canRemove={!(values.services.length === 1 && !isLineFilled(line))}
-              onKindChange={handleKindChange}
-              onServiceSelect={handleServiceSelect}
-              onMaterialSelect={handleMaterialSelect}
-              onQuantityChange={handleQuantityChange}
-              onPriceChange={(key, price) => updateLine(key, { price })}
-              onReasonChange={(key, reason) => updateLine(key, { priceChangedReason: reason })}
-              onRemove={handleRemove}
-            />
-          ))}
+      {!hasEmployee ? (
+        <div className={styles.sectionCard}>
+          <div className={styles.emptyToolbar}>
+            <ServiceLineKindToggle kind="service" readOnly onKindChange={() => undefined} />
+            <ActionIcon
+              className={styles.lineTrash}
+              variant="outline"
+              color="gray"
+              size={32}
+              radius="md"
+              aria-label="Удалить позицию"
+              disabled
+            >
+              <TrashIcon size={16} />
+            </ActionIcon>
+          </div>
+          <div className={styles.emptyLines}>Выберите сначала сотрудника</div>
         </div>
+      ) : (
+        <>
+          <div className={styles.lineList}>
+            {values.services.map((line) => (
+              <ServiceLineRow
+                key={line.key}
+                line={line}
+                serviceOptions={serviceOptions}
+                materialOptions={materialOptions}
+                promotions={promotions}
+                readOnly={readOnly}
+                canRemove={!(values.services.length === 1 && !isLineFilled(line))}
+                onKindChange={handleKindChange}
+                onServiceSelect={handleServiceSelect}
+                onMaterialSelect={handleMaterialSelect}
+                onQuantityChange={handleQuantityChange}
+                onPriceChange={(key, price) => updateLine(key, { price })}
+                onReasonChange={(key, reason) => updateLine(key, { priceChangedReason: reason })}
+                onRemove={handleRemove}
+              />
+            ))}
+          </div>
+          <div className={styles.totalBar}>
+            <span>Итого:</span>
+            <span>{formatPrice(total)}</span>
+          </div>
+        </>
       )}
-
-      <div className={styles.totalBar}>
-        <span className={styles.totalLabel}>Итого</span>
-        <span className={styles.totalValue}>{formatPrice(total)}</span>
-      </div>
     </div>
   );
 };
