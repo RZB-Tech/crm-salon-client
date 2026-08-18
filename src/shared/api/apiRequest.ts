@@ -6,6 +6,30 @@ export { API_BASE_URL };
 
 let isRedirecting = false;
 
+export function logoutOnUnauthorized(): void {
+  if (!AUTH_ENABLED) return;
+  authStorage.setAuthenticated(false);
+  if (!isRedirecting && window.location.pathname !== '/login') {
+    isRedirecting = true;
+    window.location.href = '/login';
+  }
+}
+
+/** EventSource не отдаёт HTTP-статус; проверяем куки отдельным запросом. */
+export async function isSessionAlive(): Promise<boolean> {
+  if (!AUTH_ENABLED) return true;
+  try {
+    await apiRequest('/api/v1/auth/me');
+    return true;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      logoutOnUnauthorized();
+      return false;
+    }
+    return true;
+  }
+}
+
 export async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -18,11 +42,7 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
     });
 
     if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
-      authStorage.setAuthenticated(false);
-      if (!isRedirecting && window.location.pathname !== '/login') {
-        isRedirecting = true;
-        window.location.href = '/login';
-      }
+      logoutOnUnauthorized();
     }
 
     if (!response.ok) {
@@ -53,10 +73,7 @@ export async function apiPostFormData<T>(path: string, formData: FormData): Prom
   });
 
   if (AUTH_ENABLED && response.status === 401 && !path.includes('/auth/')) {
-    authStorage.setAuthenticated(false);
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
-    }
+    logoutOnUnauthorized();
   }
 
   if (!response.ok) {

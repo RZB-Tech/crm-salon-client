@@ -1,5 +1,5 @@
 import React from 'react';
-import { API_BASE_URL, authStorage } from '@/shared/api/client';
+import { API_BASE_URL, authStorage, isSessionAlive } from '@/shared/api/client';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import { RECONNECT_DELAY_MS } from './notificationWsConstants';
 
@@ -19,6 +19,7 @@ export const useNotificationsSse = (
     }
 
     let cancelled = false;
+    let probing = false;
     let eventSource: EventSource | null = null;
     let reconnectTimer: number | null = null;
 
@@ -27,6 +28,29 @@ export const useNotificationsSse = (
         window.clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
+    };
+
+    const scheduleReconnect = () => {
+      clearReconnect();
+      reconnectTimer = window.setTimeout(connect, RECONNECT_DELAY_MS);
+    };
+
+    const handleStreamError = () => {
+      if (cancelled) return;
+      setConnected(false);
+      eventSource?.close();
+      eventSource = null;
+      if (!authStorage.isAuthenticated() || probing) return;
+
+      probing = true;
+      void isSessionAlive()
+        .then((alive) => {
+          if (cancelled || !alive || !authStorage.isAuthenticated()) return;
+          scheduleReconnect();
+        })
+        .finally(() => {
+          probing = false;
+        });
     };
 
     const connect = () => {
@@ -61,15 +85,7 @@ export const useNotificationsSse = (
         }
       });
 
-      eventSource.onerror = () => {
-        if (cancelled) return;
-        setConnected(false);
-        eventSource?.close();
-        eventSource = null;
-        if (!authStorage.isAuthenticated()) return;
-        clearReconnect();
-        reconnectTimer = window.setTimeout(connect, RECONNECT_DELAY_MS);
-      };
+      eventSource.onerror = handleStreamError;
     };
 
     connect();

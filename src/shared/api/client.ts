@@ -1,4 +1,10 @@
-export { API_BASE_URL, apiRequest, apiPostFormData } from '@/shared/api/apiRequest';
+export {
+  API_BASE_URL,
+  apiRequest,
+  apiPostFormData,
+  isSessionAlive,
+  logoutOnUnauthorized,
+} from '@/shared/api/apiRequest';
 export { ApiError } from '@/shared/api/apiError';
 export { authStorage } from '@/shared/api/authStorage';
 
