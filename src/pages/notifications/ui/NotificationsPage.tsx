@@ -23,6 +23,8 @@ export const NotificationsPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     cancelNotification,
     readNotification,
     openReadModal,
@@ -101,6 +103,8 @@ export const NotificationsPage: React.FC = () => {
     >
       <NotificationsTable
         items={paginatedItems}
+        sort={sort}
+        onSort={toggleSort}
         cancelPending={cancelNotification.isPending}
         onMarkRead={openReadModal}
         onCancel={(id) => cancelNotification.mutate(id)}

@@ -31,6 +31,8 @@ export const MaterialsPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openCreate,
     openEdit,
     handleChangeQuantity,
@@ -112,6 +114,8 @@ export const MaterialsPage: React.FC = () => {
       <MaterialsTable
         items={paginatedItems}
         showArchived={showArchived}
+        sort={sort}
+        onSort={toggleSort}
         onEdit={openEdit}
         onArchive={(e, id) => {
           e.stopPropagation();

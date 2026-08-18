@@ -4,9 +4,10 @@ import type { Employee } from '@/shared/api/types';
 import { EmployeeCard } from './EmployeeCard';
 import { EmployeesTable } from './EmployeesTable';
 import type { ListViewMode } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import styles from './employees-page.module.css';
 
-export interface EmployeesListBodyProps {
+export interface EmployeesListBodyProps extends TableSortProps {
   view: ListViewMode;
   employees: Employee[];
   specializationMap: Map<number, string>;
@@ -21,6 +22,8 @@ export const EmployeesListBody: React.FC<EmployeesListBodyProps> = ({
   view,
   employees,
   specializationMap,
+  sort,
+  onSort,
   showArchived,
   canManage,
   onOpen,
@@ -62,6 +65,8 @@ export const EmployeesListBody: React.FC<EmployeesListBodyProps> = ({
     <EmployeesTable
       employees={employees}
       specializationMap={specializationMap}
+      sort={sort}
+      onSort={onSort}
       showArchived={showArchived}
       canManage={canManage}
       onOpen={onOpen}

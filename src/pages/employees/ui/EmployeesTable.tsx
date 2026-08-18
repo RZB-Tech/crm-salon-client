@@ -2,10 +2,11 @@ import React from 'react';
 import { ActionIcon, Avatar, Badge, Box, Group, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 
-export interface EmployeesTableProps {
+export interface EmployeesTableProps extends TableSortProps {
   employees: Employee[];
   specializationMap: Map<number, string>;
   showArchived: boolean;
@@ -18,6 +19,8 @@ export interface EmployeesTableProps {
 export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   employees,
   specializationMap,
+  sort,
+  onSort,
   showArchived,
   canManage,
   onOpen,
@@ -27,17 +30,21 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
-        <Table.Th className={listPageStyles.headCell}>Сотрудник</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Специализация</Table.Th>
+        <SortableTh column="name" sort={sort} onSort={onSort}>
+          Сотрудник
+        </SortableTh>
+        <SortableTh column="spec" sort={sort} onSort={onSort}>
+          Специализация
+        </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={120}>
           Услуги
         </Table.Th>
-        <Table.Th className={listPageStyles.headCell} w={180}>
+        <SortableTh column="salary" sort={sort} onSort={onSort} w={180}>
           Ставка
-        </Table.Th>
-        <Table.Th className={listPageStyles.headCell} w={120}>
+        </SortableTh>
+        <SortableTh column="status" sort={sort} onSort={onSort} w={120}>
           Статус
-        </Table.Th>
+        </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={48} />
       </Table.Tr>
     </Table.Thead>

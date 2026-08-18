@@ -14,6 +14,7 @@ import { useServices } from '@/shared/api/hooks/useServices';
 import type { Appointment } from '@/shared/api/types';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getClientFullName, getEmployeeFullName } from '@/shared/lib/format';
 import { useAccess } from '@/shared/lib/permissions';
 import { useBoardForm } from '@/pages/board/lib/useBoardForm';
@@ -24,7 +25,18 @@ import {
   emptyAppointmentFilterForm,
   type AppointmentFilterFormState,
 } from './appointmentFilters';
+import { getAppointmentClientName } from './appointmentList';
 import { resolveStatusFilterOptions } from './appointmentStatus';
+
+const APPOINTMENT_SORT_GETTERS = {
+  id: (appointment: Appointment) => appointment.id,
+  date: (appointment: Appointment) => sortTime(appointment.start_time_est),
+  client: (appointment: Appointment) => getAppointmentClientName(appointment),
+  amount: (appointment: Appointment) => appointment.total_price,
+  status: (appointment: Appointment) => appointment.status,
+  paid: (appointment: Appointment) => Number(appointment.paid),
+  created: (appointment: Appointment) => sortTime(appointment.created_at),
+};
 
 export function useAppointmentsPage() {
   const { hasPermission } = useAccess();
@@ -76,20 +88,16 @@ export function useAppointmentsPage() {
     [filterSchema, schemaByField],
   );
 
-  const sorted = React.useMemo(
-    () =>
-      [...(appointments ?? [])].sort(
-        (a, b) =>
-          new Date(b.start_time_est).getTime() - new Date(a.start_time_est).getTime(),
-      ),
-    [appointments],
+  const { sort, sortedItems, toggleSort } = useTableSort(
+    appointments ?? [],
+    APPOINTMENT_SORT_GETTERS,
+    { key: 'date', dir: 'desc' },
   );
-
-  const pagination = usePagination(sorted, { defaultPageSize: 20 });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [listFilters, pagination.resetPage]);
+  }, [listFilters, sort.key, sort.dir, pagination.resetPage]);
 
   const patchFilter = React.useCallback(
     (patch: Partial<AppointmentFilterFormState>) => {
@@ -180,6 +188,8 @@ export function useAppointmentsPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     patchFilter,
     hasFilterField,
     clientOptions,

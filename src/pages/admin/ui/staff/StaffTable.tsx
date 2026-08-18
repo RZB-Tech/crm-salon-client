@@ -1,6 +1,8 @@
+import React from 'react';
 import { Badge, Box, Table, Text } from '@mantine/core';
-import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, ListPaginationFooter, listPageStyles, SortableTh } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import type { Staff } from '@/shared/api/types';
 
 interface StaffTableProps {
@@ -8,10 +10,27 @@ interface StaffTableProps {
   onSelectStaff: (staff: Staff) => void;
 }
 
+const STAFF_SORT_GETTERS = {
+  login: (item: Staff) => item.login,
+  name: (item: Staff) => [item.firstname, item.lastname].filter(Boolean).join(' '),
+  status: (item: Staff) => Number(item.active),
+};
+
 export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(staffList, {
-    defaultPageSize: 20,
+  const { sort, sortedItems, toggleSort } = useTableSort(staffList, STAFF_SORT_GETTERS, {
+    key: 'login',
+    dir: 'asc',
   });
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
+    sortedItems,
+    {
+      defaultPageSize: 20,
+    },
+  );
+
+  React.useEffect(() => {
+    resetPage();
+  }, [sort.key, sort.dir, resetPage]);
 
   return (
     <Box className={listPageStyles.panel}>
@@ -19,10 +38,16 @@ export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
         <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th className={listPageStyles.headCell}>Логин</Table.Th>
-              <Table.Th className={listPageStyles.headCell}>Имя</Table.Th>
+              <SortableTh column="login" sort={sort} onSort={toggleSort}>
+                Логин
+              </SortableTh>
+              <SortableTh column="name" sort={sort} onSort={toggleSort}>
+                Имя
+              </SortableTh>
               <Table.Th className={listPageStyles.headCell}>Роли</Table.Th>
-              <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+              <SortableTh column="status" sort={sort} onSort={toggleSort}>
+                Статус
+              </SortableTh>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>

@@ -70,6 +70,14 @@
   letter-spacing: 0.02em;
 }
 
+.headerAvatar[data-kind='initials'] {
+  background: #f1eae3;
+  color: var(--form-modal-accent-text);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
 .headerAvatar svg {
   width: 16px;
   height: 16px;
@@ -100,10 +108,10 @@
 }
 
 .headerSubtitle {
-  margin-top: 2px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--mantine-color-gray-6);
+  margin-top: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(31, 41, 55, 0.3);
 }
 
 .headerSide {
@@ -281,4 +289,45 @@
   background: var(--mantine-color-gray-0);
   color: var(--mantine-color-gray-6);
   font-size: 13px;
+}
+
+/* ——— History table (карточка клиента / услуги) ——— */
+
+.historyBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyLabel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--form-modal-title);
+}
+
+.historyTable {
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--form-modal-stroke);
+  box-shadow: none;
+  animation: none;
+}
+
+.historyTable thead th {
+  background: transparent;
+  color: rgba(31, 41, 55, 0.6);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  border-bottom: 1px solid var(--form-modal-stroke);
+}
+
+.historyTable tbody td {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--form-modal-title);
+  border-bottom: none;
 }

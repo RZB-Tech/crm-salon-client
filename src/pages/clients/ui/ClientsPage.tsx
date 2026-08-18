@@ -34,6 +34,8 @@ export const ClientsPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openCreate,
     handleEditFromDetail,
     handleDepositFromDetail,
@@ -116,6 +118,8 @@ export const ClientsPage: React.FC = () => {
       <ClientsTable
         items={paginatedItems}
         showArchived={showArchived}
+        sort={sort}
+        onSort={toggleSort}
         onRowClick={setDetailTarget}
         onArchive={(e, id) => {
           e.stopPropagation();

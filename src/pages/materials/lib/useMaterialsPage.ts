@@ -3,6 +3,15 @@ import { useArchiveMaterial, useMaterials, useRestoreMaterial } from '@/shared/a
 import type { Material } from '@/shared/api/types';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
+
+const MATERIAL_SORT_GETTERS = {
+  article: (item: Material) => item.article,
+  name: (item: Material) => item.name,
+  quantity: (item: Material) => item.quantity,
+  price: (item: Material) => item.sell_price,
+  created: (item: Material) => sortTime(item.created_at),
+};
 
 export function useMaterialsPage() {
   const [search, setSearch] = React.useState('');
@@ -22,20 +31,22 @@ export function useMaterialsPage() {
 
   const filtered = React.useMemo(
     () =>
-      (materials ?? [])
-        .filter((item) => {
-          const q = search.toLowerCase();
-          return !q || item.name.toLowerCase().includes(q) || item.article.toLowerCase().includes(q);
-        })
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+      (materials ?? []).filter((item) => {
+        const q = search.toLowerCase();
+        return !q || item.name.toLowerCase().includes(q) || item.article.toLowerCase().includes(q);
+      }),
     [materials, search],
   );
 
-  const pagination = usePagination(filtered, { defaultPageSize: 20 });
+  const { sort, sortedItems, toggleSort } = useTableSort(filtered, MATERIAL_SORT_GETTERS, {
+    key: 'created',
+    dir: 'desc',
+  });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [search, pagination.resetPage]);
+  }, [search, sort.key, sort.dir, pagination.resetPage]);
 
   const openCreate = React.useCallback(() => {
     setEditingId(null);
@@ -74,6 +85,8 @@ export function useMaterialsPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openCreate,
     openEdit,
     handleChangeQuantity,

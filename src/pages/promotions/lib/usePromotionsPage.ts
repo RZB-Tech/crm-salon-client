@@ -9,9 +9,18 @@ import { useServices } from '@/shared/api/hooks/useServices';
 import type { Promotion } from '@/shared/api/types';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getPromotionStatus } from './promotionHelpers';
 
 export type PromotionsFilter = 'all' | 'active';
+
+const PROMOTION_SORT_GETTERS = {
+  name: (item: Promotion) => item.name,
+  discount: (item: Promotion) => item.discount_value ?? 0,
+  period: (item: Promotion) => sortTime(item.start_time),
+  status: (item: Promotion) => getPromotionStatus(item),
+  created: (item: Promotion) => sortTime(item.created_at),
+};
 
 export function usePromotionsPage() {
   const [search, setSearch] = React.useState('');
@@ -45,26 +54,28 @@ export function usePromotionsPage() {
 
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase();
-    return (promotions ?? [])
-      .filter((item) => {
-        if (!showArchived && filter === 'active' && getPromotionStatus(item) !== 'active') return false;
-        if (!query) return true;
-        const targetName =
-          item.service_id != null
-            ? (serviceNameMap.get(item.service_id) ?? '')
-            : item.material_id != null
-              ? (materialNameMap.get(item.material_id) ?? '')
-              : '';
-        return item.name.toLowerCase().includes(query) || targetName.toLowerCase().includes(query);
-      })
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return (promotions ?? []).filter((item) => {
+      if (!showArchived && filter === 'active' && getPromotionStatus(item) !== 'active') return false;
+      if (!query) return true;
+      const targetName =
+        item.service_id != null
+          ? (serviceNameMap.get(item.service_id) ?? '')
+          : item.material_id != null
+            ? (materialNameMap.get(item.material_id) ?? '')
+            : '';
+      return item.name.toLowerCase().includes(query) || targetName.toLowerCase().includes(query);
+    });
   }, [promotions, filter, showArchived, search, serviceNameMap, materialNameMap]);
 
-  const pagination = usePagination(filtered, { defaultPageSize: 20 });
+  const { sort, sortedItems, toggleSort } = useTableSort(filtered, PROMOTION_SORT_GETTERS, {
+    key: 'created',
+    dir: 'desc',
+  });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [search, filter, showArchived, pagination.resetPage]);
+  }, [search, filter, showArchived, sort.key, sort.dir, pagination.resetPage]);
 
   const openCreate = React.useCallback(() => {
     setEditingId(null);
@@ -98,6 +109,8 @@ export function usePromotionsPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     serviceNameMap,
     materialNameMap,
     openCreate,

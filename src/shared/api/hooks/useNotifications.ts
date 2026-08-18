@@ -8,6 +8,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import type {
   SalonNotification,
   SalonNotificationCreatePayload,
+  SalonNotificationReadPayload,
 } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
 
@@ -45,23 +46,22 @@ export const useCreateNotification = () => {
   });
 };
 
-export interface ReadNotificationPayload {
-  id: number;
-  comment: string;
-}
-
 export const useReadNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: ReadNotificationPayload) =>
-      apiPost<SalonNotification, { comment: string }>(
-        `/api/v1/notifications/${payload.id}/read`,
-        { comment: payload.comment },
+    mutationFn: (payload: SalonNotificationReadPayload) =>
+      apiPost<SalonNotification, SalonNotificationReadPayload>(
+        '/api/v1/notifications/read',
+        payload,
       ),
-    onSuccess: (_, payload) => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData<SalonNotification[]>(queryKeys.notifications.all, (old) =>
+        old ? old.map((item) => (item.id === updated.id ? updated : item)) : [updated],
+      );
+      queryClient.setQueryData(queryKeys.notifications.detail(updated.id), updated);
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(payload.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(updated.id) });
     },
   });
 };

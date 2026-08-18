@@ -9,9 +9,18 @@ import { formatDateTime, getEmployeeFullName } from '@/shared/lib/format';
 interface AuditLogsPanelProps {
   tableName: AuditLogTable;
   recordId: number;
+  whoLabel?: string;
+  className?: string;
+  hideEmptyIcon?: boolean;
 }
 
-export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({ tableName, recordId }) => {
+export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({
+  tableName,
+  recordId,
+  whoLabel = 'Кто',
+  className,
+  hideEmptyIcon,
+}) => {
   const { data, isLoading, isError } = useAuditLogs({
     table_name: tableName,
     record_id: recordId,
@@ -47,9 +56,11 @@ export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({ tableName, recor
       compact
       stickyHeader={false}
       maxHeight={360}
+      className={className}
+      hideEmptyIcon={hideEmptyIcon}
       columns={[
         { key: 'date', label: 'Дата' },
-        { key: 'who', label: 'Кто' },
+        { key: 'who', label: whoLabel },
         { key: 'action', label: 'Действие' },
         { key: 'field', label: 'Поле' },
         { key: 'old', label: 'Было' },

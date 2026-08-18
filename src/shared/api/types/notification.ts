@@ -20,8 +20,14 @@ export interface SalonNotification extends BaseEntity {
   body: string;
   type: SalonNotificationType;
   status?: SalonNotificationStatus;
+  notes?: string | null;
   scheduled_at: string;
   delivered_at: string | null;
+}
+
+export interface SalonNotificationReadPayload {
+  id: number;
+  notes: string;
 }
 
 export interface SalonNotificationCreatePayload {

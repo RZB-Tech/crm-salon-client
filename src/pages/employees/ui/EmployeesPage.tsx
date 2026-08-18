@@ -20,6 +20,7 @@ import {
 } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getEmployeeFullName } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { readStoredView, VIEW_STORAGE_KEY } from '../lib/viewMode';
@@ -47,12 +48,29 @@ export const EmployeesPage: React.FC = () => {
     return map;
   }, [specializations]);
 
+  const getters = React.useMemo(
+    () => ({
+      name: (employee: Employee) => getEmployeeFullName(employee),
+      spec: (employee: Employee) =>
+        employee.specialization_id != null
+          ? (specializationMap.get(employee.specialization_id) ?? '')
+          : '',
+      salary: (employee: Employee) => employee.salary_fixed,
+      status: (employee: Employee) => Number(employee.active),
+    }),
+    [specializationMap],
+  );
+
+  const { sort, sortedItems, toggleSort } = useTableSort(employees ?? [], getters, {
+    key: 'name',
+    dir: 'asc',
+  });
   const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
-    employees ?? [],
+    sortedItems,
     { defaultPageSize: 20 },
   );
 
-  React.useEffect(() => resetPage(), [showArchived, resetPage]);
+  React.useEffect(() => resetPage(), [showArchived, sort.key, sort.dir, resetPage]);
   React.useEffect(() => {
     try {
       localStorage.setItem(VIEW_STORAGE_KEY, view);
@@ -145,6 +163,8 @@ export const EmployeesPage: React.FC = () => {
         view={view}
         employees={paginatedItems}
         specializationMap={specializationMap}
+        sort={sort}
+        onSort={toggleSort}
         showArchived={showArchived}
         canManage={canManage}
         onOpen={openProfile}

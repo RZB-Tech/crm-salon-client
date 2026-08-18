@@ -5,6 +5,7 @@ import { useRoles, useCreateRole, useUpdateRole } from '@/shared/api/hooks/useRo
 import { usePermissions } from '@/shared/api/hooks/usePermissions';
 import { ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import type { Role, RoleCreatePayload } from '@/shared/api/types';
 import { RoleFormModal } from './RoleFormModal';
@@ -19,6 +20,12 @@ export type RolesTabHandle = {
 interface RolesTabProps {
   showArchived: boolean;
 }
+
+const ROLE_SORT_GETTERS = {
+  name: (role: Role) => role.name,
+  permissions: (role: Role) => role.permissions.length,
+  status: (role: Role) => Number(role.archived),
+};
 
 export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function RolesTab(
   { showArchived },
@@ -73,14 +80,18 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
     updateRole.mutate({ id: role.id, archived: !role.archived });
   }, [updateRole]);
 
+  const { sort, sortedItems, toggleSort } = useTableSort(filteredRoles, ROLE_SORT_GETTERS, {
+    key: 'name',
+    dir: 'asc',
+  });
   const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
-    filteredRoles,
+    sortedItems,
     { defaultPageSize: 20 },
   );
 
   React.useEffect(() => {
     resetPage();
-  }, [showArchived, resetPage]);
+  }, [showArchived, sort.key, sort.dir, resetPage]);
 
   if (isLoading) {
     return (
@@ -95,6 +106,8 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
       <ListPanelBody>
         <RolesTable
           roles={paginatedItems}
+          sort={sort}
+          onSort={toggleSort}
           onEdit={handleOpen}
           onToggleArchive={handleToggleArchive}
         />

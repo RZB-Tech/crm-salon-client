@@ -1,8 +1,10 @@
 import React from 'react';
-import { Badge, Skeleton, Table, Text } from '@mantine/core';
+import { Skeleton, Table } from '@mantine/core';
 import { useClientAppointments } from '@/shared/api/hooks/useClients';
 import { DataTable, DataTableRow } from '@/shared/ui';
-import { formatAppointmentDateTime, formatPrice } from '@/shared/lib/format';
+import { formatPrice } from '@/shared/lib/format';
+import { formatClientAppointmentStamp } from '../lib/clientDisplay';
+import styles from './client-modals.module.css';
 
 interface ClientAppointmentsTabProps {
   clientId: number;
@@ -14,35 +16,34 @@ export const ClientAppointmentsTab: React.FC<ClientAppointmentsTabProps> = ({ cl
   if (isLoading) return <Skeleton height={120} />;
 
   return (
-    <DataTable
-      compact
-      stickyHeader={false}
-      maxHeight={320}
-      columns={[
-        { key: 'date', label: 'Дата' },
-        { key: 'amount', label: 'Сумма' },
-        { key: 'status', label: 'Статус' }
-      ]}
-      isEmpty={(appointments ?? []).length === 0}
-      emptyMessage='Записей нет'
-    >
-      {(appointments ?? []).map((appt) => (
-        <DataTableRow key={appt.id}>
-          <Table.Td>
-            <Text size='xs'>{formatAppointmentDateTime(appt.start_time_est)}</Text>
-          </Table.Td>
-          <Table.Td>
-            <Text size='sm' fw={600}>
-              {formatPrice(appt.total_price)}
-            </Text>
-          </Table.Td>
-          <Table.Td>
-            <Badge size='xs' color={appt.paid ? 'green' : 'orange'} variant='light'>
-              {appt.paid ? 'Оплачено' : 'Не оплачено'}
-            </Badge>
-          </Table.Td>
-        </DataTableRow>
-      ))}
-    </DataTable>
+    <div className={styles.tableBlock}>
+      <p className={styles.tableLabel}>Записи клиента</p>
+      <DataTable
+        compact
+        stickyHeader={false}
+        maxHeight={280}
+        className={styles.tableCard}
+        hideEmptyIcon
+        columns={[
+          { key: 'date', label: 'Дата' },
+          { key: 'amount', label: 'Сумма' },
+          { key: 'status', label: 'Статус' },
+        ]}
+        isEmpty={(appointments ?? []).length === 0}
+        emptyMessage="Записей нет"
+      >
+        {(appointments ?? []).map((appt) => (
+          <DataTableRow key={appt.id}>
+            <Table.Td>{formatClientAppointmentStamp(appt.start_time_est)}</Table.Td>
+            <Table.Td>{formatPrice(appt.total_price)}</Table.Td>
+            <Table.Td>
+              <span className={appt.paid ? styles.statusBadge : styles.statusBadgeUnpaid}>
+                {appt.paid ? 'оплачено' : 'не оплачено'}
+              </span>
+            </Table.Td>
+          </DataTableRow>
+        ))}
+      </DataTable>
+    </div>
   );
 };

@@ -96,9 +96,9 @@ export function useNotificationsWs() {
   }, []);
 
   const handleReadAlert = React.useCallback(
-    (id: number, comment: string) => {
+    (id: number, notes: string) => {
       readNotification.mutate(
-        { id, comment },
+        { id, notes },
         {
           onSuccess: () => alertQueue.dismissAlert(),
           onError: () => alertQueue.dismissAlert(),

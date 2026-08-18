@@ -2,11 +2,12 @@ import React from 'react';
 import { ActionIcon, Badge, Group, Table, Text, Tooltip } from '@mantine/core';
 import { CheckIcon, XIcon } from '@phosphor-icons/react';
 import type { SalonNotification } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
 
-interface NotificationsTableProps {
+interface NotificationsTableProps extends TableSortProps {
   items: SalonNotification[];
   cancelPending: boolean;
   onMarkRead: (id: number) => void;
@@ -15,6 +16,8 @@ interface NotificationsTableProps {
 
 export const NotificationsTable: React.FC<NotificationsTableProps> = ({
   items,
+  sort,
+  onSort,
   cancelPending,
   onMarkRead,
   onCancel,
@@ -22,15 +25,17 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
-        <Table.Th className={listPageStyles.headCell}>Тип</Table.Th>
+        <SortableTh column="type" sort={sort} onSort={onSort}>
+          Тип
+        </SortableTh>
         <Table.Th className={listPageStyles.headCell}>Заголовок</Table.Th>
         <Table.Th className={listPageStyles.headCell}>Текст</Table.Th>
-        <Table.Th className={listPageStyles.headCell} w={140}>
+        <SortableTh column="status" sort={sort} onSort={onSort} w={140}>
           Статус
-        </Table.Th>
-        <Table.Th className={listPageStyles.headCell} w={180}>
+        </SortableTh>
+        <SortableTh column="scheduled" sort={sort} onSort={onSort} w={180}>
           Запланировано
-        </Table.Th>
+        </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={100} />
       </Table.Tr>
     </Table.Thead>
@@ -64,13 +69,20 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
-                <Badge
-                  size="sm"
-                  variant="light"
-                  color={status === 'read' ? 'green' : status === 'cancelled' ? 'red' : 'orange'}
+                <Tooltip
+                  label={item.notes}
+                  disabled={!item.notes}
+                  multiline
+                  maw={280}
                 >
-                  {status === 'read' ? 'Прочитано' : status === 'cancelled' ? 'Отменено' : 'Новое'}
-                </Badge>
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color={status === 'read' ? 'green' : status === 'cancelled' ? 'red' : 'orange'}
+                  >
+                    {status === 'read' ? 'Прочитано' : status === 'cancelled' ? 'Отменено' : 'Новое'}
+                  </Badge>
+                </Tooltip>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="xs" c="rgba(72,72,72,0.4)">

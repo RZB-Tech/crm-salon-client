@@ -2,11 +2,12 @@ import React from 'react';
 import { ActionIcon, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Material } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 
-interface MaterialsTableProps {
+interface MaterialsTableProps extends TableSortProps {
   items: Material[];
   showArchived: boolean;
   onEdit: (material: Material) => void;
@@ -17,6 +18,8 @@ interface MaterialsTableProps {
 export const MaterialsTable: React.FC<MaterialsTableProps> = ({
   items,
   showArchived,
+  sort,
+  onSort,
   onEdit,
   onArchive,
   onRestore,
@@ -29,14 +32,18 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell}>Артикул</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={200}>
+          <SortableTh column="article" sort={sort} onSort={onSort}>
+            Артикул
+          </SortableTh>
+          <SortableTh column="name" sort={sort} onSort={onSort}>
+            Название
+          </SortableTh>
+          <SortableTh column="quantity" sort={sort} onSort={onSort} w={200}>
             Кол-во
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={200}>
+          </SortableTh>
+          <SortableTh column="price" sort={sort} onSort={onSort} w={200}>
             Цена продажи
-          </Table.Th>
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
       </Table.Thead>

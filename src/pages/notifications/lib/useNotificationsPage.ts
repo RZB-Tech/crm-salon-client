@@ -1,7 +1,15 @@
 import React from 'react';
 import { useCancelNotification, useNotifications, useReadNotification } from '@/shared/api/hooks/useNotifications';
+import type { SalonNotification } from '@/shared/api/types';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
+
+const NOTIFICATION_SORT_GETTERS = {
+  type: (item: SalonNotification) => item.type,
+  status: (item: SalonNotification) => getEffectiveStatus(item),
+  scheduled: (item: SalonNotification) => sortTime(item.scheduled_at),
+};
 
 export function useNotificationsPage() {
   const [formOpen, setFormOpen] = React.useState(false);
@@ -24,11 +32,15 @@ export function useNotificationsPage() {
     [notifications],
   );
 
-  const pagination = usePagination(items, { defaultPageSize: 20 });
+  const { sort, sortedItems, toggleSort } = useTableSort(items, NOTIFICATION_SORT_GETTERS, {
+    key: 'scheduled',
+    dir: 'desc',
+  });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [statusFilter, pagination.resetPage]);
+  }, [statusFilter, sort.key, sort.dir, pagination.resetPage]);
 
   const openReadModal = React.useCallback((id: number) => {
     setReadTarget(id);
@@ -40,7 +52,7 @@ export function useNotificationsPage() {
   const confirmRead = React.useCallback(() => {
     if (readTarget == null) return;
     readNotification.mutate(
-      { id: readTarget, comment: readComment.trim() },
+      { id: readTarget, notes: readComment.trim() },
       {
         onSuccess: () => {
           setReadTarget(null);
@@ -63,6 +75,8 @@ export function useNotificationsPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     cancelNotification,
     readNotification,
     openReadModal,

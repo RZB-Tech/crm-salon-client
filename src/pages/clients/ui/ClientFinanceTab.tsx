@@ -1,8 +1,10 @@
 import React from 'react';
-import { Badge, Skeleton, Stack, Table, Text } from '@mantine/core';
+import { Skeleton, Table } from '@mantine/core';
 import { useClientFinanceReport } from '@/shared/api/hooks/useClientFinanceReport';
-import { DataTable, DataTableRow, formModalStyles } from '@/shared/ui';
+import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
+import { formatFinanceMonth } from '../lib/clientDisplay';
+import styles from './client-modals.module.css';
 
 interface ClientFinanceTabProps {
   clientId: number;
@@ -10,54 +12,39 @@ interface ClientFinanceTabProps {
 
 export const ClientFinanceTab: React.FC<ClientFinanceTabProps> = ({ clientId }) => {
   const { data: financeReport, isLoading } = useClientFinanceReport({ clientID: clientId });
+  const months = Object.entries(financeReport?.items ?? {});
 
   if (isLoading) return <Skeleton height={120} />;
 
-  if (!financeReport || Object.keys(financeReport.items).length === 0) {
-    return <div className={formModalStyles.emptyState}>Финансовых данных нет</div>;
-  }
-
   return (
-    <Stack gap='sm'>
-      <Text size='sm' fw={600}>
-        Итого: {formatPrice(financeReport.total)}
-      </Text>
+    <div className={styles.tableBlock}>
+      <p className={styles.tableLabel}>Финансы</p>
       <DataTable
         compact
         stickyHeader={false}
-        maxHeight={320}
+        maxHeight={280}
+        className={styles.tableCard}
+        hideEmptyIcon
         columns={[
           { key: 'month', label: 'Месяц' },
           { key: 'income', label: 'Доход' },
           { key: 'net', label: 'Нетто' },
-          { key: 'transactions', label: 'Операций' }
+          { key: 'transactions', label: 'Операции' },
         ]}
-        isEmpty={false}
-        emptyMessage=''
+        isEmpty={months.length === 0}
+        emptyMessage="Финансовых данных нет"
       >
-        {Object.entries(financeReport.items).map(([month, data]) => (
+        {months.map(([month, data]) => (
           <DataTableRow key={month}>
+            <Table.Td>{formatFinanceMonth(month)}</Table.Td>
             <Table.Td>
-              <Text size='xs'>{month}</Text>
+              <span className={styles.incomeBadge}>{formatPrice(data.income)}</span>
             </Table.Td>
-            <Table.Td>
-              <Text size='xs' c='green'>
-                {formatPrice(data.income)}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Text size='xs' fw={600}>
-                {formatPrice(data.net)}
-              </Text>
-            </Table.Td>
-            <Table.Td>
-              <Badge size='xs' variant='light'>
-                {data.transactions.length}
-              </Badge>
-            </Table.Td>
+            <Table.Td>{formatPrice(data.net)}</Table.Td>
+            <Table.Td>{data.transactions.length}</Table.Td>
           </DataTableRow>
         ))}
       </DataTable>
-    </Stack>
+    </div>
   );
 };

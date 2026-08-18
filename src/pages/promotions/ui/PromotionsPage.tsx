@@ -22,6 +22,8 @@ export const PromotionsPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     serviceNameMap,
     materialNameMap,
     openCreate,
@@ -90,6 +92,8 @@ export const PromotionsPage: React.FC = () => {
       <PromotionsTable
         items={paginatedItems}
         showArchived={showArchived}
+        sort={sort}
+        onSort={toggleSort}
         serviceNameMap={serviceNameMap}
         materialNameMap={materialNameMap}
         onEdit={openEdit}

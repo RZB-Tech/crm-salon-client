@@ -32,6 +32,8 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
       isLoading,
       isError,
       pagination,
+      sort,
+      toggleSort,
       summary,
       cancelTransaction,
       confirmCancel,
@@ -75,7 +77,12 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
           onSourceChange={setSourceFilter}
         />
 
-        <TransactionsTable items={paginatedItems} onCancel={setCancelTarget} />
+        <TransactionsTable
+          items={paginatedItems}
+          sort={sort}
+          onSort={toggleSort}
+          onCancel={setCancelTarget}
+        />
 
         <ListPaginationFooter
           page={page}

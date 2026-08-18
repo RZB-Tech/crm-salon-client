@@ -1,9 +1,17 @@
 import React from 'react';
 import { useArchiveClient, useClients, useRestoreClient } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
-import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { getClientFullName } from '@/shared/lib/format';
+import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { useTableSort } from '@/shared/lib/hooks/useTableSort';
+
+const CLIENT_SORT_GETTERS = {
+  name: (client: Client) => getClientFullName(client),
+  sex: (client: Client) => client.sex,
+  deposit: (client: Client) => client.deposit,
+  birth: (client: Client) => client.birth_date,
+};
 
 export function useClientsPage() {
   const [search, setSearch] = React.useState('');
@@ -41,11 +49,15 @@ export function useClientsPage() {
     [clients, search],
   );
 
-  const pagination = usePagination(filtered, { defaultPageSize: 20 });
+  const { sort, sortedItems, toggleSort } = useTableSort(filtered, CLIENT_SORT_GETTERS, {
+    key: 'name',
+    dir: 'asc',
+  });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [search, pagination.resetPage]);
+  }, [search, sort.key, sort.dir, pagination.resetPage]);
 
   const openCreate = React.useCallback(() => {
     setEditing(null);
@@ -93,6 +105,8 @@ export function useClientsPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openCreate,
     handleEditFromDetail,
     handleDepositFromDetail,

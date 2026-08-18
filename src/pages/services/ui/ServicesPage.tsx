@@ -30,6 +30,8 @@ export const ServicesPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openServiceCreate,
     openServiceEdit,
     handleImportFile,
@@ -107,6 +109,8 @@ export const ServicesPage: React.FC = () => {
         items={paginatedItems}
         categoryMap={categoryMap}
         showArchived={showArchived}
+        sort={sort}
+        onSort={toggleSort}
         onEdit={openServiceEdit}
         onArchive={(e, id) => {
           e.stopPropagation();

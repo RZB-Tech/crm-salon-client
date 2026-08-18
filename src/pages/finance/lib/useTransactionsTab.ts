@@ -1,10 +1,23 @@
 import React from 'react';
 import { useCancelTransaction, useTransactions } from '@/shared/api/hooks/useTransactions';
+import type { Transaction } from '@/shared/api/types';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import {
   calculateTransactionSummary,
   filterTransactions,
+  getSignedAmount,
 } from './transactionHelpers';
+
+const TRANSACTION_SORT_GETTERS = {
+  id: (item: Transaction) => item.id,
+  type: (item: Transaction) => item.type,
+  category: (item: Transaction) => item.category,
+  amount: (item: Transaction) => getSignedAmount(item),
+  method: (item: Transaction) => item.method,
+  status: (item: Transaction) => Number(Boolean(item.cancelled)),
+  date: (item: Transaction) => sortTime(item.created_at),
+};
 
 export function useTransactionsTab(enabled: boolean) {
   const [formOpen, setFormOpen] = React.useState(false);
@@ -21,11 +34,16 @@ export function useTransactionsTab(enabled: boolean) {
     [transactions, typeFilter, categoryFilter, sourceFilter],
   );
 
-  const pagination = usePagination(filteredTransactions, { defaultPageSize: 20 });
+  const { sort, sortedItems, toggleSort } = useTableSort(
+    filteredTransactions,
+    TRANSACTION_SORT_GETTERS,
+    { key: 'date', dir: 'desc' },
+  );
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [typeFilter, categoryFilter, sourceFilter, pagination.resetPage]);
+  }, [typeFilter, categoryFilter, sourceFilter, sort.key, sort.dir, pagination.resetPage]);
 
   const summary = React.useMemo(
     () => calculateTransactionSummary(transactions),
@@ -55,6 +73,8 @@ export function useTransactionsTab(enabled: boolean) {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     summary,
     cancelTransaction,
     confirmCancel,

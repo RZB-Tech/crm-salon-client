@@ -4,9 +4,19 @@ import type { Receipt } from '@/shared/api/types';
 import { useCancelReceipt } from '@/shared/api/hooks/useReceipts';
 import { ConfirmModal, ListPanelBody, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
+import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { ReceiptHistoryModal } from './ReceiptHistoryModal';
 import { ReceiptsTable } from './ReceiptsTable';
+
+const RECEIPT_SORT_GETTERS = {
+  id: (item: Receipt) => item.id,
+  type: (item: Receipt) => item.receipt_type,
+  amount: (item: Receipt) => item.total_amount,
+  remaining: (item: Receipt) => item.remaining_amount,
+  status: (item: Receipt) => item.status,
+  date: (item: Receipt) => sortTime(item.created_at),
+};
 
 interface ReceiptsTabProps {
   receipts: Receipt[];
@@ -19,15 +29,26 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
   const cancelReceipt = useCancelReceipt();
   const historyReceipt = useResolvedById(receipts, historyReceiptId);
 
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = usePagination(receipts, {
-    defaultPageSize: 20,
+  const { sort, sortedItems, toggleSort } = useTableSort(receipts, RECEIPT_SORT_GETTERS, {
+    key: 'date',
+    dir: 'desc',
   });
+  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
+    sortedItems,
+    { defaultPageSize: 20 },
+  );
+
+  React.useEffect(() => {
+    resetPage();
+  }, [sort.key, sort.dir, resetPage]);
 
   return (
     <Box className={listPageStyles.panel}>
       <ListPanelBody>
         <ReceiptsTable
           items={paginatedItems}
+          sort={sort}
+          onSort={toggleSort}
           onShowHistory={setHistoryReceiptId}
           onPayReceipt={onPayReceipt}
           onCancelReceipt={setCancelTarget}

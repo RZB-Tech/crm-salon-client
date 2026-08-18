@@ -9,6 +9,7 @@ import {
 import type { Service, ServiceCategory } from '@/shared/api/types';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
+import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 
 export function useServicesPage() {
   const [activeCategory, setActiveCategory] = React.useState('all');
@@ -54,11 +55,26 @@ export function useServicesPage() {
     [services, activeCategory, search],
   );
 
-  const pagination = usePagination(filtered, { defaultPageSize: 20 });
+  const getters = React.useMemo(
+    () => ({
+      name: (service: Service) => service.name,
+      duration: (service: Service) => service.estimated_time,
+      category: (service: Service) =>
+        service.category_id != null ? (categoryMap.get(service.category_id)?.name ?? '') : '',
+      price: (service: Service) => service.price,
+    }),
+    [categoryMap],
+  );
+
+  const { sort, sortedItems, toggleSort } = useTableSort(filtered, getters, {
+    key: 'name',
+    dir: 'asc',
+  });
+  const pagination = usePagination(sortedItems, { defaultPageSize: 20 });
 
   React.useEffect(() => {
     pagination.resetPage();
-  }, [search, activeCategory, pagination.resetPage]);
+  }, [search, activeCategory, sort.key, sort.dir, pagination.resetPage]);
 
   const openServiceCreate = React.useCallback(() => {
     setEditingServiceId(null);
@@ -106,6 +122,8 @@ export function useServicesPage() {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     openServiceCreate,
     openServiceEdit,
     handleImportFile,

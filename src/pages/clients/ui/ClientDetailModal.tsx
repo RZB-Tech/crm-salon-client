@@ -1,14 +1,15 @@
 import React from 'react';
-import { Badge, Button, Tabs } from '@mantine/core';
-import { CurrencyCircleDollarIcon, PencilSimpleIcon, UserCircleIcon } from '@phosphor-icons/react';
+import { Tabs } from '@mantine/core';
 import type { Client } from '@/shared/api/types';
-import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { FormModal, FormModalFooter, FormSection, formModalStyles } from '@/shared/ui';
-import { formatPrice, getClientFullName, getClientInitials } from '@/shared/lib/format';
+import { FormModal, FormModalFooter } from '@/shared/ui';
+import { getClientInitials, getClientShortName } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { ClientAppointmentsTab } from './ClientAppointmentsTab';
+import { ClientDepositBadge } from './ClientDepositBadge';
 import { ClientFinanceTab } from './ClientFinanceTab';
+import { ClientHistoryTab } from './ClientHistoryTab';
+import styles from './client-modals.module.css';
 
 interface ClientDetailModalProps {
   client: Client | null;
@@ -21,7 +22,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
   client,
   onClose,
   onEdit,
-  onDeposit
+  onDeposit,
 }) => {
   const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('appointments');
@@ -35,76 +36,42 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
     <FormModal
       opened={Boolean(client)}
       onClose={onClose}
-      title={client ? getClientFullName(client) : 'Клиент'}
-      subtitle={client?.phone ?? 'Карточка клиента'}
+      title={client ? getClientShortName(client) : 'Клиент'}
+      subtitle={client?.phone || undefined}
       initials={client ? getClientInitials(client) : null}
-      icon={<UserCircleIcon size={22} />}
-      headerAside={
-        client ? (
-          <Badge variant='light' color='sage' size='lg' radius='sm'>
-            {formatPrice(client.deposit)}
-          </Badge>
+      size={567}
+      footer={
+        client && (canEdit || canDeposit) ? (
+          <FormModalFooter
+            cancelLabel="Редактировать"
+            onCancel={canEdit ? () => onEdit?.(client) : undefined}
+            submitLabel="Депозит"
+            onSubmit={canDeposit ? () => onDeposit?.(client) : undefined}
+          />
         ) : undefined
       }
-      size='lg'
-      footer={
-        <FormModalFooter
-          metaLabel='Депозит'
-          metaValue={client ? formatPrice(client.deposit) : undefined}
-          cancelLabel='Закрыть'
-          onCancel={onClose}
-        >
-          {canEdit && client && (
-            <Button
-              variant='light'
-              size='sm'
-              leftSection={<PencilSimpleIcon size={16} />}
-              onClick={() => onEdit?.(client)}
-            >
-              Редактировать
-            </Button>
-          )}
-          {canDeposit && client && (
-            <Button
-              variant='light'
-              size='sm'
-              leftSection={<CurrencyCircleDollarIcon size={16} />}
-              onClick={() => onDeposit?.(client)}
-            >
-              Депозит
-            </Button>
-          )}
-        </FormModalFooter>
-      }
     >
-      <Tabs
-        value={tab}
-        onChange={(v) => setTab(v ?? 'appointments')}
-        variant='pills'
-        color='sage'
-        radius='xl'
-      >
-        <Tabs.List className={formModalStyles.tabsList}>
-          <Tabs.Tab value='appointments'>Записи</Tabs.Tab>
-          <Tabs.Tab value='finance'>Финансы</Tabs.Tab>
-          <Tabs.Tab value='audit'>История</Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel value='appointments'>
-          <FormSection title='Записи клиента'>
+      <div className={styles.body}>
+        {client && <ClientDepositBadge amount={client.deposit} />}
+        <Tabs
+          value={tab}
+          onChange={(v) => setTab(v ?? 'appointments')}
+          variant="pills"
+          radius={4}
+          classNames={{ root: styles.tabs, list: styles.tabsList, tab: styles.tab }}
+        >
+          <Tabs.List>
+            <Tabs.Tab value="appointments">Записи</Tabs.Tab>
+            <Tabs.Tab value="finance">Финансы</Tabs.Tab>
+            <Tabs.Tab value="audit">История</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel value="appointments">
             {client && <ClientAppointmentsTab clientId={client.id} />}
-          </FormSection>
-        </Tabs.Panel>
-        <Tabs.Panel value='finance'>
-          <FormSection title='Финансы'>
-            {client && <ClientFinanceTab clientId={client.id} />}
-          </FormSection>
-        </Tabs.Panel>
-        <Tabs.Panel value='audit'>
-          <FormSection title='История изменений' muted>
-            {client && <AuditLogsPanel tableName='clients' recordId={client.id} />}
-          </FormSection>
-        </Tabs.Panel>
-      </Tabs>
+          </Tabs.Panel>
+          <Tabs.Panel value="finance">{client && <ClientFinanceTab clientId={client.id} />}</Tabs.Panel>
+          <Tabs.Panel value="audit">{client && <ClientHistoryTab clientId={client.id} />}</Tabs.Panel>
+        </Tabs>
+      </div>
     </FormModal>
   );
 };

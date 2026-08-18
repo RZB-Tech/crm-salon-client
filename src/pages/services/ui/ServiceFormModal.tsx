@@ -1,17 +1,16 @@
 import React from 'react';
-import { NumberInput, Select, TextInput } from '@mantine/core';
 import { ScissorsIcon } from '@phosphor-icons/react';
 import { useCreateService, useUpdateService } from '@/shared/api/hooks/useServices';
 import type {
   Service,
   ServiceCategory,
   ServiceCreatePayload,
-  ServiceUpdatePayload
+  ServiceUpdatePayload,
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
-import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
-import { formatPrice } from '@/shared/lib/format';
+import { FormModal, FormModalFooter, formModalStyles } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { ServiceFormFields } from './ServiceFormFields';
 
 interface ServiceFormModalProps {
   opened: boolean;
@@ -24,7 +23,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
   opened,
   service,
   categories,
-  onClose
+  onClose,
 }) => {
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState(0);
@@ -43,7 +42,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
   const categoryOptions = React.useMemo(
     () => categories.map((c) => ({ value: String(c.id), label: c.name })),
-    [categories]
+    [categories],
   );
 
   const handleSubmit = React.useCallback(() => {
@@ -53,7 +52,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         name,
         price: price > 0 ? price : undefined,
         category_id: categoryId ? Number(categoryId) : null,
-        estimated_time: estimatedTime > 0 ? estimatedTime : null
+        estimated_time: estimatedTime > 0 ? estimatedTime : null,
       };
       updateService.mutate(payload, { onSuccess: onClose });
       return;
@@ -62,7 +61,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     const payload: ServiceCreatePayload = {
       name,
       category_id: categoryId ? Number(categoryId) : null,
-      estimated_time: estimatedTime > 0 ? estimatedTime : null
+      estimated_time: estimatedTime > 0 ? estimatedTime : null,
     };
     createService.mutate(payload, {
       onSuccess: (created) => {
@@ -71,7 +70,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
           return;
         }
         onClose();
-      }
+      },
     });
   }, [name, price, estimatedTime, categoryId, service, createService, updateService, onClose]);
 
@@ -79,65 +78,41 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={service ? 'Редактировать услугу' : 'Новая услуга'}
-      subtitle='Название, цена и длительность'
-      icon={<ScissorsIcon size={22} />}
-      size='lg'
+      title={service ? 'Редактировать услугу' : 'Добавить услугу'}
+      icon={<ScissorsIcon />}
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel='Цена'
-          metaValue={formatPrice(price)}
           onCancel={onClose}
-          submitLabel={service ? 'Сохранить' : 'Создать'}
+          submitLabel={service ? 'Сохранить' : 'Добавить услугу'}
           onSubmit={handleSubmit}
-          submitDisabled={!name}
+          submitDisabled={!name.trim()}
           loading={createService.isPending || updateService.isPending}
         />
       }
     >
-      <FormSection title='Основное'>
-        <FormFieldGrid>
-          <TextInput
-            label='Название'
-            required
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-          />
-          <Select
-            label='Категория'
-            data={categoryOptions}
-            clearable
-            value={categoryId}
-            onChange={setCategoryId}
-          />
-        </FormFieldGrid>
-      </FormSection>
-
-      <FormSection title='Цена и время'>
-        <FormFieldGrid>
-          <NumberInput
-            label='Цена'
-            min={0}
-            value={price}
-            onChange={(v) => setPrice(Number(v) || 0)}
-            thousandSeparator=' '
-            suffix=' сум'
-          />
-          <NumberInput
-            label='Длительность'
-            min={0}
-            step={5}
-            value={estimatedTime}
-            onChange={(v) => setEstimatedTime(Number(v) || 0)}
-            suffix=' мин'
-          />
-        </FormFieldGrid>
-      </FormSection>
-
+      <ServiceFormFields
+        name={name}
+        categoryId={categoryId}
+        categoryOptions={categoryOptions}
+        price={price}
+        estimatedTime={estimatedTime}
+        onNameChange={setName}
+        onCategoryChange={setCategoryId}
+        onPriceChange={setPrice}
+        onTimeChange={setEstimatedTime}
+      />
       {service && (
-        <FormSection title='История изменений' muted>
-          <AuditLogsPanel tableName='services' recordId={service.id} />
-        </FormSection>
+        <div className={formModalStyles.historyBlock}>
+          <p className={formModalStyles.historyLabel}>История изменений</p>
+          <AuditLogsPanel
+            tableName="services"
+            recordId={service.id}
+            whoLabel="Сотрудник"
+            className={formModalStyles.historyTable}
+            hideEmptyIcon
+          />
+        </div>
       )}
     </FormModal>
   );

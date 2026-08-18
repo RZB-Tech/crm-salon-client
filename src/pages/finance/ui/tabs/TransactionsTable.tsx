@@ -7,7 +7,8 @@ import {
   Text,
 } from '@mantine/core';
 import type { Transaction } from '@/shared/api/types';
-import { ListPanelBody, listPageStyles } from '@/shared/ui';
+import { ListPanelBody, listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import {
   formatDateTime,
   formatPrice,
@@ -17,24 +18,43 @@ import {
 } from '@/shared/lib/format';
 import { getSignedAmount } from '../../lib/transactionHelpers';
 
-interface TransactionsTableProps {
+interface TransactionsTableProps extends TableSortProps {
   items: Transaction[];
   onCancel: (id: number) => void;
 }
 
-export const TransactionsTable: React.FC<TransactionsTableProps> = ({ items, onCancel }) => (
+export const TransactionsTable: React.FC<TransactionsTableProps> = ({
+  items,
+  sort,
+  onSort,
+  onCancel,
+}) => (
   <ListPanelBody>
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell}>ID</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Тип</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Категория</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Сумма</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Способ</Table.Th>
+          <SortableTh column="id" sort={sort} onSort={onSort}>
+            ID
+          </SortableTh>
+          <SortableTh column="type" sort={sort} onSort={onSort}>
+            Тип
+          </SortableTh>
+          <SortableTh column="category" sort={sort} onSort={onSort}>
+            Категория
+          </SortableTh>
+          <SortableTh column="amount" sort={sort} onSort={onSort}>
+            Сумма
+          </SortableTh>
+          <SortableTh column="method" sort={sort} onSort={onSort}>
+            Способ
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell}>Связь</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Дата</Table.Th>
+          <SortableTh column="status" sort={sort} onSort={onSort}>
+            Статус
+          </SortableTh>
+          <SortableTh column="date" sort={sort} onSort={onSort}>
+            Дата
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={100} />
         </Table.Tr>
       </Table.Thead>

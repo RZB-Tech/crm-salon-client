@@ -32,7 +32,11 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
   <header className={styles.header} data-tone={tone}>
     <div className={styles.headerTop}>
       <div className={styles.headerLead}>
-        {(initials || icon) && <div className={styles.headerAvatar}>{initials || icon}</div>}
+        {(initials || icon) && (
+          <div className={styles.headerAvatar} data-kind={initials ? 'initials' : 'icon'}>
+            {initials || icon}
+          </div>
+        )}
         <div className={styles.headerInfo}>
           <h2 className={styles.headerTitle}>{title}</h2>
           {subtitle != null && subtitle !== '' && (

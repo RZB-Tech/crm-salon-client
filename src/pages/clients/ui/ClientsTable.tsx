@@ -2,7 +2,8 @@ import React from 'react';
 import { ActionIcon, Avatar, Box, Group, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Client } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { SortableTh, listPageStyles } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import {
   formatDate,
   formatPrice,
@@ -12,7 +13,7 @@ import {
 } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 
-interface ClientsTableProps {
+interface ClientsTableProps extends TableSortProps {
   items: Client[];
   showArchived: boolean;
   onRowClick: (client: Client) => void;
@@ -23,6 +24,8 @@ interface ClientsTableProps {
 export const ClientsTable: React.FC<ClientsTableProps> = ({
   items,
   showArchived,
+  sort,
+  onSort,
   onRowClick,
   onArchive,
   onRestore,
@@ -34,21 +37,21 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell} miw={220}>
+          <SortableTh column="name" sort={sort} onSort={onSort} miw={220}>
             Клиенты
-          </Table.Th>
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={160}>
             Телефон
           </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={110}>
+          <SortableTh column="sex" sort={sort} onSort={onSort} w={110}>
             Пол
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={140}>
+          </SortableTh>
+          <SortableTh column="deposit" sort={sort} onSort={onSort} w={140}>
             Депозит
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={130}>
+          </SortableTh>
+          <SortableTh column="birth" sort={sort} onSort={onSort} w={130}>
             Дата рождения
-          </Table.Th>
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
       </Table.Thead>

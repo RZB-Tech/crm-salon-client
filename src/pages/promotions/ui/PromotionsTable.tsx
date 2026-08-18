@@ -2,7 +2,8 @@ import React from 'react';
 import { ActionIcon, Badge, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Promotion } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import {
   formatDiscountLabel,
@@ -12,7 +13,7 @@ import {
   PROMOTION_STATUS_LABELS,
 } from '../lib/promotionHelpers';
 
-interface PromotionsTableProps {
+interface PromotionsTableProps extends TableSortProps {
   items: Promotion[];
   showArchived: boolean;
   serviceNameMap: Map<number, string>;
@@ -39,6 +40,8 @@ const targetLabel = (
 export const PromotionsTable: React.FC<PromotionsTableProps> = ({
   items,
   showArchived,
+  sort,
+  onSort,
   serviceNameMap,
   materialNameMap,
   onEdit,
@@ -53,17 +56,19 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
+          <SortableTh column="name" sort={sort} onSort={onSort}>
+            Название
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell}>Цель</Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={160}>
+          <SortableTh column="discount" sort={sort} onSort={onSort} w={160}>
             Скидка
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={220}>
+          </SortableTh>
+          <SortableTh column="period" sort={sort} onSort={onSort} w={220}>
             Период
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={140}>
+          </SortableTh>
+          <SortableTh column="status" sort={sort} onSort={onSort} w={140}>
             Статус
-          </Table.Th>
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
       </Table.Thead>

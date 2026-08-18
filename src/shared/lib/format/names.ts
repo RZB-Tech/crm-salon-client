@@ -16,3 +16,18 @@ export const getClientFullName = (
 
 export const getClientInitials = (client: Pick<Client, 'firstname' | 'lastname'>): string =>
   getEmployeeInitials(client);
+
+/** «Иванов И.И.» — короткое имя для шапки карточки клиента */
+export const getClientShortName = (
+  client: Pick<Client, 'firstname' | 'lastname'> & { middlename?: string | null },
+): string => {
+  const last = client.lastname?.trim() || '';
+  const first = client.firstname?.trim() || '';
+  const middle = client.middlename?.trim() || '';
+  if (!last) return [first, middle].filter(Boolean).join(' ') || 'Клиент';
+  const initials = [first, middle]
+    .filter(Boolean)
+    .map((part) => `${part.charAt(0).toUpperCase()}.`)
+    .join('');
+  return [last, initials].filter(Boolean).join(' ');
+};

@@ -15,6 +15,8 @@ export const AppointmentsPage: React.FC = () => {
     isLoading,
     isError,
     pagination,
+    sort,
+    toggleSort,
     patchFilter,
     hasFilterField,
     clientOptions,
@@ -97,6 +99,8 @@ export const AppointmentsPage: React.FC = () => {
       <AppointmentsTable
         items={paginatedItems}
         showArchived={filterForm.archived}
+        sort={sort}
+        onSort={toggleSort}
         canUpdate={hasPermission(PermissionCode.APPOINTMENT_UPDATE)}
         restorePending={restoreAppointment.isPending}
         onRowClick={openEdit}

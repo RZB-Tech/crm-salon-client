@@ -1,0 +1,117 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.depositBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: #f6f1ee;
+  color: #ad9178;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tabsList {
+  gap: 0;
+  margin-bottom: 0;
+}
+
+.tab {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #1f2937;
+  border-radius: 4px;
+}
+
+.tab:hover {
+  background: transparent;
+}
+
+.tab[data-active] {
+  background: #ad9178;
+  color: #fff;
+}
+
+.tab[data-active]:hover {
+  background: #ad9178;
+}
+
+.tableBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tableLabel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #484848;
+}
+
+.tableCard {
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  box-shadow: none;
+  animation: none;
+}
+
+.tableCard thead th {
+  background: transparent;
+  color: rgba(31, 41, 55, 0.6);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.tableCard tbody td {
+  font-size: 12px;
+  line-height: 16px;
+  color: #484848;
+  border-bottom: none;
+}
+
+.statusBadge {
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: rgba(18, 184, 134, 0.1);
+  color: #12b886;
+}
+
+.statusBadgeUnpaid {
+  composes: statusBadge;
+  background: rgba(253, 126, 20, 0.12);
+  color: #fd7e14;
+}
+
+.incomeBadge {
+  composes: statusBadge;
+}

@@ -1,18 +1,20 @@
 import React from 'react';
-import { Badge, NumberInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
+import { NumberInput, Textarea } from '@mantine/core';
 import { UserPlusIcon } from '@phosphor-icons/react';
 import { useCreateClient, useUpdateClient } from '@/shared/api/hooks/useClients';
-import type { Client, ClientUpdatePayload, Sex } from '@/shared/api/types';
-import { formatPrice, getClientInitials, SEX_OPTIONS } from '@/shared/lib/format';
+import type { Client, ClientUpdatePayload } from '@/shared/api/types';
+import { getClientInitials } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
-import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
   clientFormToPayload,
   clientToForm,
   emptyClientForm,
-  type ClientFormState
+  type ClientFormState,
 } from '../lib/clientForm';
+import { ClientDepositBadge } from './ClientDepositBadge';
+import { ClientPersonalFields } from './ClientPersonalFields';
+import styles from './client-modals.module.css';
 
 interface ClientFormModalProps {
   opened: boolean;
@@ -42,98 +44,46 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={client ? 'Редактировать клиента' : 'Новый клиент'}
-      subtitle={client ? 'Контактные данные и заметки' : 'Заполните контактные данные'}
+      title={client ? 'Редактировать клиента' : 'Добавить клиента'}
       initials={client ? getClientInitials(client) : null}
-      icon={<UserPlusIcon size={22} />}
-      headerAside={
-        client ? (
-          <Badge variant='light' color='sage' size='lg' radius='sm'>
-            {formatPrice(client.deposit)}
-          </Badge>
-        ) : undefined
-      }
-      size='lg'
+      icon={<UserPlusIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={client ? 'Сохранить' : 'Создать'}
+          submitLabel={client ? 'Сохранить' : 'Добавить клиента'}
           onSubmit={handleSubmit}
-          submitDisabled={!form.firstname}
+          submitDisabled={!form.firstname.trim()}
           loading={isSaving}
         />
       }
     >
-      <FormSection title='Основное'>
-        <Stack gap='sm'>
-          <FormFieldGrid>
-            <TextInput
-              label='Имя'
-              required
-              value={form.firstname}
-              onChange={(e) => setForm({ ...form, firstname: e.currentTarget.value })}
-            />
-            <TextInput
-              label='Фамилия'
-              value={form.lastname}
-              onChange={(e) => setForm({ ...form, lastname: e.currentTarget.value })}
-            />
-          </FormFieldGrid>
-          <FormFieldGrid>
-            <TextInput
-              label='Отчество'
-              value={form.middlename}
-              onChange={(e) => setForm({ ...form, middlename: e.currentTarget.value })}
-            />
-            <Select
-              label='Пол'
-              required
-              data={[...SEX_OPTIONS]}
-              value={form.sex}
-              onChange={(v) => setForm({ ...form, sex: (v as Sex) ?? 'female' })}
-            />
-          </FormFieldGrid>
-        </Stack>
-      </FormSection>
-
-      <FormSection title='Контакты'>
-        <FormFieldGrid>
-          <TextInput
-            label='Телефон'
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.currentTarget.value })}
+      <div className={client ? styles.body : undefined}>
+        {client && <ClientDepositBadge amount={client.deposit} />}
+        <div className={styles.layout}>
+          <ClientPersonalFields form={form} onChange={setForm} />
+          {!client && (
+            <FormSection title="Депозит" hint="Стартовый баланс клиента на счёте салона">
+              <NumberInput
+                label="Начальный депозит"
+                min={0}
+                placeholder="0 сум"
+                value={form.deposit || ''}
+                onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })}
+                thousandSeparator=" "
+              />
+            </FormSection>
+          )}
+          <Textarea
+            label="Заметки"
+            autosize
+            minRows={2}
+            placeholder="Предпочтения, аллергии, договорённости"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
           />
-          <DateInput
-            label='Дата рождения'
-            clearable
-            value={form.birth_date || null}
-            onChange={(value) => setForm({ ...form, birth_date: value ?? '' })}
-          />
-        </FormFieldGrid>
-      </FormSection>
-
-      {!client && (
-        <FormSection title='Депозит' hint='Стартовый баланс клиента на счёте салона'>
-          <NumberInput
-            label='Начальный депозит'
-            min={0}
-            value={form.deposit}
-            onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })}
-            thousandSeparator=' '
-            suffix=' сум'
-          />
-        </FormSection>
-      )}
-
-      <FormSection title='Заметки' muted>
-        <Textarea
-          autosize
-          minRows={3}
-          placeholder='Предпочтения, аллергии, договорённости'
-          value={form.notes}
-          onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
-        />
-      </FormSection>
+        </div>
+      </div>
     </FormModal>
   );
 };

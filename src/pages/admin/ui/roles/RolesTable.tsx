@@ -8,24 +8,31 @@ import {
   ArchiveIcon,
   ArrowCounterClockwiseIcon,
 } from '@phosphor-icons/react';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import type { Role } from '@/shared/api/types';
 
-interface RolesTableProps {
+interface RolesTableProps extends TableSortProps {
   roles: Role[];
   onEdit: (role: Role) => void;
   onToggleArchive: (role: Role) => void;
 }
 
-export function RolesTable({ roles, onEdit, onToggleArchive }: RolesTableProps) {
+export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: RolesTableProps) {
   return (
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell}>Название</Table.Th>
+          <SortableTh column="name" sort={sort} onSort={onSort}>
+            Название
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell}>Описание</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Разрешений</Table.Th>
-          <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
+          <SortableTh column="permissions" sort={sort} onSort={onSort}>
+            Разрешений
+          </SortableTh>
+          <SortableTh column="status" sort={sort} onSort={onSort}>
+            Статус
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
       </Table.Thead>

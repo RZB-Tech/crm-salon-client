@@ -1,26 +1,41 @@
 import React from 'react';
 import { Badge, Table, Text } from '@mantine/core';
 import type { Payout } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatDateTime, formatPrice } from '@/shared/lib/format';
 import { PAYOUT_TYPE_LABELS } from '../../lib/payoutHelpers';
 
-interface PayoutsTableProps {
+interface PayoutsTableProps extends TableSortProps {
   items: Payout[];
   employeeMap: Map<number, string>;
 }
 
-export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap }) => (
+export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, sort, onSort }) => (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
-        <Table.Th className={listPageStyles.headCell}>ID</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Сотрудник</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Тип</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Сумма</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Способ</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Статус</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Дата</Table.Th>
+        <SortableTh column="id" sort={sort} onSort={onSort}>
+          ID
+        </SortableTh>
+        <SortableTh column="employee" sort={sort} onSort={onSort}>
+          Сотрудник
+        </SortableTh>
+        <SortableTh column="type" sort={sort} onSort={onSort}>
+          Тип
+        </SortableTh>
+        <SortableTh column="amount" sort={sort} onSort={onSort}>
+          Сумма
+        </SortableTh>
+        <SortableTh column="method" sort={sort} onSort={onSort}>
+          Способ
+        </SortableTh>
+        <SortableTh column="status" sort={sort} onSort={onSort}>
+          Статус
+        </SortableTh>
+        <SortableTh column="date" sort={sort} onSort={onSort}>
+          Дата
+        </SortableTh>
       </Table.Tr>
     </Table.Thead>
     <Table.Tbody>

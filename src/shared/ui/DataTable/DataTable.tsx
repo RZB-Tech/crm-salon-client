@@ -20,6 +20,7 @@ interface DataTableProps {
   stickyHeader?: boolean;
   maxHeight?: number | string;
   className?: string;
+  hideEmptyIcon?: boolean;
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -32,6 +33,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   stickyHeader = true,
   maxHeight,
   className,
+  hideEmptyIcon = false,
 }) => {
   const colSpan = emptyColSpan ?? columns.length;
 
@@ -71,11 +73,17 @@ export const DataTable: React.FC<DataTableProps> = ({
             {isEmpty ? (
               <Table.Tr>
                 <Table.Td colSpan={colSpan}>
-                  <Stack align="center" gap="xs" className={styles.empty}>
-                    <Box className={styles.emptyIcon}>
-                      <TableIcon size={24} />
-                    </Box>
-                    <Text size="sm" c="dimmed">
+                  <Stack
+                    align="center"
+                    gap="xs"
+                    className={[styles.empty, hideEmptyIcon ? styles.emptyPlain : ''].filter(Boolean).join(' ')}
+                  >
+                    {!hideEmptyIcon && (
+                      <Box className={styles.emptyIcon}>
+                        <TableIcon size={24} />
+                      </Box>
+                    )}
+                    <Text size={hideEmptyIcon ? 'xs' : 'sm'} fw={hideEmptyIcon ? 600 : undefined} c={hideEmptyIcon ? undefined : 'dimmed'}>
                       {emptyMessage}
                     </Text>
                   </Stack>

@@ -46,9 +46,7 @@ export const filterTransactions = (
   transactions: Transaction[] | undefined,
   filters: TransactionFilters,
 ): Transaction[] => {
-  let items = [...(transactions ?? [])].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+  let items = [...(transactions ?? [])];
 
   if (filters.type) {
     items = items.filter((item) => item.type === filters.type);

@@ -2,13 +2,14 @@ import React from 'react';
 import { ActionIcon, Badge, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Service, ServiceCategory } from '@/shared/api/types';
-import { listPageStyles } from '@/shared/ui';
+import { listPageStyles, SortableTh } from '@/shared/ui';
+import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { formatDuration } from '../lib/formatDuration';
 import styles from './services-page.module.css';
 
-interface ServicesTableProps {
+interface ServicesTableProps extends TableSortProps {
   items: Service[];
   categoryMap: Map<number, ServiceCategory>;
   showArchived: boolean;
@@ -21,6 +22,8 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
   items,
   categoryMap,
   showArchived,
+  sort,
+  onSort,
   onEdit,
   onArchive,
   onRestore,
@@ -33,16 +36,18 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
-          <Table.Th className={listPageStyles.headCell}>Услуга</Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={275}>
+          <SortableTh column="name" sort={sort} onSort={onSort}>
+            Услуга
+          </SortableTh>
+          <SortableTh column="duration" sort={sort} onSort={onSort} w={275}>
             Длительность
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={380}>
+          </SortableTh>
+          <SortableTh column="category" sort={sort} onSort={onSort} w={380}>
             Категория
-          </Table.Th>
-          <Table.Th className={listPageStyles.headCell} w={310}>
+          </SortableTh>
+          <SortableTh column="price" sort={sort} onSort={onSort} w={310}>
             Цена
-          </Table.Th>
+          </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
       </Table.Thead>
