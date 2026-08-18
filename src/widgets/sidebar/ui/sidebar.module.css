@@ -31,106 +31,75 @@
   width: 100%;
 }
 
-.groupLabel {
-  color: var(--mantine-color-gray-5);
-  padding: 4px 10px;
-  margin-bottom: 2px;
-  letter-spacing: 0.5px;
-}
-
 .navItem {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 8px;
-  border-radius: var(--mantine-radius-md);
-  color: var(--mantine-color-gray-7);
+  padding: 7px 8px 7px 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: transparent;
+  color: #484848;
   text-decoration: none;
   font-size: 13px;
-  font-weight: 500;
-  transition:
-    background 160ms var(--motion-ease, ease),
-    color 160ms var(--motion-ease, ease),
-    transform 160ms var(--motion-ease, ease),
-    box-shadow 200ms var(--motion-ease, ease);
+  font-weight: 400;
+  line-height: 20px;
   width: 100%;
-  position: relative;
-  animation: nav-item-in 360ms var(--motion-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
-.navItem::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
+.bar {
   width: 3px;
-  height: 0;
-  border-radius: 0 3px 3px 0;
-  background: var(--mantine-color-sage-6);
-  transform: translateY(-50%);
-  transition: height 200ms var(--motion-ease, ease);
-  opacity: 0;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin-block: -7px;
+  background: #fff;
 }
 
-.navItem:nth-child(1) {
-  animation-delay: 20ms;
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  color: inherit;
 }
-.navItem:nth-child(2) {
-  animation-delay: 40ms;
-}
-.navItem:nth-child(3) {
-  animation-delay: 60ms;
-}
-.navItem:nth-child(4) {
-  animation-delay: 80ms;
-}
-.navItem:nth-child(5) {
-  animation-delay: 100ms;
-}
-.navItem:nth-child(6) {
-  animation-delay: 120ms;
-}
-.navItem:nth-child(7) {
-  animation-delay: 140ms;
-}
-.navItem:nth-child(8) {
-  animation-delay: 160ms;
-}
-.navItem:nth-child(9) {
-  animation-delay: 180ms;
-}
-.navItem:nth-child(10) {
-  animation-delay: 200ms;
+
+.label {
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (min-width: $mantine-breakpoint-xl) {
   .navItem {
     gap: 10px;
-    padding: 9px 10px;
+    padding: 9px 10px 9px 0;
     font-size: var(--mantine-font-size-sm);
+  }
+
+  .bar {
+    margin-block: -9px;
+  }
+
+  .icon {
+    font-size: 20px;
   }
 }
 
-.navItem:hover:not(.disabled) {
-  background: var(--mantine-color-gray-1);
-  color: var(--mantine-color-gray-9);
-  transform: translateX(2px);
-}
-
 .navItem.active {
-  background: var(--mantine-color-sage-0);
-  color: var(--mantine-color-sage-7);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mantine-color-sage-3) 55%, transparent);
+  background: #f6f1ee;
+  color: #ad9178;
+  font-weight: 500;
 }
 
-.navItem.active::before {
-  height: 56%;
-  opacity: 1;
-}
-
-.navItem.active .icon {
-  color: var(--mantine-color-sage-6);
-  transform: scale(1.06);
+.navItem.active .bar {
+  background: #c9b09a;
 }
 
 .navItem.disabled {
@@ -141,64 +110,9 @@
 .navItem.collapsed {
   justify-content: center;
   padding: 8px;
+  width: auto;
 }
 
-.navItem.collapsed:hover:not(.disabled) {
-  transform: scale(1.04);
-}
-
-.icon {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  /* Иконки заданы в 1em — размер управляется отсюда */
-  font-size: 18px;
-  transition: transform 180ms var(--motion-ease, ease), color 160ms ease;
-}
-
-@media (min-width: $mantine-breakpoint-xl) {
-  .icon {
-    font-size: 20px;
-  }
-}
-
-.label {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.soon {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--mantine-color-gray-5);
-  background: var(--mantine-color-gray-1);
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-@keyframes nav-item-in {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .navItem {
-    animation: none;
-  }
-
-  .navItem:hover:not(.disabled),
-  .navItem.collapsed:hover:not(.disabled),
-  .navItem.active .icon {
-    transform: none;
-  }
+.navItem.collapsed .bar {
+  display: none;
 }

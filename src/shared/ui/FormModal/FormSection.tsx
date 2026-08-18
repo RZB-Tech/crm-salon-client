@@ -12,10 +12,14 @@ export interface FormSectionProps {
 
 export const FormSection: React.FC<FormSectionProps> = ({ title, hint, muted, children }) => (
   <section className={muted ? styles.sectionCardMuted : styles.sectionCard}>
-    {title != null && (
-      <p className={muted ? styles.sectionTitleMuted : styles.sectionTitle}>{title}</p>
+    {(title != null || hint != null) && (
+      <div className={styles.sectionHeading}>
+        {title != null && (
+          <p className={muted ? styles.sectionTitleMuted : styles.sectionTitle}>{title}</p>
+        )}
+        {hint != null && <p className={styles.sectionHint}>{hint}</p>}
+      </div>
     )}
-    {hint != null && <p className={styles.sectionHint}>{hint}</p>}
     {children}
   </section>
 );

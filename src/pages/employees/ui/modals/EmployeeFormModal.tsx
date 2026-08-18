@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserIcon } from '@phosphor-icons/react';
+import { UserListIcon } from '@phosphor-icons/react';
 import { useServices } from '@/shared/api/hooks/useServices';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { Employee, EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
@@ -50,9 +50,6 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const errors = React.useMemo(() => validateEmployeeForm(form), [form]);
   const isValid = Object.keys(errors).length === 0;
 
-  const initials =
-    [form.firstname[0], form.lastname[0]].filter(Boolean).join('').toUpperCase() || null;
-
   const handleSubmit = React.useCallback(() => {
     if (!isValid) return;
     if (employee) {
@@ -66,15 +63,13 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={employee ? 'Редактировать сотрудника' : 'Новый сотрудник'}
-      subtitle="Личные данные, услуги и зарплата"
-      initials={initials}
-      icon={<UserIcon size={22} />}
-      size="lg"
+      title={employee ? 'Редактировать сотрудника' : 'Добавить сотрудника'}
+      icon={<UserListIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={employee ? 'Сохранить' : 'Создать'}
+          submitLabel={employee ? 'Сохранить' : 'Добавить сотрудника'}
           onSubmit={handleSubmit}
           submitDisabled={!isValid}
           loading={loading}

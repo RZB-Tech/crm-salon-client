@@ -23,7 +23,7 @@ export const emptyEmployeeForm = (): EmployeeFormState => ({
   lastname: '',
   middlename: '',
   phone: '',
-  birth_date: new Date().toISOString().slice(0, 10),
+  birth_date: '',
   active: true,
   specialization_id: null,
   salary_fixed: 0,

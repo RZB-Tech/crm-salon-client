@@ -31,24 +31,26 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
 }) => (
   <header className={styles.header} data-tone={tone}>
     <div className={styles.headerTop}>
-      {(initials || icon) && <div className={styles.headerAvatar}>{initials || icon}</div>}
-      <div className={styles.headerInfo}>
-        <h2 className={styles.headerTitle}>{title}</h2>
-        {subtitle != null && subtitle !== '' && (
-          <div className={styles.headerSubtitle}>{subtitle}</div>
-        )}
+      <div className={styles.headerLead}>
+        {(initials || icon) && <div className={styles.headerAvatar}>{initials || icon}</div>}
+        <div className={styles.headerInfo}>
+          <h2 className={styles.headerTitle}>{title}</h2>
+          {subtitle != null && subtitle !== '' && (
+            <div className={styles.headerSubtitle}>{subtitle}</div>
+          )}
+        </div>
       </div>
       <div className={styles.headerSide}>
         {aside}
         <ActionIcon
           variant="subtle"
           color="gray"
-          size="lg"
-          radius="xl"
+          size={32}
+          radius="md"
           aria-label="Закрыть"
           onClick={onClose}
         >
-          <XIcon size={18} />
+          <XIcon size={24} />
         </ActionIcon>
       </div>
     </div>

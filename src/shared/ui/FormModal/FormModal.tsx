@@ -44,9 +44,10 @@ export const FormModal: React.FC<FormModalProps> = ({
       onClose={onClose}
       withCloseButton={false}
       title={null}
-      radius="lg"
+      radius="md"
       size={size}
       padding={0}
+      classNames={{ content: styles.modalShell }}
       transitionProps={{
         transition: 'pop',
         duration: 220,

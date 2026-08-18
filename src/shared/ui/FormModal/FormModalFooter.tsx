@@ -34,35 +34,48 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
   onSubmit,
   loading = false,
   children,
-}) => (
-  <footer className={styles.footer}>
-    {meta ??
-      (metaValue != null ? (
-        <div className={styles.footerMeta}>
-          {metaLabel && <span className={styles.footerTotalLabel}>{metaLabel}</span>}
-          <span className={styles.footerTotalValue}>{metaValue}</span>
-        </div>
-      ) : null)}
+}) => {
+  const hasMeta = meta != null || metaValue != null;
+  const stretch = !hasMeta && !dangerActions && !children;
 
-    <div className={styles.footerActions}>
-      {dangerActions && <div className={styles.dangerActions}>{dangerActions}</div>}
-      {children}
-      {onCancel && (
-        <Button variant="default" size="sm" onClick={onCancel} disabled={loading}>
-          {cancelLabel}
-        </Button>
-      )}
-      {onSubmit && submitLabel && (
-        <Button
-          size="sm"
-          color={submitColor}
-          onClick={onSubmit}
-          loading={loading}
-          disabled={submitDisabled}
-        >
-          {submitLabel}
-        </Button>
-      )}
-    </div>
-  </footer>
-);
+  return (
+    <footer className={styles.footer} data-stretch={stretch || undefined}>
+      {meta ??
+        (metaValue != null ? (
+          <div className={styles.footerMeta}>
+            {metaLabel && <span className={styles.footerTotalLabel}>{metaLabel}</span>}
+            <span className={styles.footerTotalValue}>{metaValue}</span>
+          </div>
+        ) : null)}
+
+      <div className={styles.footerActions}>
+        {dangerActions && <div className={styles.dangerActions}>{dangerActions}</div>}
+        {children}
+        {onCancel && (
+          <Button
+            className={stretch ? styles.footerBtn : undefined}
+            variant="outline"
+            color="sage"
+            size="sm"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            {cancelLabel}
+          </Button>
+        )}
+        {onSubmit && submitLabel && (
+          <Button
+            className={stretch ? styles.footerBtn : undefined}
+            size="sm"
+            color={submitColor}
+            onClick={onSubmit}
+            loading={loading}
+            disabled={submitDisabled}
+          >
+            {submitLabel}
+          </Button>
+        )}
+      </div>
+    </footer>
+  );
+};
