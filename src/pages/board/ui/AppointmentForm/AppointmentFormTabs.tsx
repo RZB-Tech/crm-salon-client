@@ -18,7 +18,13 @@ export const AppointmentFormTabs: React.FC<AppointmentFormTabsProps> = ({
   onTabChange,
   mainForm,
 }) => (
-  <Tabs value={tab} onChange={onTabChange} variant="pills" color="sage" radius="xl">
+  <Tabs
+    value={tab}
+    onChange={onTabChange}
+    variant="pills"
+    radius={4}
+    classNames={{ list: styles.tabsList, tab: styles.tab }}
+  >
     <Tabs.List className={styles.tabsList}>
       <Tabs.Tab value="main">Запись</Tabs.Tab>
       <Tabs.Tab value="payment">Оплата</Tabs.Tab>

@@ -2,7 +2,7 @@ import React from 'react';
 import { TextInput } from '@mantine/core';
 import { TagIcon } from '@phosphor-icons/react';
 import type { Specialization } from '@/shared/api/types';
-import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { FormModal, FormModalFooter } from '@/shared/ui';
 
 interface SpecializationFormModalProps {
   opened: boolean;
@@ -27,26 +27,24 @@ export const SpecializationFormModal: React.FC<SpecializationFormModalProps> = (
     opened={opened}
     onClose={onClose}
     title={editing ? 'Редактировать специализацию' : 'Новая специализация'}
-    subtitle={editing ? editing.name : 'Направление работы мастера'}
-    icon={<TagIcon size={22} />}
-    size="md"
+    icon={<TagIcon />}
+    size={567}
     footer={
       <FormModalFooter
         onCancel={onClose}
-        submitLabel={editing ? 'Сохранить' : 'Создать'}
+        submitLabel={editing ? 'Сохранить' : 'Создать специализацию'}
         onSubmit={onSubmit}
         submitDisabled={!name}
         loading={loading}
       />
     }
   >
-    <FormSection title="Основное">
-      <TextInput
-        label="Название"
-        required
-        value={name}
-        onChange={(e) => onNameChange(e.currentTarget.value)}
-      />
-    </FormSection>
+    <TextInput
+      label="Название"
+      required
+      placeholder="Введите название"
+      value={name}
+      onChange={(e) => onNameChange(e.currentTarget.value)}
+    />
   </FormModal>
 );

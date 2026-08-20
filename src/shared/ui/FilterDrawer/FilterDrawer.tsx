@@ -25,7 +25,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
     position="right"
     withCloseButton={false}
     padding={0}
-    size={360}
+    size={400}
     overlayProps={{ backgroundOpacity: 0.08, blur: 3 }}
     classNames={{ content: styles.panel, body: styles.body }}
   >

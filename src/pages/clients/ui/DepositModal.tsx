@@ -3,7 +3,7 @@ import { Badge, NumberInput, Select, Stack } from '@mantine/core';
 import { CurrencyCircleDollarIcon } from '@phosphor-icons/react';
 import { useUpdateClientDeposit } from '@/shared/api/hooks/useClients';
 import type { Client } from '@/shared/api/types';
-import { formatPrice, getClientFullName } from '@/shared/lib/format';
+import { formatPrice } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
@@ -42,8 +42,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ client, onClose }) =
       opened={Boolean(client)}
       onClose={onClose}
       title='Изменить депозит'
-      subtitle={client ? getClientFullName(client) : undefined}
-      icon={<CurrencyCircleDollarIcon size={22} />}
+      icon={<CurrencyCircleDollarIcon />}
       headerAside={
         client ? (
           <Badge variant='light' color='sage' size='lg' radius='sm'>
@@ -51,7 +50,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({ client, onClose }) =
           </Badge>
         ) : undefined
       }
-      size='md'
+      size={567}
       footer={
         <FormModalFooter
           metaLabel='Баланс после операции'

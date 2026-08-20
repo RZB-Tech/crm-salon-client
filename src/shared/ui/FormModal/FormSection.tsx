@@ -5,24 +5,38 @@ export interface FormSectionProps {
   title?: React.ReactNode;
   /** Пояснение под заголовком секции */
   hint?: React.ReactNode;
+  /** Контрол справа от заголовка (например, переключатель) */
+  aside?: React.ReactNode;
   /** Приглушённая карточка — для второстепенных блоков (заметки, история) */
   muted?: boolean;
   children: React.ReactNode;
 }
 
-export const FormSection: React.FC<FormSectionProps> = ({ title, hint, muted, children }) => (
-  <section className={muted ? styles.sectionCardMuted : styles.sectionCard}>
-    {(title != null || hint != null) && (
-      <div className={styles.sectionHeading}>
-        {title != null && (
-          <p className={muted ? styles.sectionTitleMuted : styles.sectionTitle}>{title}</p>
-        )}
-        {hint != null && <p className={styles.sectionHint}>{hint}</p>}
-      </div>
-    )}
-    {children}
-  </section>
-);
+export const FormSection: React.FC<FormSectionProps> = ({ title, hint, aside, muted, children }) => {
+  const heading = (title != null || hint != null) && (
+    <div className={styles.sectionHeading}>
+      {title != null && (
+        <p className={muted ? styles.sectionTitleMuted : styles.sectionTitle}>{title}</p>
+      )}
+      {hint != null && <p className={styles.sectionHint}>{hint}</p>}
+    </div>
+  );
+
+  return (
+    <section className={muted ? styles.sectionCardMuted : styles.sectionCard}>
+      {(heading || aside != null) &&
+        (aside != null ? (
+          <div className={styles.sectionHeadingRow}>
+            {heading}
+            {aside}
+          </div>
+        ) : (
+          heading
+        ))}
+      {children}
+    </section>
+  );
+};
 
 export interface FormFieldGridProps {
   /** Число колонок на десктопе (на мобильном всегда одна) */

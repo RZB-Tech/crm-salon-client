@@ -43,9 +43,8 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       opened={opened}
       onClose={onClose}
       title={category ? 'Редактировать категорию' : 'Новая категория'}
-      subtitle='Группировка услуг в прайсе'
-      icon={<FolderIcon size={22} />}
-      size='md'
+      icon={<FolderIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
@@ -60,6 +59,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
         <TextInput
           label='Название'
           required
+          placeholder='Введите название'
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
         />

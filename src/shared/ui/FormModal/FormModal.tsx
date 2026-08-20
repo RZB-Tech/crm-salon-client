@@ -33,20 +33,24 @@ export const FormModal: React.FC<FormModalProps> = ({
   headerAside,
   badges,
   footer,
-  size = 'lg',
+  size = 567,
   children,
 }) => {
+  const stackId = React.useId();
   const [renderKey, setRenderKey] = React.useState(0);
 
   return (
     <Modal
       opened={opened}
       onClose={onClose}
+      stackId={stackId}
       withCloseButton={false}
       title={null}
       radius="md"
+      shadow="sm"
       size={size}
       padding={0}
+      overlayProps={{ backgroundOpacity: 0.08, blur: 3 }}
       classNames={{ content: styles.modalShell }}
       transitionProps={{
         transition: 'pop',
@@ -62,9 +66,10 @@ export const FormModal: React.FC<FormModalProps> = ({
           icon={icon}
           tone={tone}
           aside={headerAside}
-          badges={badges}
           onClose={onClose}
         />
+
+        {badges != null && <div className={styles.badgeRow}>{badges}</div>}
 
         <div className={styles.content} data-no-footer={footer == null}>
           {children}

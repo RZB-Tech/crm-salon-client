@@ -28,36 +28,41 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   children,
   onConfirm,
   onClose,
-}) => (
-  <Modal
-    opened={opened}
-    onClose={onClose}
-    withCloseButton={false}
-    centered
-    radius="lg"
-    size={420}
-    padding={0}
-  >
-    <div className={styles.body}>
-      <div className={styles.iconWrap} data-tone={tone}>
-        <WarningIcon size={26} weight="fill" />
+}) => {
+  const stackId = React.useId();
+
+  return (
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      stackId={stackId}
+      withCloseButton={false}
+      centered
+      radius="lg"
+      size={420}
+      padding={0}
+    >
+      <div className={styles.body}>
+        <div className={styles.iconWrap} data-tone={tone}>
+          <WarningIcon size={26} weight="fill" />
+        </div>
+        <h3 className={styles.title}>{title}</h3>
+        <p className={styles.message}>{message}</p>
+        {children != null && <div className={styles.extra}>{children}</div>}
+        <div className={styles.actions}>
+          <Button variant="default" onClick={onClose} disabled={loading}>
+            Отмена
+          </Button>
+          <Button
+            color={tone === 'warning' ? 'orange' : 'red'}
+            onClick={onConfirm}
+            loading={loading}
+            disabled={confirmDisabled}
+          >
+            {confirmLabel}
+          </Button>
+        </div>
       </div>
-      <h3 className={styles.title}>{title}</h3>
-      <p className={styles.message}>{message}</p>
-      {children != null && <div className={styles.extra}>{children}</div>}
-      <div className={styles.actions}>
-        <Button variant="default" onClick={onClose} disabled={loading}>
-          Отмена
-        </Button>
-        <Button
-          color={tone === 'warning' ? 'orange' : 'red'}
-          onClick={onConfirm}
-          loading={loading}
-          disabled={confirmDisabled}
-        >
-          {confirmLabel}
-        </Button>
-      </div>
-    </div>
-  </Modal>
-);
+    </Modal>
+  );
+};

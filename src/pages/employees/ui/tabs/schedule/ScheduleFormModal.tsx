@@ -29,10 +29,9 @@ export const ScheduleFormModal: React.FC<ScheduleFormModalProps> = ({
   <FormModal
     opened={opened}
     onClose={onClose}
-    title={hasSchedule ? 'Редактировать график' : 'Новый график'}
-    subtitle="Рабочие дни и время смен"
-    icon={<CalendarBlankIcon size={22} />}
-    size="lg"
+    title={hasSchedule ? 'Редактировать рабочие дни' : 'Новый график'}
+    icon={<CalendarBlankIcon />}
+    size={567}
     footer={
       <FormModalFooter
         onCancel={onClose}

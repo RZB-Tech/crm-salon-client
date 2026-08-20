@@ -60,6 +60,57 @@ export const formatDateTime = (value: string): string =>
     minute: '2-digit',
   });
 
+const MONTHS_GENITIVE = [
+  'Января',
+  'Февраля',
+  'Марта',
+  'Апреля',
+  'Мая',
+  'Июня',
+  'Июля',
+  'Августа',
+  'Сентября',
+  'Октября',
+  'Ноября',
+  'Декабря',
+];
+
+const padTime = (hours: number, minutes: number) =>
+  `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+const isTimezoneAware = (value: string): boolean =>
+  /[zZ]|[+-]\d{2}:\d{2}$/.test(value.trim());
+
+/** Для уведомлений с TZ — локальные часы салона; иначе настенное время из API. */
+const parseNotificationDateTimeParts = (value: string): ApiDateTimeParts => {
+  if (isTimezoneAware(value)) {
+    const local = new Date(value);
+    if (!Number.isNaN(local.getTime())) {
+      return {
+        date: toDateInput(local),
+        hours: local.getHours(),
+        minutes: local.getMinutes(),
+      };
+    }
+  }
+
+  return parseApiDateTimeParts(value);
+};
+
+/** Попап уведомления: `16.08.2026. • 12:30` */
+export const formatNotificationAlertStamp = (value: string): string => {
+  const { date, hours, minutes } = parseNotificationDateTimeParts(value);
+  const [year, month, day] = date.split('-');
+  return `${day}.${month}.${year}. • ${padTime(hours, minutes)}`;
+};
+
+/** Список в колокольчике: `23 Мая 14:09` */
+export const formatNotificationListStamp = (value: string): string => {
+  const { date, hours, minutes } = parseNotificationDateTimeParts(value);
+  const [, month, day] = date.split('-').map(Number);
+  return `${day} ${MONTHS_GENITIVE[month - 1] ?? ''} ${padTime(hours, minutes)}`;
+};
+
 export const isSameDay = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&

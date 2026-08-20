@@ -4,14 +4,13 @@ import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 import { useCreateTransaction } from '@/shared/api/hooks/useTransactions';
 import type { ManualTransactionCategory, TransactionMethod, TransactionType } from '@/shared/api/types';
 import {
-  formatPrice,
   MANUAL_TRANSACTION_CATEGORY_OPTIONS,
   TRANSACTION_METHOD_OPTIONS,
   TRANSACTION_TYPE_LABELS,
   TRANSACTION_TYPE_OPTIONS,
 } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
-import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { FormFieldGrid, FormModal, FormModalFooter } from '@/shared/ui';
 import { DEFAULT_FORM, type TransactionFormState } from '../lib/transactionHelpers';
 
 interface TransactionFormModalProps {
@@ -47,20 +46,17 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
       opened={opened}
       onClose={onClose}
       title="Новая транзакция"
-      subtitle="Ручная запись дохода или расхода по кассе"
-      icon={<ArrowsLeftRightIcon size={22} />}
-      headerAside={
+      icon={<ArrowsLeftRightIcon />}
+      badges={
         <Badge variant="light" color={isIncome ? 'teal' : 'red'} radius="sm">
           {TRANSACTION_TYPE_LABELS[form.type]}
         </Badge>
       }
-      size="lg"
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel="Сумма"
-          metaValue={formatPrice(form.amount)}
           onCancel={onClose}
-          submitLabel="Создать"
+          submitLabel="Создать новую транзакцию"
           submitColor={isIncome ? undefined : 'red'}
           onSubmit={handleSubmit}
           submitDisabled={form.amount <= 0}
@@ -68,8 +64,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
         />
       }
     >
-      <FormSection title="Транзакция">
-        <FormFieldGrid cols={2}>
+      <FormFieldGrid cols={2}>
           <Select
             label="Тип"
             data={TRANSACTION_TYPE_OPTIONS}
@@ -105,18 +100,16 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
             thousandSeparator=" "
             suffix=" сум"
           />
-        </FormFieldGrid>
-      </FormSection>
+      </FormFieldGrid>
 
-      <FormSection title="Комментарий" muted>
-        <Textarea
-          placeholder="Назначение платежа, детали операции…"
-          minRows={2}
-          autosize
-          value={form.notes}
-          onChange={(event) => setForm((prev) => ({ ...prev, notes: event.currentTarget.value }))}
-        />
-      </FormSection>
+      <Textarea
+        label="Комментарий"
+        placeholder="Назначение платежа, детали операции..."
+        minRows={2}
+        autosize
+        value={form.notes}
+        onChange={(event) => setForm((prev) => ({ ...prev, notes: event.currentTarget.value }))}
+      />
     </FormModal>
   );
 };

@@ -41,10 +41,9 @@ export const AbsenceFormModal: React.FC<AbsenceFormModalProps> = ({
   <FormModal
     opened={opened}
     onClose={onClose}
-    title={editingAbsence ? 'Редактировать отсутствие' : 'Новое отсутствие'}
-    subtitle="Тип, период и причина"
-    icon={<AirplaneTakeoffIcon size={22} />}
-    size="lg"
+    title={editingAbsence ? 'Редактировать отсутствие' : 'Добавить отсутствие'}
+    icon={<AirplaneTakeoffIcon />}
+    size={567}
     footer={
       <FormModalFooter
         onCancel={onClose}

@@ -32,10 +32,14 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   onSubmit,
 }) => {
   const [form, setForm] = React.useState<EmployeeFormState>(emptyEmployeeForm);
+  const [submitted, setSubmitted] = React.useState(false);
   const { data: services, isLoading: servicesLoading } = useServices();
   const { data: specializations, isLoading: specializationsLoading } = useSpecializations();
 
-  useResetOnOpen(opened, () => setForm(employee ? employeeToForm(employee) : emptyEmployeeForm()));
+  useResetOnOpen(opened, () => {
+    setForm(employee ? employeeToForm(employee) : emptyEmployeeForm());
+    setSubmitted(false);
+  });
 
   const serviceOptions = React.useMemo(
     () => (services ?? []).map((s) => ({ value: String(s.id), label: s.name })),
@@ -51,6 +55,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   const isValid = Object.keys(errors).length === 0;
 
   const handleSubmit = React.useCallback(() => {
+    setSubmitted(true);
     if (!isValid) return;
     if (employee) {
       onSubmit(toUpdatePayload(employee.id, form));
@@ -78,7 +83,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     >
       <EmployeePersonalFields
         form={form}
-        errors={errors}
+        errors={submitted ? errors : {}}
         serviceOptions={serviceOptions}
         specializationOptions={specializationOptions}
         servicesLoading={servicesLoading}

@@ -14,8 +14,6 @@ export interface FormModalHeaderProps {
   tone?: FormModalTone;
   /** Бейджи/контролы справа от заголовка */
   aside?: React.ReactNode;
-  /** Ряд бейджей под заголовком */
-  badges?: React.ReactNode;
   onClose: () => void;
 }
 
@@ -26,7 +24,6 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
   icon,
   tone = 'brand',
   aside,
-  badges,
   onClose,
 }) => (
   <header className={styles.header} data-tone={tone}>
@@ -47,18 +44,17 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
       <div className={styles.headerSide}>
         {aside}
         <ActionIcon
-          variant="subtle"
+          className={styles.closeBtn}
+          variant="default"
           color="gray"
           size={32}
           radius="md"
           aria-label="Закрыть"
           onClick={onClose}
         >
-          <XIcon size={24} />
+          <XIcon size={20} />
         </ActionIcon>
       </div>
     </div>
-
-    {badges != null && <div className={styles.badgeRow}>{badges}</div>}
   </header>
 );

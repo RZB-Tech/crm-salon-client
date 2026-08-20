@@ -71,6 +71,7 @@
 }
 
 .headerAvatar[data-kind='initials'] {
+  border-radius: 50%;
   background: #f1eae3;
   color: var(--form-modal-accent-text);
   font-size: 14px;
@@ -121,10 +122,21 @@
   flex-shrink: 0;
 }
 
+.closeBtn {
+  border: 1px solid #dee2e6;
+  background: transparent;
+  color: #484848;
+}
+
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
+  padding: 0 16px;
+}
+
+.badgeRow :global(.mantine-Badge-label) {
+  text-transform: uppercase;
 }
 
 /* ——— Content ——— */
@@ -132,8 +144,15 @@
 .content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   padding: 0 16px;
+}
+
+.content :global(.mantine-InputWrapper-label) {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #484848;
 }
 
 .content[data-no-footer='true'] {
@@ -165,6 +184,13 @@
   border-radius: 12px;
   background: var(--mantine-color-gray-0);
   border: 1px solid var(--form-modal-stroke);
+}
+
+.sectionHeadingRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .sectionHeading {
@@ -250,6 +276,24 @@
 .footerBtn {
   flex: 1 1 0;
   min-width: 0;
+  height: 32px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.footerCancel {
+  border-color: #c9b09a;
+  color: #ad9178;
+  background: transparent;
+}
+
+.footerSubmit:disabled,
+.footerSubmit[data-disabled] {
+  background: #e9ecef;
+  color: #adb5bd;
+  border-color: transparent;
 }
 
 .dangerActions {

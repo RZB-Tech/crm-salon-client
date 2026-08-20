@@ -7,7 +7,6 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
   const {
     contextValue,
     currentAlert,
-    alertQueueLength,
     readPending,
     dismissAlert,
     handleReadAlert,
@@ -18,7 +17,6 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
       {children}
       <SalonNotificationAlertModal
         notification={currentAlert}
-        queueLength={alertQueueLength}
         loading={readPending}
         onDismiss={dismissAlert}
         onRead={handleReadAlert}

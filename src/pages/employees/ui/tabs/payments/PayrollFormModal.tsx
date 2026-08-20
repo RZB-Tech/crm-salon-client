@@ -36,10 +36,9 @@ export const PayrollFormModal: React.FC<PayrollFormModalProps> = ({
   <FormModal
     opened={opened}
     onClose={onClose}
-    title={editing ? 'Редактировать выплату' : 'Новая выплата'}
-    subtitle="Тип, сумма и заметка"
-    icon={<MoneyIcon size={22} />}
-    size="lg"
+    title={editing ? 'Редактировать выплату' : 'Добавить выплату'}
+    icon={<MoneyIcon />}
+    size={567}
     footer={
       <FormModalFooter
         metaLabel="Сумма выплаты"

@@ -5,7 +5,7 @@ import { HandCoinsIcon } from '@phosphor-icons/react';
 import { useCreatePayout } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutMethod, PayoutType } from '@/shared/api/types';
-import { formatPrice, getEmployeeFullName } from '@/shared/lib/format';
+import { getEmployeeFullName } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
@@ -52,20 +52,17 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
       opened={opened}
       onClose={onClose}
       title="Новая выплата"
-      subtitle="Зарплата, аванс или прочие выплаты сотруднику"
-      icon={<HandCoinsIcon size={22} />}
-      headerAside={
+      icon={<HandCoinsIcon />}
+      badges={
         <Badge variant="light" color="sage" radius="sm">
           {PAYOUT_TYPE_LABELS[form.payoutType]}
         </Badge>
       }
-      size="lg"
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel={isAdvance ? 'Сумма аванса' : undefined}
-          metaValue={isAdvance ? formatPrice(form.amount) : undefined}
           onCancel={onClose}
-          submitLabel="Провести выплату"
+          submitLabel="Провести новую выплату"
           onSubmit={handleSubmit}
           submitDisabled={!form.employeeId}
           loading={createPayout.isPending}
@@ -78,6 +75,7 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
             label="Сотрудник"
             required
             searchable
+            placeholder="Выберите сотрудника"
             data={employeeOptions}
             value={form.employeeId}
             onChange={(value) => setField('employeeId', value)}
@@ -85,12 +83,14 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
           <FormFieldGrid cols={2}>
             <Select
               label="Тип выплаты"
+              required
               data={PAYOUT_TYPE_OPTIONS}
               value={form.payoutType}
               onChange={(v) => setField('payoutType', (v as PayoutType) ?? 'other')}
             />
             <Select
               label="Способ"
+              required
               data={PAYOUT_METHOD_OPTIONS}
               value={form.method}
               onChange={(v) => setField('method', (v as PayoutMethod) ?? 'cash')}
@@ -113,14 +113,18 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
         <FormSection title="Период" hint="Сумма рассчитывается по начислениям за выбранный период">
           <FormFieldGrid cols={2}>
             <DateInput
-              label="Начало периода"
+              label="С"
+              required
               clearable
+              placeholder="Выберите дату"
               value={form.startDate || null}
               onChange={(value) => setField('startDate', value ?? '')}
             />
             <DateInput
-              label="Конец периода"
+              label="По"
+              required
               clearable
+              placeholder="Выберите дату"
               value={form.endDate || null}
               onChange={(value) => setField('endDate', value ?? '')}
             />
@@ -128,15 +132,14 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
         </FormSection>
       )}
 
-      <FormSection title="Комментарий" muted>
-        <Textarea
-          placeholder="Основание выплаты, детали расчёта…"
-          autosize
-          minRows={2}
-          value={form.notes}
-          onChange={(e) => setField('notes', e.currentTarget.value)}
-        />
-      </FormSection>
+      <Textarea
+        label="Комментарий"
+        placeholder="Основания выплаты, детали расчёта..."
+        autosize
+        minRows={2}
+        value={form.notes}
+        onChange={(e) => setField('notes', e.currentTarget.value)}
+      />
     </FormModal>
   );
 };

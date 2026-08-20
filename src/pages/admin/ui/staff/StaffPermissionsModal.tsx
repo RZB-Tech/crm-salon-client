@@ -62,7 +62,7 @@ export function StaffPermissionsModal({
       title="Разрешения"
       subtitle={staffLogin}
       icon={<ShieldCheckIcon size={22} />}
-      size="lg"
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}

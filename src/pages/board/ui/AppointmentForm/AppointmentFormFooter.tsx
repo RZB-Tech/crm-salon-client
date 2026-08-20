@@ -1,13 +1,11 @@
 import React from 'react';
 import { Button } from '@mantine/core';
-import { Archive, ArrowCounterClockwise, Prohibit } from '@phosphor-icons/react';
-import { formatPrice } from '@/shared/lib/format';
+import { ArrowCounterClockwise, Prohibit } from '@phosphor-icons/react';
 import { FormModalFooter } from '@/shared/ui';
 
 interface AppointmentFormFooterProps {
   mode: 'create' | 'edit';
   tab: string;
-  total: number;
   isValid: boolean;
   loading: boolean;
   cancelled: boolean;
@@ -24,7 +22,6 @@ interface AppointmentFormFooterProps {
 export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
   mode,
   tab,
-  total,
   isValid,
   loading,
   cancelled,
@@ -39,7 +36,6 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
 }) => {
   const onMainTab = mode === 'create' || tab === 'main';
   const canSubmit = onMainTab && !cancelled && !archived;
-  const showVisitTotal = mode === 'edit' && onMainTab;
 
   const dangerActions =
     mode === 'edit' && tab === 'main' ? (
@@ -71,12 +67,12 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
         )}
         {!archived && onDelete && (
           <Button
-            variant="subtle"
+            variant="light"
             color="red"
             size="sm"
-            leftSection={<Archive size={14} />}
             onClick={onDelete}
             loading={loading}
+            styles={{ root: { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252' } }}
           >
             В архив
           </Button>
@@ -93,10 +89,10 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
           </Button>
         )
       }
-      metaLabel={showVisitTotal ? 'Сумма визита' : undefined}
-      metaValue={showVisitTotal ? formatPrice(total) : undefined}
+      metaLabel={undefined}
+      metaValue={undefined}
       dangerActions={dangerActions}
-      onCancel={mode === 'create' ? onClose : undefined}
+      onCancel={onMainTab ? onClose : undefined}
       submitLabel={canSubmit ? (mode === 'edit' ? 'Сохранить' : 'Добавить запись') : undefined}
       onSubmit={canSubmit ? onSubmit : undefined}
       submitDisabled={!isValid}

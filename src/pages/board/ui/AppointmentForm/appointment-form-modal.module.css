@@ -22,7 +22,30 @@
 }
 
 .tabsList {
-  composes: tabsList from '../../../../shared/ui/FormModal/form-modal.module.css';
+  gap: 0;
+  margin-bottom: 0;
+}
+
+.tab {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #1f2937;
+  border-radius: 4px;
+}
+
+.tab:hover {
+  background: transparent;
+}
+
+.tab[data-active] {
+  background: #ad9178;
+  color: #fff;
+}
+
+.tab[data-active]:hover {
+  background: #ad9178;
 }
 
 .createLayout {
@@ -67,17 +90,17 @@
 .clientMeta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--mantine-color-sage-0);
-  border: 1px solid color-mix(in srgb, var(--mantine-color-sage-2) 70%, transparent);
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: #f6f1ee;
 }
 
 .clientPhone {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--mantine-color-sage-9);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #6e483c;
 }
 
 .scheduleGrid {
@@ -167,7 +190,7 @@
   padding: 16px;
   border-radius: 12px;
   background: var(--mantine-color-white);
-  border: 1px solid #ad9178;
+  border: 1px solid #f1eae3;
 }
 
 .lineCardChanged {
@@ -177,9 +200,14 @@
 
 .lineTop {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
+}
+
+.lineSelect {
+  flex: 1;
+  min-width: 0;
 }
 
 .kindToggle {

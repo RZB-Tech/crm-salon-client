@@ -1,97 +1,95 @@
 import React from 'react';
-import { Badge, Box, Button, Group, Modal, Stack, Text, Textarea } from '@mantine/core';
-import { BellIcon } from '@phosphor-icons/react';
+import { ActionIcon, Button, Modal } from '@mantine/core';
+import { XIcon } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
-import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
-import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import illustrationSrc from '@/shared/assets/notification-alert-illustration.png';
+import { formatNotificationAlertStamp, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
+import { DEFAULT_NOTIFICATION_READ_NOTES } from '@/shared/lib/notifications/notificationDelivery';
 import styles from './salon-notification-alert-modal.module.css';
 
 interface SalonNotificationAlertModalProps {
   notification: SalonNotificationWsPayload | null;
-  queueLength: number;
   loading?: boolean;
   onDismiss: () => void;
-  onRead: (id: number, comment: string) => void;
+  onRead: (id: number, notes: string) => void;
 }
 
 export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalProps> = ({
   notification,
-  queueLength,
   loading = false,
   onDismiss,
   onRead,
 }) => {
-  const [comment, setComment] = React.useState('');
-
-  useResetOnOpen(notification?.id, () => setComment(''));
-
   const handleRead = React.useCallback(() => {
     if (!notification) return;
-    onRead(notification.id, comment.trim());
-  }, [notification, comment, onRead]);
+    onRead(notification.id, DEFAULT_NOTIFICATION_READ_NOTES);
+  }, [notification, onRead]);
 
   return (
     <Modal
       opened={notification != null}
       onClose={onDismiss}
       centered
-      radius="lg"
-      size="md"
-      withCloseButton
+      radius={16}
+      size={423}
+      withCloseButton={false}
       closeOnClickOutside={false}
-      closeOnEscape
-      overlayProps={{ backgroundOpacity: 0.55, blur: 3 }}
+      overlayProps={{ backgroundOpacity: 0.08, blur: 3 }}
       title={null}
-      padding="xl"
+      padding={16}
       zIndex={1100}
+      classNames={{ content: styles.shell }}
     >
       {notification && (
-        <Stack gap="md" className={styles.modalContent}>
-          <Box className={styles.iconWrap}>
-            <BellIcon size={36} weight="fill" />
-          </Box>
+        <div className={styles.card}>
+          <div className={styles.closeRow}>
+            <ActionIcon
+              className={styles.closeBtn}
+              variant="default"
+              size={32}
+              radius={8}
+              aria-label="Закрыть"
+              onClick={onDismiss}
+            >
+              <XIcon size={20} />
+            </ActionIcon>
+          </div>
 
-          <Badge size="sm" variant="light" mx="auto">
-            {NOTIFICATION_TYPE_LABELS[notification.type] ?? notification.type}
-          </Badge>
+          <div className={styles.body}>
+            <div className={styles.hero}>
+              <img
+                src={illustrationSrc}
+                alt=""
+                width={217}
+                height={166}
+                className={styles.illustration}
+              />
+              <span className={styles.badge}>
+                {NOTIFICATION_TYPE_LABELS[notification.type] ?? notification.type}
+              </span>
+            </div>
 
-          <Text size="xl" fw={700}>
-            {notification.title ?? 'Напоминание'}
-          </Text>
+            <div className={styles.copy}>
+              <div className={styles.titles}>
+                <h2 className={styles.title}>{notification.title ?? 'Напоминание'}</h2>
+                {notification.body ? <p className={styles.description}>{notification.body}</p> : null}
+              </div>
+              <p className={styles.stamp}>{formatNotificationAlertStamp(notification.scheduled_at)}</p>
+            </div>
+          </div>
 
-          <Text size="md" c="dimmed" className={styles.body}>
-            {notification.body}
-          </Text>
-
-          <Text size="xs" c="dimmed" className={styles.meta}>
-            Запланировано: {formatDateTime(notification.scheduled_at)}
-          </Text>
-
-          {queueLength > 1 && (
-            <Text size="xs" c="dimmed">
-              Ещё {queueLength - 1} уведомлений в очереди
-            </Text>
-          )}
-
-          <Textarea
-            placeholder="Комментарий"
-            label="Комментарий"
-            required
-            minRows={2}
-            value={comment}
-            onChange={(event) => setComment(event.currentTarget.value)}
-            styles={{ input: { textAlign: 'left' } }}
-          />
-
-          <Group justify="center" mt="sm">
-            <Button variant="subtle" color="gray" onClick={onDismiss}>
-              Пропустить
-            </Button>
-            <Button size="md" onClick={handleRead} loading={loading} disabled={!comment.trim()}>
-              Прочитано
-            </Button>
-          </Group>
-        </Stack>
+          <Button
+            className={styles.readBtn}
+            fullWidth
+            radius={8}
+            variant="subtle"
+            color="gray"
+            loading={loading}
+            onClick={handleRead}
+          >
+            Отметить прочитанным
+          </Button>
+        </div>
       )}
     </Modal>
   );

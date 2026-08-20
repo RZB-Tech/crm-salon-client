@@ -5,7 +5,7 @@ import { useCreateMaterial, useUpdateMaterial } from '@/shared/api/hooks/useMate
 import type { Material, MaterialCreatePayload, MaterialUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
-import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { emptyMaterialForm, materialToForm, type MaterialFormState } from '../lib/materialForm';
@@ -64,9 +64,9 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={material ? 'Редактировать материал' : 'Новый материал'}
-      subtitle={material ? material.article : 'Карточка складской позиции'}
-      icon={<PackageIcon size={22} />}
+      title={material ? 'Редактировать материал' : 'Добавить материал'}
+      subtitle={material ? material.article : undefined}
+      icon={<PackageIcon />}
       headerAside={
         material ? (
           <Badge variant='light' color='sage' size='lg' radius='sm'>
@@ -74,13 +74,11 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
           </Badge>
         ) : undefined
       }
-      size='lg'
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel='Цена продажи'
-          metaValue={formatPrice(form.sell_price)}
           onCancel={onClose}
-          submitLabel={material ? 'Сохранить' : 'Создать'}
+          submitLabel={material ? 'Сохранить' : 'Добавить материал'}
           onSubmit={handleSubmit}
           submitDisabled={!form.article || !form.name}
           loading={createMaterial.isPending || updateMaterial.isPending}

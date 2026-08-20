@@ -53,7 +53,7 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
         {children}
         {onCancel && (
           <Button
-            className={stretch ? styles.footerBtn : undefined}
+            className={`${styles.footerCancel} ${stretch ? styles.footerBtn : ''}`}
             variant="outline"
             color="sage"
             size="sm"
@@ -65,7 +65,7 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
         )}
         {onSubmit && submitLabel && (
           <Button
-            className={stretch ? styles.footerBtn : undefined}
+            className={`${styles.footerSubmit} ${stretch ? styles.footerBtn : ''}`}
             size="sm"
             color={submitColor}
             onClick={onSubmit}

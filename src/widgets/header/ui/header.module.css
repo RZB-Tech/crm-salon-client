@@ -116,32 +116,6 @@
   transform: scale(1.05);
 }
 
-.notificationItem {
-  padding: 10px 16px;
-  border-top: 1px solid var(--mantine-color-gray-2);
-  transition: background-color 140ms ease;
-}
-
-.notificationItem:hover {
-  background: var(--mantine-color-gray-0);
-}
-
-.notificationsLink {
-  display: block;
-  padding: 10px 16px;
-  border-top: 1px solid var(--mantine-color-gray-2);
-  text-align: center;
-  font-size: var(--mantine-font-size-sm);
-  color: var(--mantine-color-sage-6);
-  text-decoration: none;
-  transition: background-color 140ms ease, color 140ms ease;
-}
-
-.notificationsLink:hover {
-  background: var(--mantine-color-gray-0);
-  color: var(--mantine-color-sage-8);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .toggle:hover,
   .avatarTarget:hover {

@@ -24,7 +24,7 @@ export const ReceiptHistoryModal: React.FC<ReceiptHistoryModalProps> = ({ receip
         </Badge>
       ) : undefined
     }
-    size="lg"
+    size={567}
     footer={
       <FormModalFooter
         metaLabel={receipt ? 'Сумма чека' : undefined}

@@ -66,7 +66,7 @@ export const AppointmentClientFields: React.FC<AppointmentClientFieldsProps> = (
 
       {selectedClient?.phone && (
         <div className={styles.clientMeta}>
-          <Phone size={14} color="var(--mantine-color-sage-7)" />
+          <Phone size={14} color="#6e483c" />
           <span className={styles.clientPhone}>{selectedClient.phone}</span>
         </div>
       )}

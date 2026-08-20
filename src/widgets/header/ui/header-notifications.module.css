@@ -1,0 +1,156 @@
+.bell {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #dee2e6;
+  background: #fff;
+  color: #484848;
+}
+
+.dropdown {
+  padding: 0 0 16px;
+  overflow: hidden;
+  border: 1px solid #f1eae3;
+  border-radius: 16px;
+  box-shadow: 4px 4px 8px rgba(173, 145, 120, 0.3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  background: rgba(246, 241, 238, 0.5);
+  border-bottom: 1px solid #dee2e6;
+}
+
+.headerLead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #c9b09a;
+  color: #fff;
+}
+
+.title {
+  margin: 0;
+  color: #484848;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  color: #484848;
+}
+
+.closeBtn {
+  border: 1px solid #dee2e6;
+  background: transparent;
+  color: #484848;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.empty {
+  padding: 8px 0 4px;
+  color: rgba(72, 72, 72, 0.4);
+  font-size: 14px;
+  text-align: center;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #f1eae3;
+  border-radius: 8px;
+}
+
+.itemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1eae3;
+  color: #ad9178;
+}
+
+.itemBody {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  margin: 0;
+  color: #484848;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.itemDescription {
+  margin: 0;
+  color: #484848;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.itemMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #b6b6b6;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.itemType {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.unreadDot {
+  width: 10px;
+  height: 10px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fa5252;
+}

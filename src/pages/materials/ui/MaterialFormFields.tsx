@@ -1,5 +1,5 @@
 import React from 'react';
-import { NumberInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { NumberInput, Select, TextInput } from '@mantine/core';
 import type { MeasurementUnit } from '@/shared/api/types';
 import { FormFieldGrid, FormSection } from '@/shared/ui';
 import { MEASUREMENT_OPTIONS, type MaterialFormState } from '../lib/materialForm';
@@ -13,74 +13,76 @@ interface MaterialFormFieldsProps {
 export const MaterialFormFields: React.FC<MaterialFormFieldsProps> = ({
   form,
   isEdit,
-  onChange
+  onChange,
 }) => (
   <>
-    <FormSection title='Основное'>
-      <Stack gap='sm'>
-        <FormFieldGrid>
-          <TextInput
-            label='Артикул'
-            required
-            value={form.article}
-            onChange={(e) => onChange({ ...form, article: e.currentTarget.value })}
-          />
-          <TextInput
-            label='Название'
-            required
-            value={form.name}
-            onChange={(e) => onChange({ ...form, name: e.currentTarget.value })}
-          />
-        </FormFieldGrid>
-        <Textarea
-          label='Описание'
-          autosize
-          minRows={2}
-          value={form.description}
-          onChange={(e) => onChange({ ...form, description: e.currentTarget.value })}
+    <FormSection title="Материал">
+      <FormFieldGrid>
+        <TextInput
+          label="Артикул"
+          required
+          placeholder="Введите артикул"
+          value={form.article}
+          onChange={(e) => onChange({ ...form, article: e.currentTarget.value })}
         />
-      </Stack>
+        <TextInput
+          label="Название"
+          required
+          placeholder="Введите название"
+          value={form.name}
+          onChange={(e) => onChange({ ...form, name: e.currentTarget.value })}
+        />
+      </FormFieldGrid>
+      <TextInput
+        label="Описание"
+        placeholder="Введите описание"
+        value={form.description}
+        onChange={(e) => onChange({ ...form, description: e.currentTarget.value })}
+      />
     </FormSection>
 
     <FormSection
-      title='Склад'
+      title="Склад"
       hint={isEdit ? 'Количество меняется отдельной операцией прихода или расхода' : undefined}
     >
-      <FormFieldGrid cols={isEdit ? 2 : 3}>
+      <FormFieldGrid>
         {!isEdit && (
           <NumberInput
-            label='Начальное количество'
+            label="Начальное количество"
             min={0}
-            value={form.quantity}
+            placeholder="Введите количество"
+            value={form.quantity || ''}
             onChange={(v) => onChange({ ...form, quantity: Number(v) || 0 })}
           />
         )}
         <Select
-          label='Единица измерения'
+          label="Единица измерения"
+          placeholder="Выберите единицу измерения"
           data={MEASUREMENT_OPTIONS}
           value={form.measurement_unit}
           onChange={(v) =>
             onChange({ ...form, measurement_unit: (v as MeasurementUnit) ?? 'piece' })
           }
         />
-        <NumberInput
-          label='Объём'
-          min={0}
-          value={form.volume}
-          onChange={(v) => onChange({ ...form, volume: Number(v) || 0 })}
-        />
       </FormFieldGrid>
-    </FormSection>
-
-    <FormSection title='Цена'>
       <NumberInput
-        label='Цена продажи'
+        label="Объём"
         min={0}
-        value={form.sell_price}
-        onChange={(v) => onChange({ ...form, sell_price: Number(v) || 0 })}
-        thousandSeparator=' '
-        suffix=' сум'
+        placeholder="Введите объём"
+        value={form.volume || ''}
+        onChange={(v) => onChange({ ...form, volume: Number(v) || 0 })}
       />
     </FormSection>
+
+    <NumberInput
+      label="Цена продажи"
+      required
+      min={0}
+      placeholder="Введите цену"
+      value={form.sell_price || ''}
+      onChange={(v) => onChange({ ...form, sell_price: Number(v) || 0 })}
+      thousandSeparator=" "
+      suffix={form.sell_price ? ' сум' : undefined}
+    />
   </>
 );

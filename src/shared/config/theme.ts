@@ -122,11 +122,11 @@ export const theme = createTheme({
     },
     Modal: {
       defaultProps: {
-        radius: 'lg',
+        radius: 'md',
         padding: 'xl',
         scrollAreaComponent: ScrollArea.Autosize,
         transitionProps: { transition: 'pop', duration: 220 },
-        overlayProps: { backgroundOpacity: 0.45, blur: 2 },
+        overlayProps: { backgroundOpacity: 0.08, blur: 3 },
       },
     },
     Drawer: {
@@ -134,7 +134,7 @@ export const theme = createTheme({
         padding: 'xl',
         scrollAreaComponent: ScrollArea.Autosize,
         transitionProps: { duration: 220 },
-        overlayProps: { backgroundOpacity: 0.45, blur: 2 },
+        overlayProps: { backgroundOpacity: 0.08, blur: 3 },
       },
     },
     Notification: {
@@ -159,6 +159,7 @@ export const theme = createTheme({
         format: '24h',
         withDropdown: true,
         radius: 'md',
+        popoverProps: { withinPortal: true },
       },
     }),
   },

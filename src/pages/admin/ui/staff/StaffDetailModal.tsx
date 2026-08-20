@@ -3,6 +3,7 @@ import { KeyIcon, UserIcon } from '@phosphor-icons/react';
 import type { Permission, Staff } from '@/shared/api/types';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 import { getStaffFullName, getStaffInitials } from '../../lib/staffDisplay';
+import { PasswordResultAlert } from './PasswordResultAlert';
 import { StaffDetailInfo } from './StaffDetailInfo';
 import { StaffRolesSection } from './StaffRolesSection';
 import { StaffPermissionsSection } from './StaffPermissionsSection';
@@ -15,6 +16,7 @@ interface StaffDetailModalProps {
   onOpenRoles: (staff: Staff) => void;
   onOpenPerms: (staff: Staff) => void;
   onOpenReset: (staff: Staff) => void;
+  resetResult?: string | null;
 }
 
 export function StaffDetailModal({
@@ -25,6 +27,7 @@ export function StaffDetailModal({
   onOpenRoles,
   onOpenPerms,
   onOpenReset,
+  resetResult,
 }: StaffDetailModalProps) {
   if (!staff) return null;
 
@@ -50,7 +53,7 @@ export function StaffDetailModal({
             ))
           : undefined
       }
-      size="lg"
+      size={567}
       footer={
         <FormModalFooter
           cancelLabel="Закрыть"
@@ -69,6 +72,13 @@ export function StaffDetailModal({
         />
       }
     >
+      {resetResult ? (
+        <PasswordResultAlert
+          title="Пароль сброшен"
+          label="Новый пароль:"
+          password={resetResult}
+        />
+      ) : null}
       <StaffDetailInfo staff={staff} />
       <StaffRolesSection staff={staff} onEdit={onOpenRoles} />
       <StaffPermissionsSection

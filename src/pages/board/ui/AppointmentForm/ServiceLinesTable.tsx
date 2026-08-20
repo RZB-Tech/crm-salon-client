@@ -1,6 +1,4 @@
 import React from 'react';
-import { ActionIcon } from '@mantine/core';
-import { TrashIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
 import type { Promotion } from '@/shared/api/types';
 import {
@@ -10,7 +8,6 @@ import {
   type MaterialOption,
   type ServiceOption,
 } from '../../lib/appointmentForm';
-import { ServiceLineKindToggle } from './ServiceLineKindToggle';
 import { ServiceLineRow } from './ServiceLineRow';
 import { useServiceLineHandlers } from './useServiceLineHandlers';
 import { VisitAddButton } from './VisitAddButton';
@@ -40,7 +37,6 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
 
   const {
     updateLine,
-    handleKindChange,
     handleServiceSelect,
     handleMaterialSelect,
     handleQuantityChange,
@@ -75,20 +71,6 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
 
       {!hasEmployee ? (
         <div className={styles.sectionCard}>
-          <div className={styles.emptyToolbar}>
-            <ServiceLineKindToggle kind="service" readOnly onKindChange={() => undefined} />
-            <ActionIcon
-              className={styles.lineTrash}
-              variant="outline"
-              color="gray"
-              size={32}
-              radius="md"
-              aria-label="Удалить позицию"
-              disabled
-            >
-              <TrashIcon size={16} />
-            </ActionIcon>
-          </div>
           <div className={styles.emptyLines}>Выберите сначала сотрудника</div>
         </div>
       ) : (
@@ -103,7 +85,6 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
                 promotions={promotions}
                 readOnly={readOnly}
                 canRemove={!(values.services.length === 1 && !isLineFilled(line))}
-                onKindChange={handleKindChange}
                 onServiceSelect={handleServiceSelect}
                 onMaterialSelect={handleMaterialSelect}
                 onQuantityChange={handleQuantityChange}

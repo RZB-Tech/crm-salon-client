@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stack, TextInput, Textarea } from '@mantine/core';
+import { TextInput, Textarea } from '@mantine/core';
 import { ShieldStarIcon } from '@phosphor-icons/react';
 import type { Permission, Role } from '@/shared/api/types';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
@@ -41,41 +41,38 @@ export function RoleFormModal({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={editingRole ? 'Редактирование роли' : 'Новая роль'}
-      subtitle={editingRole ? editingRole.name : 'Название, описание и права доступа'}
-      icon={<ShieldStarIcon size={22} />}
-      size="lg"
+      title={editingRole ? 'Редактировать роль' : 'Создать роль'}
+      icon={<ShieldStarIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={editingRole ? 'Сохранить' : 'Создать'}
+          submitLabel={editingRole ? 'Сохранить' : 'Создать роль'}
           onSubmit={onSave}
           submitDisabled={!form.name}
           loading={isSaving}
         />
       }
     >
-      <FormSection title="Основное">
-        <Stack gap="sm">
-          <TextInput
-            label="Название"
-            required
-            value={form.name}
-            onChange={(e) => onFormChange((prev) => ({ ...prev, name: e.currentTarget.value }))}
-          />
-          <Textarea
-            label="Описание"
-            autosize
-            minRows={2}
-            value={form.description}
-            onChange={(e) =>
-              onFormChange((prev) => ({ ...prev, description: e.currentTarget.value }))
-            }
-          />
-        </Stack>
-      </FormSection>
+      <TextInput
+        label="Название"
+        required
+        placeholder="Введите название роли"
+        value={form.name}
+        onChange={(e) => onFormChange((prev) => ({ ...prev, name: e.currentTarget.value }))}
+      />
+      <Textarea
+        label="Описание"
+        placeholder="Введите описание роли"
+        autosize
+        minRows={2}
+        value={form.description}
+        onChange={(e) =>
+          onFormChange((prev) => ({ ...prev, description: e.currentTarget.value }))
+        }
+      />
 
-      <FormSection title="Разрешения" hint="Отметьте доступы, которые получит роль">
+      <FormSection title="Разрешения" hint="Отметьте пункты, которые будут доступны для роли">
         <PermissionsTreeToolbar
           selectedCount={form.permissions.length}
           totalCount={perms.totalCount}

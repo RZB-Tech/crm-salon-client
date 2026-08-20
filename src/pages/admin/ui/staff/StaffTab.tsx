@@ -3,7 +3,6 @@ import { Box, Skeleton } from '@mantine/core';
 import { listPageStyles } from '@/shared/ui';
 import { AssignRolesModal } from './AssignRolesModal';
 import { CreateStaffModal } from './CreateStaffModal';
-import { ResetPasswordAlert } from './ResetPasswordAlert';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { StaffDetailModal } from './StaffDetailModal';
 import { StaffPermissionsModal } from './StaffPermissionsModal';
@@ -30,17 +29,17 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
 
       <StaffDetailModal
         opened={tab.detailOpened}
-        onClose={tab.closeDetail}
+        onClose={() => {
+          tab.closeDetail();
+          tab.setResetResult(null);
+        }}
         staff={tab.selectedStaff}
         getPermissionNames={tab.getPermissionNames}
         onOpenRoles={tab.handleOpenRoles}
         onOpenPerms={tab.handleOpenPerms}
         onOpenReset={tab.handleOpenReset}
+        resetResult={tab.resetOpened ? null : tab.resetResult}
       />
-
-      {tab.resetResult && !tab.resetOpened && (
-        <ResetPasswordAlert password={tab.resetResult} onClose={() => tab.setResetResult(null)} />
-      )}
 
       <CreateStaffModal
         opened={tab.createOpened}

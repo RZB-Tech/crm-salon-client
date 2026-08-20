@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Client, Promotion } from '@/shared/api/types';
-import { getClientFullName } from '@/shared/lib/format';
+import { getClientShortName } from '@/shared/lib/format';
 import {
   calcServicesTotal,
   isAppointmentFormValid,
@@ -42,23 +42,10 @@ export const useAppointmentFormMeta = ({
     mode === 'create'
       ? 'Новая запись'
       : selectedClient
-        ? getClientFullName(selectedClient)
+        ? getClientShortName(selectedClient)
         : 'Запись клиента';
 
-  const subtitle =
-    mode === 'create'
-      ? 'Клиент, время и состав визита'
-      : [values.date, `${values.startTime}–${values.endTime}`].filter(Boolean).join(' · ');
+  const subtitle = mode === 'create' ? undefined : 'Визит клиента';
 
-  const avatarInitials = React.useMemo(() => {
-    if (!selectedClient) return null;
-    return (
-      [selectedClient.firstname?.[0], selectedClient.lastname?.[0]]
-        .filter(Boolean)
-        .join('')
-        .toUpperCase() || null
-    );
-  }, [selectedClient]);
-
-  return { title, subtitle, avatarInitials, total, isValid, fieldsLocked };
+  return { title, subtitle, total, isValid, fieldsLocked };
 };

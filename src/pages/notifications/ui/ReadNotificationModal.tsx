@@ -25,8 +25,8 @@ export const ReadNotificationModal: React.FC<ReadNotificationModalProps> = ({
     onClose={onClose}
     title="Отметить прочитанным"
     subtitle="Оставьте комментарий к уведомлению"
-    icon={<CheckCircleIcon size={22} />}
-    size="md"
+    icon={<CheckCircleIcon />}
+    size={567}
     footer={
       <FormModalFooter
         onCancel={onClose}

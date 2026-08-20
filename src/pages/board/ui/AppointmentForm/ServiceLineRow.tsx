@@ -5,11 +5,9 @@ import type { Promotion } from '@/shared/api/types';
 import {
   isPriceChanged,
   type AppointmentServiceLine,
-  type LineKind,
   type MaterialOption,
   type ServiceOption,
 } from '../../lib/appointmentForm';
-import { ServiceLineKindToggle } from './ServiceLineKindToggle';
 import { ServiceLineMetrics } from './ServiceLineMetrics';
 import styles from './appointment-form-modal.module.css';
 
@@ -20,7 +18,6 @@ interface ServiceLineRowProps {
   promotions: Promotion[];
   readOnly: boolean;
   canRemove: boolean;
-  onKindChange: (key: string, kind: LineKind) => void;
   onServiceSelect: (key: string, serviceId: string | null) => void;
   onMaterialSelect: (key: string, materialId: string | null) => void;
   onQuantityChange: (key: string, quantity: number) => void;
@@ -36,7 +33,6 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
   promotions,
   readOnly,
   canRemove,
-  onKindChange,
   onServiceSelect,
   onMaterialSelect,
   onQuantityChange,
@@ -50,11 +46,29 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
   return (
     <div className={`${styles.lineCard} ${changed ? styles.lineCardChanged : ''}`}>
       <div className={styles.lineTop}>
-        <ServiceLineKindToggle
-          kind={line.kind}
-          readOnly={readOnly}
-          onKindChange={(kind) => onKindChange(line.key, kind)}
-        />
+        {isService ? (
+          <Select
+            className={styles.lineSelect}
+            searchable
+            placeholder="Выберите услугу"
+            data={serviceOptions}
+            value={line.serviceId}
+            onChange={(value) => onServiceSelect(line.key, value)}
+            nothingFoundMessage="Нет услуг у сотрудника"
+            disabled={readOnly}
+          />
+        ) : (
+          <Select
+            className={styles.lineSelect}
+            searchable
+            placeholder="Выберите товар"
+            data={materialOptions}
+            value={line.materialId}
+            onChange={(value) => onMaterialSelect(line.key, value)}
+            nothingFoundMessage="Нет товаров"
+            disabled={readOnly}
+          />
+        )}
         {!readOnly && (
           <Tooltip label="Удалить позицию" openDelay={300}>
             <ActionIcon
@@ -72,30 +86,6 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
           </Tooltip>
         )}
       </div>
-
-      {isService ? (
-        <Select
-          label="Услуга"
-          searchable
-          placeholder="Выберите услугу"
-          data={serviceOptions}
-          value={line.serviceId}
-          onChange={(value) => onServiceSelect(line.key, value)}
-          nothingFoundMessage="Нет услуг у сотрудника"
-          disabled={readOnly}
-        />
-      ) : (
-        <Select
-          label="Товар"
-          searchable
-          placeholder="Выберите товар"
-          data={materialOptions}
-          value={line.materialId}
-          onChange={(value) => onMaterialSelect(line.key, value)}
-          nothingFoundMessage="Нет товаров"
-          disabled={readOnly}
-        />
-      )}
 
       <ServiceLineMetrics
         line={line}

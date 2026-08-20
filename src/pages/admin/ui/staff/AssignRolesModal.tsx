@@ -30,7 +30,7 @@ export function AssignRolesModal({
       title="Роли"
       subtitle={staffLogin}
       icon={<UsersThreeIcon size={22} />}
-      size="md"
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}

@@ -1,17 +1,22 @@
 import React from 'react';
 import { Badge } from '@mantine/core';
-import { CheckCircle } from '@phosphor-icons/react';
 import type { Appointment } from '@/shared/api/types';
 import { APPOINTMENT_CANCELLED_REASON_LABELS } from '@/shared/lib/format';
 
 export const AppointmentPaidBadge: React.FC<{ paid: boolean }> = ({ paid }) => (
   <Badge
-    size="lg"
+    size="sm"
     variant="light"
-    color={paid ? 'teal' : 'orange'}
-    leftSection={paid ? <CheckCircle size={14} /> : undefined}
+    color={paid ? 'teal' : 'red'}
+    tt="uppercase"
+    radius="xl"
+    styles={{
+      root: paid
+        ? undefined
+        : { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252', textTransform: 'uppercase' },
+    }}
   >
-    {paid ? 'Оплачено' : 'Не оплачено'}
+    {paid ? 'оплачено' : 'не оплачено'}
   </Badge>
 );
 

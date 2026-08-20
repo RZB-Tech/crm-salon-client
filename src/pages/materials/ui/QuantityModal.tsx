@@ -5,7 +5,7 @@ import { useUpdateMaterialQuantity } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
-import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { FormModal, FormModalFooter } from '@/shared/ui';
 
 const OPERATION_OPTIONS = [
   { value: '1', label: 'Приход' },
@@ -36,7 +36,6 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
   }, [material, operation, value, updateQuantity, onClose]);
 
   const unitLabel = material ? MEASUREMENT_UNIT_LABELS[material.measurement_unit] : '';
-  const nextQuantity = (material?.quantity ?? 0) + Number(operation) * value;
 
   return (
     <FormModal
@@ -44,19 +43,17 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
       onClose={onClose}
       title='Изменить количество'
       subtitle={material?.name}
-      icon={<StackIcon size={22} />}
-      headerAside={
+      icon={<StackIcon />}
+      badges={
         material ? (
-          <Badge variant='light' color='sage' size='lg' radius='sm'>
+          <Badge variant='light' color='sage' radius='sm'>
             {material.quantity} {unitLabel}
           </Badge>
         ) : undefined
       }
-      size='md'
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel='Остаток после операции'
-          metaValue={`${nextQuantity} ${unitLabel}`}
           onCancel={onClose}
           submitLabel='Применить'
           onSubmit={handleSubmit}
@@ -64,23 +61,23 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
         />
       }
     >
-      <FormSection title='Операция'>
-        <Stack gap='sm'>
+      <Stack gap='sm'>
           <Select
             label='Тип операции'
+            required
             data={OPERATION_OPTIONS}
             value={operation}
             onChange={(v) => setOperation((v as '1' | '-1') ?? '1')}
           />
           <NumberInput
             label='Количество'
+            required
             min={1}
             value={value}
             onChange={(v) => setValue(Number(v) || 1)}
             suffix={unitLabel ? ` ${unitLabel}` : undefined}
           />
-        </Stack>
-      </FormSection>
+      </Stack>
     </FormModal>
   );
 };

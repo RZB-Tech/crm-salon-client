@@ -24,7 +24,7 @@ export const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({ paymen
         </Badge>
       ) : undefined
     }
-    size="lg"
+    size={567}
     footer={
       <FormModalFooter
         metaLabel={payment ? 'Сумма оплаты' : undefined}

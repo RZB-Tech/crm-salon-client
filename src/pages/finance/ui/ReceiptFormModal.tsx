@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge, NumberInput, Select, Stack } from '@mantine/core';
 import { ReceiptIcon } from '@phosphor-icons/react';
 import type { ReceiptType } from '@/shared/api/types';
-import { formatPrice, RECEIPT_TYPE_LABELS } from '@/shared/lib/format';
+import { RECEIPT_TYPE_LABELS } from '@/shared/lib/format';
 import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { useReceiptForm } from '../lib/useReceiptForm';
 
@@ -27,7 +27,6 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
     clientOptions,
     materialOptions,
     selectedMaterial,
-    total,
     isValid,
     isPending,
     handleSubmit,
@@ -38,28 +37,24 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
       opened={opened}
       onClose={onClose}
       title="Новый чек"
-      subtitle="Продажа по записи или напрямую"
-      icon={<ReceiptIcon size={22} />}
-      headerAside={
+      icon={<ReceiptIcon />}
+      badges={
         <Badge variant="light" color="sage" radius="sm">
           {RECEIPT_TYPE_LABELS[receiptType]}
         </Badge>
       }
-      size="lg"
+      size={567}
       footer={
         <FormModalFooter
-          metaLabel="К оплате"
-          metaValue={formatPrice(total)}
           onCancel={onClose}
-          submitLabel="Создать"
+          submitLabel="Создать новый чек"
           onSubmit={handleSubmit}
           submitDisabled={!isValid}
           loading={isPending}
         />
       }
     >
-      <FormSection title="Чек">
-        <Stack gap="sm">
+      <Stack gap="sm">
           <Select
             label="Тип чека"
             data={[
@@ -73,6 +68,7 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
             <Select
               label="Запись"
               searchable
+              placeholder="Введите запись"
               data={appointmentOptions}
               value={appointmentId}
               onChange={setAppointmentId}
@@ -82,13 +78,13 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
               label="Клиент"
               searchable
               clearable
+              placeholder="Выберите клиента"
               data={clientOptions}
               value={clientId}
               onChange={setClientId}
             />
           )}
-        </Stack>
-      </FormSection>
+      </Stack>
 
       {receiptType === 'direct sale' && (
         <FormSection title="Позиция">

@@ -51,6 +51,7 @@ export function useStaffTab() {
   const handleSelectStaff = React.useCallback(
     (staff: Staff) => {
       setSelectedStaffId(staff.id);
+      setResetResult(null);
       openDetail();
     },
     [openDetail],

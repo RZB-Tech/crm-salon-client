@@ -1,82 +1,99 @@
 import React from 'react';
-import {
-  ActionIcon,
-  Box,
-  Group,
-  Indicator,
-  Popover,
-  ScrollArea,
-  Stack,
-  Text,
-} from '@mantine/core';
-import { BellIcon } from '@phosphor-icons/react';
-import { Link } from 'react-router-dom';
+import { ActionIcon, Popover, ScrollArea } from '@mantine/core';
+import { ArrowSquareOutIcon, BellIcon, XIcon } from '@phosphor-icons/react';
+import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
+import { sortTime } from '@/shared/lib/hooks/useTableSort';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
-import { formatDateTime } from '@/shared/lib/format';
-import styles from './header.module.css';
+import { HeaderNotificationItem } from './HeaderNotificationItem';
+import styles from './header-notifications.module.css';
+
+const LIST_LIMIT = 8;
 
 export const HeaderNotifications: React.FC = () => {
+  const [opened, setOpened] = React.useState(false);
+  const navigate = useNavigate();
   const { data: notifications } = useNotifications();
 
-  const recent = React.useMemo(
-    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').slice(0, 5),
-    [notifications],
-  );
-  const unreadCount = React.useMemo(
-    () => (notifications ?? []).filter((n) => getEffectiveStatus(n) === 'pending').length,
-    [notifications],
-  );
-  const hasUnread = unreadCount > 0;
+  const items = React.useMemo(() => {
+    return (notifications ?? [])
+      .filter((item) => getEffectiveStatus(item) !== 'cancelled')
+      .sort((a, b) => {
+        const unreadA = getEffectiveStatus(a) === 'pending' ? 0 : 1;
+        const unreadB = getEffectiveStatus(b) === 'pending' ? 0 : 1;
+        if (unreadA !== unreadB) return unreadA - unreadB;
+        return (sortTime(b.scheduled_at) ?? 0) - (sortTime(a.scheduled_at) ?? 0);
+      })
+      .slice(0, LIST_LIMIT);
+  }, [notifications]);
+
+  const openAll = () => {
+    setOpened(false);
+    navigate('/notifications');
+  };
 
   return (
-    <Popover width={320} position="bottom-end" shadow="md" radius="md">
+    <Popover
+      opened={opened}
+      onChange={setOpened}
+      width={423}
+      position="bottom-end"
+      radius={16}
+      shadow="none"
+      offset={8}
+    >
       <Popover.Target>
-        <Indicator
-          label={hasUnread ? String(unreadCount) : undefined}
-          color="red"
-          size={16}
-          offset={4}
-          disabled={!hasUnread}
-          processing={hasUnread}
+        <ActionIcon
+          className={styles.bell}
+          variant="default"
+          size={32}
+          radius={8}
+          aria-label="Уведомления"
+          aria-expanded={opened}
         >
-          <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Уведомления">
-            <BellIcon size={20} />
-          </ActionIcon>
-        </Indicator>
+          <BellIcon size={16} />
+        </ActionIcon>
       </Popover.Target>
-      <Popover.Dropdown p={0}>
-        <Stack gap={0}>
-          <Group justify="space-between" px="md" py="sm">
-            <Text size="sm" fw={600}>
-              Уведомления
-            </Text>
-          </Group>
-          <ScrollArea.Autosize mah={280}>
-            {recent.length === 0 ? (
-              <Text size="sm" c="dimmed" px="md" py="sm">
-                Нет уведомлений
-              </Text>
+      <Popover.Dropdown className={styles.dropdown} p={0}>
+        <div className={styles.header}>
+          <div className={styles.headerLead}>
+            <div className={styles.headerIcon}>
+              <BellIcon size={20} />
+            </div>
+            <h2 className={styles.title}>Уведомления</h2>
+          </div>
+          <div className={styles.headerActions}>
+            <ActionIcon
+              className={styles.iconBtn}
+              variant="subtle"
+              size={32}
+              radius={8}
+              aria-label="Все уведомления"
+              onClick={openAll}
+            >
+              <ArrowSquareOutIcon size={20} />
+            </ActionIcon>
+            <ActionIcon
+              className={styles.closeBtn}
+              variant="default"
+              size={32}
+              radius={8}
+              aria-label="Закрыть"
+              onClick={() => setOpened(false)}
+            >
+              <XIcon size={20} />
+            </ActionIcon>
+          </div>
+        </div>
+        <ScrollArea.Autosize mah={360} type="auto">
+          <div className={styles.list}>
+            {items.length === 0 ? (
+              <div className={styles.empty}>Нет уведомлений</div>
             ) : (
-              recent.map((item) => (
-                <Box key={item.id} className={styles.notificationItem}>
-                  <Text size="sm" fw={500} lineClamp={1}>
-                    {item.title ?? 'Уведомление'}
-                  </Text>
-                  <Text size="xs" c="dimmed" lineClamp={2}>
-                    {item.body}
-                  </Text>
-                  <Text size="xs" c="dimmed" mt={4}>
-                    {formatDateTime(item.scheduled_at)}
-                  </Text>
-                </Box>
-              ))
+              items.map((item) => <HeaderNotificationItem key={item.id} item={item} />)
             )}
-          </ScrollArea.Autosize>
-          <Link to="/notifications" className={styles.notificationsLink}>
-            Все уведомления
-          </Link>
-        </Stack>
+          </div>
+        </ScrollArea.Autosize>
       </Popover.Dropdown>
     </Popover>
   );

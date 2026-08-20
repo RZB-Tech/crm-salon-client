@@ -72,7 +72,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
   const canReadPromos = isAdmin || hasPermission(PermissionCode.PROMOTION_GET);
   const { data: promotions } = usePromotions(false, canReadPromos);
 
-  const { title, subtitle, avatarInitials, total, isValid, fieldsLocked } = useAppointmentFormMeta({
+  const { title, subtitle, isValid, fieldsLocked } = useAppointmentFormMeta({
     mode,
     values,
     clients,
@@ -118,26 +118,28 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
       opened={opened}
       onClose={onClose}
       title={title}
-      subtitle={mode === 'create' ? undefined : subtitle}
-      initials={mode === 'create' ? undefined : avatarInitials}
+      subtitle={subtitle}
       icon={<UserCheckIcon />}
-      size={mode === 'create' ? 567 : 'lg'}
-      headerAside={mode === 'edit' ? <AppointmentPaidBadge paid={paid} /> : undefined}
+      size={567}
       badges={
-        hasStateBadges ? (
-          <AppointmentStateBadges
-            archived={archived}
-            cancelled={cancelled}
-            structureLocked={structureLocked}
-            appointment={appointment}
-          />
+        mode === 'edit' ? (
+          <>
+            <AppointmentPaidBadge paid={paid} />
+            {hasStateBadges && (
+              <AppointmentStateBadges
+                archived={archived}
+                cancelled={cancelled}
+                structureLocked={structureLocked}
+                appointment={appointment}
+              />
+            )}
+          </>
         ) : undefined
       }
       footer={
         <AppointmentFormFooter
           mode={mode}
           tab={tab}
-          total={total}
           isValid={isValid}
           loading={loading}
           cancelled={cancelled}

@@ -1,49 +1,50 @@
 import React from 'react';
-import { Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { Select, Stack, TextInput } from '@mantine/core';
+import { DateInput, TimePicker } from '@mantine/dates';
 import { BellRingingIcon } from '@phosphor-icons/react';
-import { DateTimePicker } from '@mantine/dates';
 import { useCreateNotification } from '@/shared/api/hooks/useNotifications';
 import type { SalonNotificationType } from '@/shared/api/types';
+import { toDateInput } from '@/shared/lib/format';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
-import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
+import { FormFieldGrid, FormModal, FormModalFooter } from '@/shared/ui';
+import {
+  defaultNotificationSchedule,
+  toNotificationScheduledAt,
+} from '../lib/notificationSchedule';
 
 interface NotificationFormModalProps {
   opened: boolean;
   onClose: () => void;
 }
 
-/** Mantine DateTimePicker value → ISO for API */
-const toScheduledIso = (value: string | Date | null): string => {
-  if (!value) return new Date().toISOString();
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString();
-  }
-  const normalized = value.includes('T') ? value : value.replace(' ', 'T');
-  const parsed = new Date(normalized);
-  return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-};
-
 export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ opened, onClose }) => {
   const [title, setTitle] = React.useState('');
   const [body, setBody] = React.useState('');
   const [type, setType] = React.useState<SalonNotificationType>('reminder');
-  const [scheduledAt, setScheduledAt] = React.useState<string | Date | null>(null);
+  const [date, setDate] = React.useState('');
+  const [time, setTime] = React.useState('');
   const createNotification = useCreateNotification();
+  const minDate = React.useMemo(() => toDateInput(new Date()), [opened]);
 
   useResetOnOpen(opened, () => {
+    const next = defaultNotificationSchedule();
     setTitle('');
     setBody('');
-    setScheduledAt(null);
     setType('reminder');
+    setDate(next.date);
+    setTime(next.time);
   });
 
+  const scheduledAt = toNotificationScheduledAt(date, time);
+
   const handleSubmit = React.useCallback(() => {
+    if (!scheduledAt) return;
     createNotification.mutate(
       {
         title: title || null,
-        body,
+        body: body || title,
         type,
-        scheduled_at: toScheduledIso(scheduledAt),
+        scheduled_at: scheduledAt,
       },
       { onSuccess: onClose },
     );
@@ -54,56 +55,60 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
       opened={opened}
       onClose={onClose}
       title="Новое уведомление"
-      subtitle="Текст и время отправки"
-      icon={<BellRingingIcon size={22} />}
-      size="lg"
+      icon={<BellRingingIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Создать"
+          submitLabel="Создать уведомление"
           onSubmit={handleSubmit}
-          submitDisabled={!body}
+          submitDisabled={!title.trim() || !scheduledAt}
           loading={createNotification.isPending}
         />
       }
     >
-      <FormSection title="Текст уведомления">
-        <Stack gap="sm">
-          <FormFieldGrid>
-            <Select
-              label="Тип"
-              data={[
-                { value: 'reminder', label: 'Напоминание' },
-                { value: 'other', label: 'Другое' },
-              ]}
-              value={type}
-              onChange={(v) => setType((v as SalonNotificationType) ?? 'reminder')}
-            />
-            <TextInput
-              label="Заголовок"
-              value={title}
-              onChange={(e) => setTitle(e.currentTarget.value)}
-            />
-          </FormFieldGrid>
-          <Textarea
-            label="Текст"
-            required
-            minRows={3}
-            value={body}
-            onChange={(e) => setBody(e.currentTarget.value)}
-          />
-        </Stack>
-      </FormSection>
-
-      <FormSection title="Период">
-        <DateTimePicker
-          label="Запланировать на"
-          clearable
-          value={scheduledAt}
-          onChange={setScheduledAt}
-          placeholder="Сейчас"
+      <Stack gap="sm">
+        <Select
+          label="Тип"
+          required
+          data={[
+            { value: 'reminder', label: 'Напоминание' },
+            { value: 'other', label: 'Другое' },
+          ]}
+          value={type}
+          onChange={(v) => setType((v as SalonNotificationType) ?? 'reminder')}
         />
-      </FormSection>
+        <TextInput
+          label="Заголовок"
+          required
+          placeholder="Введите заголовок"
+          value={title}
+          onChange={(e) => setTitle(e.currentTarget.value)}
+        />
+        <TextInput
+          label="Описание"
+          placeholder="Введите описание"
+          value={body}
+          onChange={(e) => setBody(e.currentTarget.value)}
+        />
+        <FormFieldGrid>
+          <DateInput
+            label="Дата"
+            required
+            placeholder="ДД.ММ.ГГГГ"
+            value={date || null}
+            minDate={minDate}
+            onChange={(value) => setDate(value ?? '')}
+          />
+          <TimePicker
+            label="Время"
+            required
+            minutesStep={5}
+            value={time}
+            onChange={setTime}
+          />
+        </FormFieldGrid>
+      </Stack>
     </FormModal>
   );
 };

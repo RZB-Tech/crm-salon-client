@@ -34,7 +34,7 @@ export function ResetPasswordModal({
       subtitle={staffLogin}
       icon={<KeyIcon size={22} />}
       tone="warning"
-      size="md"
+      size={567}
       footer={
         <FormModalFooter
           cancelLabel={resetResult ? 'Закрыть' : 'Отмена'}

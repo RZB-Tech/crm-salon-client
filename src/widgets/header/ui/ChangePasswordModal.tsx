@@ -44,8 +44,8 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ opened
       onClose={onClose}
       title="Смена пароля"
       subtitle="Обновите пароль от учётной записи"
-      icon={<KeyIcon size={22} />}
-      size="md"
+      icon={<KeyIcon />}
+      size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}

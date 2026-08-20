@@ -47,6 +47,7 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
           label="Начало"
           required
           minutesStep={15}
+          placeholder="--:--"
           value={values.startTime}
           onChange={(value) =>
             onChange(
@@ -63,6 +64,7 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
           label="Конец"
           required
           minutesStep={15}
+          placeholder="--:--"
           value={values.endTime}
           onChange={(value) => onChange({ ...values, endTime: value })}
           disabled={fieldsLocked}

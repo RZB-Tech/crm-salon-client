@@ -19,22 +19,29 @@ export function PermissionsTreeToolbar({
 }: PermissionsTreeToolbarProps) {
   return (
     <Group justify="space-between" wrap="nowrap" mb="xs">
-      <Badge size="sm" variant="light" color={allSelected ? 'green' : 'gray'}>
-        {selectedCount} / {totalCount}
-      </Badge>
-      <Group gap="xs">
-        <Button variant="subtle" size="compact-xs" onClick={onToggleExpandAll}>
-          {allExpanded ? 'Свернуть все' : 'Развернуть все'}
+      <Group gap={8}>
+        <Button
+          variant="light"
+          color="sage"
+          size="compact-sm"
+          radius="xs"
+          onClick={onToggleExpandAll}
+        >
+          {allExpanded ? 'Свернуть' : 'Развернуть'}
         </Button>
         <Button
           variant="light"
-          size="compact-xs"
-          color={allSelected ? 'red' : 'green'}
+          color="sage"
+          size="compact-sm"
+          radius="xs"
           onClick={onToggleSelectAll}
         >
           {allSelected ? 'Снять все' : 'Выбрать все'}
         </Button>
       </Group>
+      <Badge size="sm" variant="transparent" color="gray">
+        {selectedCount}/{totalCount}
+      </Badge>
     </Group>
   );
 }
