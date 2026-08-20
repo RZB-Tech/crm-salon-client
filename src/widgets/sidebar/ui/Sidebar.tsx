@@ -4,6 +4,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   ScissorsIcon,
   TagIcon,
+  TicketIcon,
   UserListIcon,
   SquaresFourIcon,
   UsersIcon,
@@ -62,6 +63,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Акции',
     Icon: TagIcon,
     permissions: [PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE],
+  },
+  {
+    path: '/gift-cards',
+    label: 'Купоны',
+    Icon: TicketIcon,
+    permissions: [PermissionCode.GIFT_CARD_GET, PermissionCode.GIFT_CARD_MANAGE],
   },
   {
     path: '/employees',

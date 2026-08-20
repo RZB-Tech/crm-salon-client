@@ -74,6 +74,7 @@ export const invalidatePaymentFlow = (
     queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.clients.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.materials.all }),
     queryClient.invalidateQueries({ queryKey: ['audit-logs'] }),
   ]);

@@ -31,6 +31,7 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
       cancelledReceiptsCount={pay.cancelledReceipts.length}
       amount={pay.amount}
       method={pay.method}
+      giftCardId={pay.giftCardId}
       addChangeToDeposit={pay.addChangeToDeposit}
       overpay={pay.overpay}
       canPay={pay.canPay}
@@ -42,7 +43,13 @@ export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appoin
       cancelPending={pay.cancelReceipt.isPending}
       payPending={pay.isLoading}
       onAmountChange={pay.setAmount}
-      onMethodChange={(value) => pay.setMethod(value as typeof pay.method)}
+      onMethodChange={pay.handleMethodChange}
+      onGiftCardIdChange={(id, remain) => {
+        pay.setGiftCardId(id);
+        if (remain != null && pay.receipt) {
+          pay.setAmount(Math.min(remain, pay.receipt.remaining_amount));
+        }
+      }}
       onAddChangeToDepositChange={pay.setAddChangeToDeposit}
       onCreateReceipt={pay.handleCreateReceipt}
       onPay={pay.handlePay}

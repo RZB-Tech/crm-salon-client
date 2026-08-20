@@ -18,6 +18,7 @@ import {
   MaterialsPage,
   NotificationsPage,
   PromotionsPage,
+  GiftCardsPage,
   ServicesPage,
   SettingsPage,
 } from './lazyPages';
@@ -76,6 +77,16 @@ export const AppRouter: React.FC = () => (
             <Suspense fallback={<PageLoader />}>
               <PermissionGuard permissions={[PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE]}>
                 <PromotionsPage />
+              </PermissionGuard>
+            </Suspense>
+          }
+        />
+        <Route
+          path="/gift-cards"
+          element={
+            <Suspense fallback={<PageLoader />}>
+              <PermissionGuard permissions={[PermissionCode.GIFT_CARD_GET, PermissionCode.GIFT_CARD_MANAGE]}>
+                <GiftCardsPage />
               </PermissionGuard>
             </Suspense>
           }

@@ -46,6 +46,7 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   card: 'Карта',
   'bank transfer': 'Банковский перевод',
   deposit: 'Депозит',
+  'gift card': 'Купон',
 };
 
 export const APPOINTMENT_STATUS_LABELS: Record<string, string> = {
@@ -86,6 +87,7 @@ export const TRANSACTION_TYPE_LABELS: Record<string, string> = {
 export const TRANSACTION_CATEGORY_LABELS: Record<string, string> = {
   receipt: 'Оплата чека',
   'employee payment': 'Выплата сотруднику',
+  'gift card': 'Купон',
   utility: 'Коммунальные',
   internet: 'Интернет',
   telephone: 'Телефон',
@@ -97,4 +99,12 @@ export const TRANSACTION_METHOD_LABELS: Record<string, string> = {
   card: 'Карта',
   'bank transfer': 'Банковский перевод',
   deposit: 'Депозит',
+  'gift card': 'Купон',
+};
+
+export const GIFT_CARD_STATUS_LABELS: Record<string, string> = {
+  active: 'Активен',
+  used: 'Использован',
+  expired: 'Истёк',
+  cancelled: 'Отменён',
 };

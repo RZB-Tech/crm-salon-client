@@ -41,6 +41,11 @@ export const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD_LABELS).map(
   ([value, label]) => ({ value, label }),
 );
 
+/** Покупка купона — без оплаты другим купоном. */
+export const GIFT_CARD_PURCHASE_METHOD_OPTIONS = PAYMENT_METHOD_OPTIONS.filter(
+  (item) => item.value !== 'gift card',
+);
+
 export const APPOINTMENT_CANCELLED_REASON_OPTIONS = Object.entries(
   APPOINTMENT_CANCELLED_REASON_LABELS,
 ).map(([value, label]) => ({ value, label }));
@@ -56,6 +61,6 @@ export const TRANSACTION_TYPE_OPTIONS = Object.entries(TRANSACTION_TYPE_LABELS).
   ([value, label]) => ({ value, label }),
 );
 
-export const TRANSACTION_METHOD_OPTIONS = Object.entries(TRANSACTION_METHOD_LABELS).map(
-  ([value, label]) => ({ value, label }),
-);
+export const TRANSACTION_METHOD_OPTIONS = Object.entries(TRANSACTION_METHOD_LABELS)
+  .filter(([value]) => value !== 'gift card')
+  .map(([value, label]) => ({ value, label }));

@@ -3,6 +3,7 @@ export * from './service';
 export * from './employee';
 export * from './appointment';
 export * from './promotion';
+export * from './giftCard';
 export * from './material';
 export * from './finance';
 export * from './client';

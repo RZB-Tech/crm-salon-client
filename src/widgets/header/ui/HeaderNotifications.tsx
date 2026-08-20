@@ -10,7 +10,7 @@ import styles from './header-notifications.module.css';
 
 const LIST_LIMIT = 8;
 
-export const HeaderNotifications: React.FC = () => {
+export function HeaderNotifications() {
   const [opened, setOpened] = React.useState(false);
   const navigate = useNavigate();
   const { data: notifications } = useNotifications();
@@ -97,4 +97,4 @@ export const HeaderNotifications: React.FC = () => {
       </Popover.Dropdown>
     </Popover>
   );
-};
+}

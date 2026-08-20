@@ -13,6 +13,7 @@ export function usePayAppointment(appointment: Appointment) {
 
   const [amount, setAmount] = React.useState(appointment.total_price);
   const [method, setMethod] = React.useState<PaymentMethod>('cash');
+  const [giftCardId, setGiftCardId] = React.useState<string | null>(null);
   const [addChangeToDeposit, setAddChangeToDeposit] = React.useState(true);
   const [cancelConfirmOpen, setCancelConfirmOpen] = React.useState(false);
 
@@ -29,13 +30,15 @@ export function usePayAppointment(appointment: Appointment) {
   useResetOnOpen(receipt, () => {
     if (!receipt) return;
     setAmount(receipt.remaining_amount > 0 ? receipt.remaining_amount : receipt.total_amount);
+    setGiftCardId(null);
   });
 
-  const overpay = receipt != null && amount > receipt.remaining_amount;
+  const overpay = receipt != null && method !== 'gift card' && amount > receipt.remaining_amount;
   const canPay =
     receipt != null &&
     receipt.status === 'pending' &&
     amount > 0 &&
+    (method !== 'gift card' || Boolean(giftCardId)) &&
     (!overpay || addChangeToDeposit);
 
   const handleCreateReceipt = React.useCallback(() => {
@@ -51,9 +54,15 @@ export function usePayAppointment(appointment: Appointment) {
       receipt_id: receipt.id,
       amount,
       method,
-      add_change_to_deposit: addChangeToDeposit,
+      giftCard_id: method === 'gift card' && giftCardId ? Number(giftCardId) : null,
+      add_change_to_deposit: method === 'gift card' ? false : addChangeToDeposit,
     });
-  }, [receipt, canPay, amount, method, addChangeToDeposit, createPayment]);
+  }, [receipt, canPay, amount, method, giftCardId, addChangeToDeposit, createPayment]);
+
+  const handleMethodChange = React.useCallback((value: PaymentMethod) => {
+    setMethod(value);
+    if (value !== 'gift card') setGiftCardId(null);
+  }, []);
 
   const handleCancelReceipt = React.useCallback(() => {
     if (!receipt) return;
@@ -78,7 +87,9 @@ export function usePayAppointment(appointment: Appointment) {
     amount,
     setAmount,
     method,
-    setMethod,
+    giftCardId,
+    setGiftCardId,
+    handleMethodChange,
     addChangeToDeposit,
     setAddChangeToDeposit,
     cancelConfirmOpen,

@@ -54,6 +54,10 @@ export const queryKeys = {
     all: ['promotions'] as const,
     detail: (id: number) => ['promotions', id] as const,
   },
+  giftCards: {
+    all: ['gift-cards'] as const,
+    detail: (id: number) => ['gift-cards', id] as const,
+  },
   receipts: {
     all: ['receipts'] as const,
     detail: (id: number) => ['receipts', id] as const,

@@ -16,6 +16,12 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   PROMOTION_TYPE_CONDITION_CONFLICT: 'Тип акции не сочетается с выбранными условиями',
   PROMOTION_HAS_CONFLICT_WITH_TARGET: 'На эту услугу или товар уже есть активная акция',
   PROMOTION_DISCOUNT_PERCENTAGE_EXCEED: 'Процент скидки должен быть от 1 до 100',
+  GIFT_CARD_NOT_FOUND: 'Купон не найден',
+  GIFT_CARD_HAS_CHARGED: 'Купон уже использован — отменить нельзя',
+  GIFT_CARD_INSUFFICIENT_AMOUNT: 'На купоне недостаточно средств',
+  GIFT_CARD_CANCELLED: 'Купон отменён',
+  GIFT_CARD_UNUSABLE: 'Купон нельзя использовать',
+  GIFT_CARD_CLIENT_CONFLICT: 'Этот купон привязан к другому клиенту',
 };
 
 interface ApiErrorBody {

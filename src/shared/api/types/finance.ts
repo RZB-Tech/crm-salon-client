@@ -3,7 +3,7 @@ import type { Payroll } from './employee';
 
 export type ReceiptType = 'appointment' | 'direct sale';
 export type ReceiptStatus = 'pending' | 'paid' | 'cancelled';
-export type PaymentMethod = 'cash' | 'card' | 'bank transfer' | 'deposit';
+export type PaymentMethod = 'cash' | 'card' | 'bank transfer' | 'deposit' | 'gift card';
 
 export interface ReceiptItem extends BaseEntity {
   material_id: number | null;
@@ -43,6 +43,7 @@ export interface PaymentCreatePayload {
   receipt_id: number;
   amount: number;
   method: PaymentMethod;
+  giftCard_id?: number | null;
   add_change_to_deposit?: boolean;
 }
 
@@ -50,6 +51,7 @@ export interface ReceiptPaymentPayload {
   receipt_id: number;
   amount: number;
   method: PaymentMethod;
+  giftCard_id?: number | null;
   add_change_to_deposit?: boolean;
 }
 
@@ -58,6 +60,7 @@ export type TransactionType = 'income' | 'expense';
 export type TransactionCategory =
   | 'receipt'
   | 'employee payment'
+  | 'gift card'
   | 'utility'
   | 'internet'
   | 'telephone'
@@ -65,7 +68,7 @@ export type TransactionCategory =
 
 export type ManualTransactionCategory = 'utility' | 'internet' | 'telephone' | 'other';
 
-export type TransactionMethod = 'card' | 'cash' | 'bank transfer' | 'deposit';
+export type TransactionMethod = 'card' | 'cash' | 'bank transfer' | 'deposit' | 'gift card';
 
 export type PayoutType = 'salary' | 'advance salary' | 'other';
 export type PayoutMethod = 'cash' | 'card';
