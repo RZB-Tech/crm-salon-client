@@ -1,17 +1,23 @@
 import type { AppointmentStatus, FilterFieldSchema } from '@/shared/api/types';
+import { APPOINTMENT_STATUS_LABELS } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 import { enumOptionsFromSchema } from './appointmentFilters';
 
-export const PAID_OPTIONS = [
-  { value: 'true', label: 'Оплачено' },
-  { value: 'false', label: 'Не оплачено' },
+export const getPaidOptions = () => [
+  { value: 'true', label: t('appointments.paid') },
+  { value: 'false', label: t('appointments.unpaid') },
 ];
 
-export const DEFAULT_APPOINTMENT_STATUS_OPTIONS = [
-  { value: 'awaiting', label: 'Ожидание' },
-  { value: 'started', label: 'Начата' },
-  { value: 'finished', label: 'Завершена' },
-  { value: 'cancelled', label: 'Отменена' },
+export const PAID_OPTIONS = getPaidOptions;
+
+export const getDefaultAppointmentStatusOptions = () => [
+  { value: 'awaiting', label: APPOINTMENT_STATUS_LABELS.awaiting },
+  { value: 'started', label: APPOINTMENT_STATUS_LABELS.started },
+  { value: 'finished', label: APPOINTMENT_STATUS_LABELS.finished },
+  { value: 'cancelled', label: APPOINTMENT_STATUS_LABELS.cancelled },
 ];
+
+export const DEFAULT_APPOINTMENT_STATUS_OPTIONS = getDefaultAppointmentStatusOptions;
 
 export const statusColor = (status: AppointmentStatus): string => {
   if (status === 'cancelled') return 'red';
@@ -22,12 +28,13 @@ export const statusColor = (status: AppointmentStatus): string => {
 
 export const paidBadgeColor = (paid: boolean): string => (paid ? 'teal' : 'orange');
 
-export const paidLabel = (paid: boolean): string => (paid ? 'Оплачено' : 'Не оплачено');
+export const paidLabel = (paid: boolean): string =>
+  paid ? t('appointments.paid') : t('appointments.unpaid');
 
 export const resolveStatusFilterOptions = (
   field: FilterFieldSchema | undefined,
 ): { value: string; label: string }[] => {
   const fromSchema = enumOptionsFromSchema(field);
   if (fromSchema.length > 0) return fromSchema;
-  return DEFAULT_APPOINTMENT_STATUS_OPTIONS;
+  return getDefaultAppointmentStatusOptions();
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Textarea } from '@mantine/core';
 import type { Client, Receipt } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import type { AppointmentFormValues, ServiceOption } from '../../lib/appointmentForm';
 import { AppointmentStatusField } from './AppointmentStatusField';
 import { AppointmentClientFields } from './AppointmentClientFields';
@@ -41,6 +42,7 @@ export const AppointmentMainFields: React.FC<AppointmentMainFieldsProps> = ({
   servicesSlot,
   onChange,
 }) => {
+  const { t } = useI18n();
   const body = (
     <>
       {structureLocked && (
@@ -48,15 +50,14 @@ export const AppointmentMainFields: React.FC<AppointmentMainFieldsProps> = ({
           className={styles.lockAlert}
           color="yellow"
           variant="light"
-          title="Состав заблокирован чеком"
+          title={t('board.linesLocked')}
         >
-          Чек{activeReceipt ? ` #${activeReceipt.id}` : ''} активен. Отмените его во вкладке
-          «Оплата», чтобы менять клиента, время или услуги.
+          {t('board.linesLockedHint', { id: activeReceipt ? ` #${activeReceipt.id}` : '' })}
         </Alert>
       )}
 
       <div className={styles.sectionCard}>
-        <p className={styles.sectionTitle}>Персональные данные</p>
+        <p className={styles.sectionTitle}>{t('clients.personalData')}</p>
 
         {mode === 'edit' && !cancelled && (
           <AppointmentStatusField values={values} archived={archived} onChange={onChange} />
@@ -83,8 +84,8 @@ export const AppointmentMainFields: React.FC<AppointmentMainFieldsProps> = ({
       {servicesSlot}
 
       <Textarea
-        label="Комментарий"
-        placeholder="Добавьте комментарий"
+        label={t('common.comment')}
+        placeholder={t('board.addComment')}
         minRows={2}
         autosize
         value={values.notes}

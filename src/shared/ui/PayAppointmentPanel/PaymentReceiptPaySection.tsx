@@ -12,6 +12,7 @@ import {
 import type { PaymentMethod, Receipt } from '@/shared/api/types';
 import { GiftCardPaySelect } from '@/pages/gift-cards/ui/GiftCardPaySelect';
 import { PAYMENT_METHOD_OPTIONS, RECEIPT_STATUS_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './pay-appointment-panel.module.css';
 
@@ -52,10 +53,11 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
   onPay,
   onOpenCancelConfirm,
 }) => {
+  const { t } = useI18n();
   const { isAdmin, hasPermission } = useAccess();
   const canUseGiftCard = isAdmin || hasPermission(PermissionCode.GIFT_CARD_GET);
   const methodOptions = React.useMemo(
-    () => PAYMENT_METHOD_OPTIONS.filter((item) => item.value !== 'gift card' || canUseGiftCard),
+    () => PAYMENT_METHOD_OPTIONS().filter((item) => item.value !== 'gift card' || canUseGiftCard),
     [canUseGiftCard],
   );
   const isGiftCard = method === 'gift card';
@@ -65,7 +67,7 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
       <Group justify="space-between" mb="sm">
         <div>
           <p className={styles.sectionTitle} style={{ marginBottom: 4 }}>
-            Чек #{receipt.id}
+            {t('form.receiptNamed', { id: receipt.id })}
           </p>
           <Text size="xs" c="dimmed">
             {RECEIPT_STATUS_LABELS[receipt.status] ?? receipt.status}
@@ -78,23 +80,23 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
           onClick={onOpenCancelConfirm}
           loading={cancelPending}
         >
-          Отменить чек
+          {t('form.cancelReceipt')}
         </Button>
       </Group>
 
       {receipt.remaining_amount > 0 && (
         <Stack gap="sm">
           <NumberInput
-            label="Сумма платежа"
-            description="Можно оплатить частями"
+            label={t('form.payAmount')}
+            description={t('form.partialPay')}
             min={1}
             value={amount}
             onChange={(value) => onAmountChange(Number(value) || 0)}
             thousandSeparator=" "
-            suffix=" сум"
+            suffix={` ${t('common.currency')}`}
           />
           <Select
-            label="Способ оплаты"
+            label={t('form.method')}
             data={methodOptions}
             value={method}
             onChange={(value) => onMethodChange((value as PaymentMethod) ?? 'cash')}
@@ -109,11 +111,9 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
           )}
           {!isGiftCard && (
             <Checkbox
-              label="Сдачу на депозит клиента"
+              label={t('form.changeToDeposit')}
               description={
-                overpay
-                  ? 'Обязательно при сумме больше остатка'
-                  : 'Если клиент дал больше — разница уйдёт на депозит'
+                overpay ? t('form.overpayRequired') : t('form.overpayHint')
               }
               checked={addChangeToDeposit}
               onChange={(event) => onAddChangeToDepositChange(event.currentTarget.checked)}
@@ -121,12 +121,12 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
           )}
           {overpay && !addChangeToDeposit && (
             <Alert color="red" variant="light">
-              При переплате включите зачисление сдачи на депозит
+              {t('form.overpayAlert')}
             </Alert>
           )}
           <Group justify="flex-end">
             <Button onClick={onPay} loading={payPending} disabled={!canPay}>
-              Принять оплату
+              {t('form.acceptPayment')}
             </Button>
           </Group>
         </Stack>

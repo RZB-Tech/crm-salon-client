@@ -1,5 +1,6 @@
 import React from 'react';
 import { Group, Pagination as MantinePagination, Select, Text } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './pagination.module.css';
 
 interface PaginationProps {
@@ -19,6 +20,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageSizeChange,
   pageSizeOptions = [10, 25, 50, 100],
 }) => {
+  const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -36,7 +38,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         {onPageSizeChange && (
           <>
             <Text size='sm' c='dimmed'>
-              Показать:
+              {t('common.show')}
             </Text>
             <Select
               size='xs'
@@ -54,7 +56,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           </>
         )}
         <Text size='sm' c='dimmed'>
-          {from}–{to} из {total}
+          {from}–{to} {t('common.of')} {total}
         </Text>
       </Group>
 

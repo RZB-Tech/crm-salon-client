@@ -12,6 +12,7 @@ import type {
   MaterialQuantityPayload,
   MaterialUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useMaterials = (archived = false) =>
@@ -35,7 +36,7 @@ export const useCreateMaterial = () => {
       apiPost<Material, MaterialCreatePayload>('/api/v1/materials', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
-      addNotification.success({ message: 'Материал создан' });
+      addNotification.success({ message: t('toast.materialCreated') });
     },
   });
 };
@@ -49,7 +50,7 @@ export const useUpdateMaterial = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.detail(payload.id) });
-      addNotification.success({ message: 'Материал обновлён' });
+      addNotification.success({ message: t('toast.materialUpdated') });
     },
   });
 };
@@ -63,7 +64,7 @@ export const useUpdateMaterialQuantity = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.detail(payload.id) });
-      addNotification.success({ message: 'Количество обновлено' });
+      addNotification.success({ message: t('toast.quantityUpdated') });
     },
   });
 };
@@ -76,7 +77,7 @@ export const useArchiveMaterial = () => {
       apiPatch<Material, { id: number; archived: boolean }>('/api/v1/materials', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
-      addNotification.success({ message: 'Материал архивирован' });
+      addNotification.success({ message: t('toast.materialArchived') });
     },
   });
 };
@@ -89,7 +90,7 @@ export const useRestoreMaterial = () => {
       apiPatch<Material, { id: number; archived: boolean }>('/api/v1/materials', { id, archived: false }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
-      addNotification.success({ message: 'Материал восстановлен' });
+      addNotification.success({ message: t('toast.materialRestored') });
     },
   });
 };

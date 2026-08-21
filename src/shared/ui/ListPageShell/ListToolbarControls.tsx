@@ -13,6 +13,7 @@ import {
   SquaresFourIcon,
   TableIcon,
 } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 
 type ListTabsProps = SegmentedControlProps & {
   /** Контрол внутри трека табов (например, «добавить категорию»). */
@@ -46,31 +47,26 @@ interface ArchiveToggleProps {
 }
 
 /** Архив — ActionIcon size="input-sm" (= высота Input/Button sm). */
-export const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ active, onChange }) => (
-  <Tooltip label={active ? 'Показать активные' : 'Показать архив'} position="bottom">
+export const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ active, onChange }) => {
+  const { t } = useI18n();
+  const label = active ? t('common.showActive') : t('common.showArchive');
+  return (
+  <Tooltip label={label} position="bottom">
     <ActionIcon
       size="input-sm"
       variant={active ? 'light' : 'default'}
       color={active ? 'orange' : 'gray'}
       onClick={() => onChange(!active)}
-      aria-label={active ? 'Показать активные' : 'Показать архив'}
+      aria-label={label}
       aria-pressed={active}
     >
       <ArchiveIcon size={18} />
     </ActionIcon>
   </Tooltip>
-);
+  );
+};
 
 export type ListViewMode = 'cards' | 'table';
-
-const VIEW_OPTIONS: {
-  value: ListViewMode;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  { value: 'cards', label: 'Карточки', icon: <SquaresFourIcon size={18} /> },
-  { value: 'table', label: 'Таблица', icon: <TableIcon size={18} /> },
-];
 
 interface ViewModeToggleProps {
   value: ListViewMode;
@@ -79,25 +75,35 @@ interface ViewModeToggleProps {
 
 /** Вид — ActionIcon size="input-sm", меню выбора. */
 export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ value, onChange }) => {
-  const current = VIEW_OPTIONS.find((o) => o.value === value) ?? VIEW_OPTIONS[0];
+  const { t } = useI18n();
+  const viewOptions: {
+    value: ListViewMode;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    { value: 'cards', label: t('common.cards'), icon: <SquaresFourIcon size={18} /> },
+    { value: 'table', label: t('common.table'), icon: <TableIcon size={18} /> },
+  ];
+  const current = viewOptions.find((o) => o.value === value) ?? viewOptions[0];
+  const named = t('common.viewNamed', { label: current.label });
 
   return (
     <Menu shadow="sm" width={180} position="bottom-end" radius="md">
-      <Tooltip label={`Вид: ${current.label}`} position="bottom">
+      <Tooltip label={named} position="bottom">
         <Menu.Target>
           <ActionIcon
             size="input-sm"
             variant="default"
             color="gray"
-            aria-label={`Вид: ${current.label}`}
+            aria-label={named}
           >
             {current.icon}
           </ActionIcon>
         </Menu.Target>
       </Tooltip>
       <Menu.Dropdown>
-        <Menu.Label>Вид списка</Menu.Label>
-        {VIEW_OPTIONS.map((option) => (
+        <Menu.Label>{t('common.viewList')}</Menu.Label>
+        {viewOptions.map((option) => (
           <Menu.Item
             key={option.value}
             leftSection={option.icon}

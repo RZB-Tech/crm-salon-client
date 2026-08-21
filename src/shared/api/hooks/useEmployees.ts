@@ -15,6 +15,7 @@ import type {
   EmployeeWorkScheduleResponse,
   Payroll,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useEmployees = (archived = false) =>
@@ -81,7 +82,7 @@ export const useCreateEmployee = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
-      addNotification.success({ message: 'Сотрудник создан' });
+      addNotification.success({ message: t('toast.employeeCreated') });
     },
   });
 };
@@ -98,7 +99,7 @@ export const useUpdateEmployee = () => {
       // Услуги сотрудника влияют на форму создания посещения
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
-      addNotification.success({ message: 'Сотрудник обновлён' });
+      addNotification.success({ message: t('toast.employeeUpdated') });
     },
   });
 };
@@ -113,7 +114,7 @@ export const useArchiveEmployee = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
-      addNotification.success({ message: 'Сотрудник архивирован' });
+      addNotification.success({ message: t('toast.employeeArchived') });
     },
   });
 };
@@ -128,7 +129,7 @@ export const useRestoreEmployee = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.appointments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
-      addNotification.success({ message: 'Сотрудник восстановлен' });
+      addNotification.success({ message: t('toast.employeeRestored') });
     },
   });
 };

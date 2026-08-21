@@ -2,6 +2,7 @@ import React from 'react';
 import { TextInput, Textarea } from '@mantine/core';
 import { ShieldStarIcon } from '@phosphor-icons/react';
 import type { Permission, Role } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { PermissionsResourceTree } from '../PermissionsResourceTree';
 import { PermissionsTreeToolbar } from '../PermissionsTreeToolbar';
@@ -29,6 +30,7 @@ export function RoleFormModal({
   onSave,
   isSaving,
 }: RoleFormModalProps) {
+  const { t } = useI18n();
   const perms = useRolePermissions({
     opened,
     editingRole,
@@ -41,13 +43,13 @@ export function RoleFormModal({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={editingRole ? 'Редактировать роль' : 'Создать роль'}
+      title={editingRole ? t('form.editRole') : t('form.createRole')}
       icon={<ShieldStarIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={editingRole ? 'Сохранить' : 'Создать роль'}
+          submitLabel={editingRole ? t('common.save') : t('form.createRole')}
           onSubmit={onSave}
           submitDisabled={!form.name}
           loading={isSaving}
@@ -55,15 +57,15 @@ export function RoleFormModal({
       }
     >
       <TextInput
-        label="Название"
+        label={t('common.name')}
         required
-        placeholder="Введите название роли"
+        placeholder={t('form.enterRoleName')}
         value={form.name}
         onChange={(e) => onFormChange((prev) => ({ ...prev, name: e.currentTarget.value }))}
       />
       <Textarea
-        label="Описание"
-        placeholder="Введите описание роли"
+        label={t('form.description')}
+        placeholder={t('form.enterRoleDescription')}
         autosize
         minRows={2}
         value={form.description}
@@ -72,7 +74,7 @@ export function RoleFormModal({
         }
       />
 
-      <FormSection title="Разрешения" hint="Отметьте пункты, которые будут доступны для роли">
+      <FormSection title={t('form.permissions')} hint={t('form.permissionsHint')}>
         <PermissionsTreeToolbar
           selectedCount={form.permissions.length}
           totalCount={perms.totalCount}

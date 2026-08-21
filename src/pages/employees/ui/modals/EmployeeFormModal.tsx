@@ -4,6 +4,7 @@ import { useServices } from '@/shared/api/hooks/useServices';
 import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
 import type { Employee, EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 import {
   emptyEmployeeForm,
@@ -31,6 +32,7 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<EmployeeFormState>(emptyEmployeeForm);
   const [submitted, setSubmitted] = React.useState(false);
   const { data: services, isLoading: servicesLoading } = useServices();
@@ -68,13 +70,13 @@ export const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={employee ? 'Редактировать сотрудника' : 'Добавить сотрудника'}
+      title={employee ? t('form.editEmployee') : t('form.addEmployee')}
       icon={<UserListIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={employee ? 'Сохранить' : 'Добавить сотрудника'}
+          submitLabel={employee ? t('common.save') : t('form.addEmployee')}
           onSubmit={handleSubmit}
           submitDisabled={!isValid}
           loading={loading}

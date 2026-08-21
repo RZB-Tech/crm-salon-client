@@ -2,6 +2,7 @@ import React from 'react';
 import { SegmentedControl, Text } from '@mantine/core';
 import type { AppointmentStatus } from '@/shared/api/types';
 import { APPOINTMENT_STATUS_OPTIONS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import type { AppointmentFormValues } from '../../lib/appointmentForm';
 import styles from './appointment-form-modal.module.css';
 
@@ -15,14 +16,16 @@ export const AppointmentStatusField: React.FC<AppointmentStatusFieldProps> = ({
   values,
   archived,
   onChange,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <div className={styles.statusBlock}>
     <Text size="xs" c="dimmed" mb={6}>
-      Статус
+      {t('common.status')}
     </Text>
     <SegmentedControl
       fullWidth
-      data={APPOINTMENT_STATUS_OPTIONS}
+      data={APPOINTMENT_STATUS_OPTIONS()}
       value={values.status === 'cancelled' ? 'awaiting' : values.status}
       onChange={(value) =>
         onChange({
@@ -33,4 +36,5 @@ export const AppointmentStatusField: React.FC<AppointmentStatusFieldProps> = ({
       disabled={archived}
     />
   </div>
-);
+  );
+};

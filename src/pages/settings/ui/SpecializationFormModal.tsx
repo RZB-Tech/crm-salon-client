@@ -2,6 +2,7 @@ import React from 'react';
 import { TextInput } from '@mantine/core';
 import { TagIcon } from '@phosphor-icons/react';
 import type { Specialization } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 
 interface SpecializationFormModalProps {
@@ -22,29 +23,32 @@ export const SpecializationFormModal: React.FC<SpecializationFormModalProps> = (
   onClose,
   onSubmit,
   onNameChange,
-}) => (
-  <FormModal
-    opened={opened}
-    onClose={onClose}
-    title={editing ? 'Редактировать специализацию' : 'Новая специализация'}
-    icon={<TagIcon />}
-    size={567}
-    footer={
-      <FormModalFooter
-        onCancel={onClose}
-        submitLabel={editing ? 'Сохранить' : 'Создать специализацию'}
-        onSubmit={onSubmit}
-        submitDisabled={!name}
-        loading={loading}
+}) => {
+  const { t } = useI18n();
+  return (
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title={editing ? t('form.editSpec') : t('form.newSpec')}
+      icon={<TagIcon />}
+      size={567}
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={editing ? t('common.save') : t('form.createSpec')}
+          onSubmit={onSubmit}
+          submitDisabled={!name}
+          loading={loading}
+        />
+      }
+    >
+      <TextInput
+        label={t('common.name')}
+        required
+        placeholder={t('form.enterName')}
+        value={name}
+        onChange={(e) => onNameChange(e.currentTarget.value)}
       />
-    }
-  >
-    <TextInput
-      label="Название"
-      required
-      placeholder="Введите название"
-      value={name}
-      onChange={(e) => onNameChange(e.currentTarget.value)}
-    />
-  </FormModal>
-);
+    </FormModal>
+  );
+};

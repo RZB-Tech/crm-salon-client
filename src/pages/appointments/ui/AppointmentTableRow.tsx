@@ -15,6 +15,7 @@ import {
   getAppointmentServicesLabel,
   getAppointmentWhenLabel,
 } from '../lib/appointmentList';
+import { useI18n } from '@/shared/lib/i18n';
 import { paidBadgeColor, paidLabel, statusColor } from '../lib/appointmentStatus';
 
 interface AppointmentTableRowProps {
@@ -35,7 +36,9 @@ export const AppointmentTableRow: React.FC<AppointmentTableRowProps> = ({
   onRowClick,
   onRestore,
   onArchive,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Table.Tr
     className={`${listPageStyles.row} ${listPageStyles.rowClickable}`}
     onClick={() => onRowClick(appointment)}
@@ -97,7 +100,7 @@ export const AppointmentTableRow: React.FC<AppointmentTableRowProps> = ({
     </Table.Td>
     <Table.Td className={listPageStyles.bodyCell}>
       <Text size="sm" c={appointment.notes ? undefined : 'dimmed'} lineClamp={2}>
-        {appointment.notes || '—'}
+        {appointment.notes || t('common.dash')}
       </Text>
     </Table.Td>
     <Table.Td className={listPageStyles.bodyCell}>
@@ -108,7 +111,7 @@ export const AppointmentTableRow: React.FC<AppointmentTableRowProps> = ({
     <Table.Td className={listPageStyles.bodyCell} onClick={(event) => event.stopPropagation()}>
       {showArchived || appointment.archived
         ? canUpdate && (
-            <Tooltip label="Восстановить">
+            <Tooltip label={t('common.restore')}>
               <ActionIcon
                 variant="subtle"
                 color="teal"
@@ -120,7 +123,7 @@ export const AppointmentTableRow: React.FC<AppointmentTableRowProps> = ({
             </Tooltip>
           )
         : canUpdate && (
-            <Tooltip label="Архивировать">
+            <Tooltip label={t('common.archive')}>
               <ActionIcon
                 variant="subtle"
                 color="red"
@@ -132,4 +135,5 @@ export const AppointmentTableRow: React.FC<AppointmentTableRowProps> = ({
           )}
     </Table.Td>
   </Table.Tr>
-);
+  );
+};

@@ -7,6 +7,7 @@ import type {
   AbsenceCreatePayload,
   AbsenceUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useAbsences = () =>
@@ -23,7 +24,7 @@ export const useCreateAbsence = () => {
       apiPost<Absence, AbsenceCreatePayload>('/api/v1/absences', payload),
     onSuccess: async (result, payload) => {
       await invalidateEmployeeSchedule(queryClient, payload.employee_id ?? result.employee_id);
-      addNotification.success({ message: 'Отсутствие добавлено' });
+      addNotification.success({ message: t('toast.absenceCreated') });
     },
   });
 };
@@ -36,7 +37,7 @@ export const useUpdateAbsence = () => {
       apiPatch<Absence, AbsenceUpdatePayload>('/api/v1/absences', payload),
     onSuccess: async (result) => {
       await invalidateEmployeeSchedule(queryClient, result.employee_id);
-      addNotification.success({ message: 'Отсутствие обновлено' });
+      addNotification.success({ message: t('toast.absenceUpdated') });
     },
   });
 };
@@ -52,7 +53,7 @@ export const useArchiveAbsence = () => {
       }),
     onSuccess: async (result) => {
       await invalidateEmployeeSchedule(queryClient, result.employee_id);
-      addNotification.success({ message: 'Отсутствие архивировано' });
+      addNotification.success({ message: t('toast.absenceArchived') });
     },
   });
 };

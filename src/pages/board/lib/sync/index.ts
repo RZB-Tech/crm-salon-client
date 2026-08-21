@@ -14,6 +14,7 @@ import {
 } from '../appointmentForm';
 import { detectStructureTouched } from './structureChanges';
 import { mapRecordToLines, syncServiceLines } from './serviceLines';
+import { t } from '@/shared/lib/i18n';
 
 export class AppointmentEditBlockedError extends Error {
   constructor(message: string) {
@@ -57,16 +58,12 @@ export const syncAppointmentEdit = async ({
   const structureTouched = employeeChanged || detectStructureTouched(record, values);
 
   if ((scheduleChanged || structureTouched) && hasActiveReceipt) {
-    throw new AppointmentEditBlockedError(
-      'Сначала отмените активный чек — иначе нельзя менять время, клиента, мастера или состав услуг',
-    );
+    throw new AppointmentEditBlockedError(t('board.receiptActiveHint'));
   }
 
   if (scheduleChanged) {
     if (appointment.paid) {
-      throw new AppointmentEditBlockedError(
-        'Нельзя пересоздать оплаченную запись. Сначала отмените чек',
-      );
+      throw new AppointmentEditBlockedError(t('board.cannotRecreatePaid'));
     }
 
     const createPayload = formValuesToPayload(values);

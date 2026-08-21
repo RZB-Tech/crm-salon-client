@@ -25,6 +25,7 @@ import {
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './employee-profile.module.css';
 
 export interface EmployeeProfileHeaderProps {
@@ -49,6 +50,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
   onDismissPasswordResult,
 }) => {
   const { hasPermission } = useAccess();
+  const { t } = useI18n();
 
   return (
     <Box className={styles.pageTop}>
@@ -59,7 +61,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
         onClick={onBack}
         w="fit-content"
       >
-        К сотрудникам
+        {t('employees.backToList')}
       </Button>
 
       <Card padding="md" radius="md" withBorder className={styles.headerCard}>
@@ -73,7 +75,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
                 {getEmployeeFullName(employee)}
               </Text>
               <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
-                {employee.active ? 'Активен' : 'Неактивен'}
+                {employee.active ? t('form.staffActive') : t('form.staffInactive')}
               </Badge>
             </Group>
             <Box className={styles.contactRow}>
@@ -96,7 +98,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
         <Group gap="sm">
           {hasPermission(PermissionCode.EMPLOYEE_UPDATE) && (
             <Button variant="light" leftSection={<PencilSimpleIcon size={16} />} onClick={onEdit}>
-              Редактировать
+              {t('common.edit')}
             </Button>
           )}
           {hasPermission(PermissionCode.EMPLOYEE_MANAGE) && (
@@ -107,14 +109,14 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
                 onClick={onResetPassword}
                 loading={resetPasswordPending}
               >
-                Сбросить пароль
+                {t('form.resetPasswordAction')}
               </Button>
               {employee.active && (
                 <ActionIcon
                   variant="light"
                   color="orange"
                   size="lg"
-                  aria-label="Архивировать"
+                  aria-label={t('common.archive')}
                   onClick={onArchive}
                 >
                   <ArchiveIcon size={18} />
@@ -126,10 +128,10 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
       </Card>
 
       {resetPasswordResult && (
-        <Alert color="sage" title="Пароль сброшен" onClose={onDismissPasswordResult} withCloseButton>
+        <Alert color="sage" title={t('form.passwordResetTitle')} onClose={onDismissPasswordResult} withCloseButton>
           <Group gap="sm">
             <Text size="sm" fw={600} component="div">
-              Новый пароль:{' '}
+              {t('form.newPasswordLabel')}{' '}
               <Box
                 component="code"
                 style={{
@@ -144,7 +146,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
             </Text>
             <CopyButton value={resetPasswordResult}>
               {({ copied, copy }) => (
-                <Tooltip label={copied ? 'Скопировано!' : 'Скопировать'} withArrow>
+                <Tooltip label={copied ? t('employees.copiedExclaim') : t('employees.copyAction')} withArrow>
                   <ActionIcon color={copied ? 'teal' : 'sage'} variant="light" onClick={copy} size="sm">
                     {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
                   </ActionIcon>
@@ -153,7 +155,7 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
             </CopyButton>
           </Group>
           <Text size="xs" c="dimmed" mt="xs">
-            Обязательно передайте этот пароль сотруднику
+            {t('employees.passToEmployee')}
           </Text>
         </Alert>
       )}

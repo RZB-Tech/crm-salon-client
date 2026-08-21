@@ -1,4 +1,5 @@
 import { Button, Group, Stack, Text } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormSection, formModalStyles } from '@/shared/ui';
 import type { Staff } from '@/shared/api/types';
 
@@ -8,8 +9,9 @@ interface StaffRolesSectionProps {
 }
 
 export function StaffRolesSection({ staff, onEdit }: StaffRolesSectionProps) {
+  const { t } = useI18n();
   return (
-    <FormSection title="Роли">
+    <FormSection title={t('admin.roles')}>
       <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
           {staff.roles.length > 0 ? (
@@ -25,11 +27,11 @@ export function StaffRolesSection({ staff, onEdit }: StaffRolesSectionProps) {
               </Text>
             ))
           ) : (
-            <div className={formModalStyles.emptyState}>Нет назначенных ролей</div>
+            <div className={formModalStyles.emptyState}>{t('admin.noRoles')}</div>
           )}
         </Stack>
         <Button variant="subtle" size="compact-xs" onClick={() => onEdit(staff)}>
-          Изменить
+          {t('common.change')}
         </Button>
       </Group>
     </FormSection>

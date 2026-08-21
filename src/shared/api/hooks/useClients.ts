@@ -14,6 +14,7 @@ import type {
   ClientDepositPayload,
   ClientUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const patchClientInLists = (
@@ -70,7 +71,7 @@ export const useCreateClient = () => {
     onSuccess: async (created) => {
       patchClientInLists(queryClient, created);
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      addNotification.success({ message: 'Клиент создан' });
+      addNotification.success({ message: t('toast.clientCreated') });
     },
   });
 };
@@ -85,7 +86,7 @@ export const useUpdateClient = () => {
       patchClientInLists(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
-      addNotification.success({ message: 'Клиент обновлён' });
+      addNotification.success({ message: t('toast.clientUpdated') });
     },
   });
 };
@@ -101,7 +102,7 @@ export const useUpdateClientDeposit = () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(payload.id) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      addNotification.success({ message: 'Депозит обновлён' });
+      addNotification.success({ message: t('toast.depositUpdated') });
     },
   });
 };
@@ -118,7 +119,7 @@ export const useArchiveClient = () => {
     onSuccess: async (result) => {
       patchClientInLists(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      addNotification.success({ message: 'Клиент архивирован' });
+      addNotification.success({ message: t('toast.clientArchived') });
     },
   });
 };
@@ -135,7 +136,7 @@ export const useRestoreClient = () => {
     onSuccess: async (result) => {
       patchClientInLists(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
-      addNotification.success({ message: 'Клиент восстановлен' });
+      addNotification.success({ message: t('toast.clientRestored') });
     },
   });
 };

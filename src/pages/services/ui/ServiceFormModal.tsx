@@ -9,6 +9,7 @@ import type {
 } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { FormModal, FormModalFooter, formModalStyles } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { ServiceFormFields } from './ServiceFormFields';
 
@@ -25,6 +26,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
   categories,
   onClose,
 }) => {
+  const { t } = useI18n();
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState(0);
   const [estimatedTime, setEstimatedTime] = React.useState(0);
@@ -78,13 +80,13 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={service ? 'Редактировать услугу' : 'Добавить услугу'}
+      title={service ? t('services.edit') : t('services.add')}
       icon={<ScissorsIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={service ? 'Сохранить' : 'Добавить услугу'}
+          submitLabel={service ? t('common.save') : t('services.add')}
           onSubmit={handleSubmit}
           submitDisabled={!name.trim()}
           loading={createService.isPending || updateService.isPending}
@@ -104,11 +106,11 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
       />
       {service && (
         <div className={formModalStyles.historyBlock}>
-          <p className={formModalStyles.historyLabel}>История изменений</p>
+          <p className={formModalStyles.historyLabel}>{t('form.changeHistory')}</p>
           <AuditLogsPanel
             tableName="services"
             recordId={service.id}
-            whoLabel="Сотрудник"
+            whoLabel={t('form.employee')}
             className={formModalStyles.historyTable}
             hideEmptyIcon
           />

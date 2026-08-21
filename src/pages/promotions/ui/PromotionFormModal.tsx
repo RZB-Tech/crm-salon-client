@@ -5,6 +5,7 @@ import { useMaterials } from '@/shared/api/hooks/useMaterials';
 import { useServices } from '@/shared/api/hooks/useServices';
 import type { Promotion } from '@/shared/api/types';
 import { FormModal, FormModalFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import {
   emptyPromotionForm,
@@ -27,6 +28,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
   promotion,
   onClose,
 }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<PromotionFormState>(emptyPromotionForm);
   const { data: services } = useServices(false);
   const { data: materials } = useMaterials(false);
@@ -63,13 +65,13 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={promotion ? 'Редактировать акцию' : 'Добавить акцию'}
+      title={promotion ? t('form.editPromo') : t('form.addPromo')}
       icon={<TagIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={promotion ? 'Сохранить' : 'Добавить акцию'}
+          submitLabel={promotion ? t('common.save') : t('form.addPromo')}
           onSubmit={handleSubmit}
           submitDisabled={!isPromotionFormValid(form)}
           loading={loading}

@@ -14,9 +14,12 @@ import {
   GearSixIcon,
   ShieldCheckIcon,
   CalendarCheckIcon,
+  BuildingsIcon,
 } from '@phosphor-icons/react';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { PermissionCodeValue } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
+import { useTenantBranches } from '@/shared/api/hooks/useTenantBranches';
 import styles from './sidebar.module.css';
 
 interface SidebarProps {
@@ -25,66 +28,68 @@ interface SidebarProps {
 
 interface NavItem {
   path: string;
-  label: string;
+  labelKey: string;
   Icon: React.ElementType;
   /** Коды разрешений — достаточно хотя бы одного. undefined = доступно всем */
   permissions?: PermissionCodeValue[];
   /** Только для admin */
   adminOnly?: boolean;
+  /** Только головная организация (не филиал) */
+  parentTenantOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   {
     path: '/board',
-    label: 'Рабочий стол',
+    labelKey: 'nav.board',
     Icon: SquaresFourIcon,
     permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE],
   },
   {
     path: '/appointments',
-    label: 'Посещения',
+    labelKey: 'nav.appointments',
     Icon: CalendarCheckIcon,
     permissions: [PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE],
   },
   {
     path: '/clients',
-    label: 'Клиенты',
+    labelKey: 'nav.clients',
     Icon: UsersIcon,
     permissions: [PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE],
   },
   {
     path: '/services',
-    label: 'Услуги',
+    labelKey: 'nav.services',
     Icon: ScissorsIcon,
     permissions: [PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE],
   },
   {
     path: '/promotions',
-    label: 'Акции',
+    labelKey: 'nav.promotions',
     Icon: TagIcon,
     permissions: [PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE],
   },
   {
     path: '/gift-cards',
-    label: 'Купоны',
+    labelKey: 'nav.giftCards',
     Icon: TicketIcon,
     permissions: [PermissionCode.GIFT_CARD_GET, PermissionCode.GIFT_CARD_MANAGE],
   },
   {
     path: '/employees',
-    label: 'Сотрудники',
+    labelKey: 'nav.employees',
     Icon: UserListIcon,
     permissions: [PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE],
   },
   {
     path: '/materials',
-    label: 'Склад',
+    labelKey: 'nav.materials',
     Icon: PackageIcon,
     permissions: [PermissionCode.MATERIAL_READ, PermissionCode.MATERIAL_MANAGE],
   },
   {
     path: '/finance',
-    label: 'Финансы',
+    labelKey: 'nav.finance',
     Icon: CurrencyCircleDollarIcon,
     permissions: [
       PermissionCode.RECEIPT_READ,
@@ -97,31 +102,50 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     path: '/notifications',
-    label: 'Уведомления',
+    labelKey: 'nav.notifications',
     Icon: BellIcon,
     permissions: [PermissionCode.NOTIFICATION_READ, PermissionCode.NOTIFICATION_MANAGE],
   },
   {
     path: '/settings',
-    label: 'Настройки',
+    labelKey: 'nav.settings',
     Icon: GearSixIcon,
     permissions: [PermissionCode.TENANT_PREFERENCES_READ, PermissionCode.TENANT_MANAGE],
   },
-  { path: '/admin', label: 'Админ', Icon: ShieldCheckIcon, adminOnly: true },
+  {
+    path: '/branches',
+    labelKey: 'nav.branches',
+    Icon: BuildingsIcon,
+    permissions: [
+      PermissionCode.TENANT_BRANCH_READ,
+      PermissionCode.TENANT_BRANCH_MANAGE,
+      PermissionCode.TENANT_MANAGE,
+    ],
+    parentTenantOnly: true,
+  },
+  { path: '/admin', labelKey: 'nav.admin', Icon: ShieldCheckIcon, adminOnly: true },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   const location = useLocation();
+  const { t } = useI18n();
   const { isAdmin, hasAnyPermission, ready } = useAccess();
+  const { data: branchesData } = useTenantBranches(ready && (isAdmin || hasAnyPermission([
+    PermissionCode.TENANT_BRANCH_READ,
+    PermissionCode.TENANT_BRANCH_MANAGE,
+    PermissionCode.TENANT_MANAGE,
+  ])));
+  const isParentTenant = branchesData?.isParent === true;
 
   const visibleItems = React.useMemo(() => {
     if (!ready) return [];
     return NAV_ITEMS.filter((item) => {
       if (item.adminOnly) return isAdmin;
+      if (item.parentTenantOnly && !isParentTenant) return false;
       if (item.permissions) return isAdmin || hasAnyPermission(item.permissions);
       return true;
     });
-  }, [ready, isAdmin, hasAnyPermission]);
+  }, [ready, isAdmin, hasAnyPermission, isParentTenant]);
 
   const renderItem = (item: NavItem) => {
     const isActive = location.pathname.startsWith(item.path);
@@ -142,13 +166,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         <span className={styles.icon}>
           <item.Icon size="1em" weight="regular" />
         </span>
-        {!collapsed && <span className={styles.label}>{item.label}</span>}
+        {!collapsed && <span className={styles.label}>{t(item.labelKey)}</span>}
       </NavLink>
     );
 
     if (collapsed) {
       return (
-        <Tooltip key={item.path} label={item.label} position="right" withArrow>
+        <Tooltip key={item.path} label={t(item.labelKey)} position="right" withArrow>
           {button}
         </Tooltip>
       );

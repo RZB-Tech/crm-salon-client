@@ -22,6 +22,7 @@ const ROUTE_PRIORITY: RouteEntry[] = [
   { path: '/finance', permissions: [PermissionCode.RECEIPT_READ, PermissionCode.RECEIPT_MANAGE, PermissionCode.PAYROLL_READ, PermissionCode.TRANSACTION_READ] },
   { path: '/notifications', permissions: [PermissionCode.NOTIFICATION_READ, PermissionCode.NOTIFICATION_MANAGE] },
   { path: '/settings', permissions: [PermissionCode.TENANT_PREFERENCES_READ, PermissionCode.TENANT_MANAGE] },
+  { path: '/branches', permissions: [PermissionCode.TENANT_BRANCH_READ, PermissionCode.TENANT_BRANCH_MANAGE, PermissionCode.TENANT_MANAGE] },
   { path: '/admin', adminOnly: true },
 ];
 

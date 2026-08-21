@@ -6,6 +6,7 @@ import type { Material, MaterialCreatePayload, MaterialUpdatePayload } from '@/s
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { emptyMaterialForm, materialToForm, type MaterialFormState } from '../lib/materialForm';
@@ -24,6 +25,7 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
   onClose,
   onChangeQuantity
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const [form, setForm] = React.useState<MaterialFormState>(emptyMaterialForm);
   const createMaterial = useCreateMaterial();
@@ -64,7 +66,7 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={material ? 'Редактировать материал' : 'Добавить материал'}
+      title={material ? t('materials.edit') : t('materials.add')}
       subtitle={material ? material.article : undefined}
       icon={<PackageIcon />}
       headerAside={
@@ -78,14 +80,14 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={material ? 'Сохранить' : 'Добавить материал'}
+          submitLabel={material ? t('common.save') : t('materials.add')}
           onSubmit={handleSubmit}
           submitDisabled={!form.article || !form.name}
           loading={createMaterial.isPending || updateMaterial.isPending}
         >
           {canChangeQuantity && material && (
             <Button variant='light' size='sm' onClick={() => onChangeQuantity?.(material)}>
-              Изменить количество
+              {t('form.changeQuantity')}
             </Button>
           )}
         </FormModalFooter>
@@ -94,7 +96,7 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({
       <MaterialFormFields form={form} isEdit={Boolean(material)} onChange={setForm} />
 
       {material && (
-        <FormSection title='История изменений' muted>
+        <FormSection title={t('form.changeHistory')} muted>
           <AuditLogsPanel tableName='materials' recordId={material.id} />
         </FormSection>
       )}

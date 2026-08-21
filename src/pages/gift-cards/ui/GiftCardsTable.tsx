@@ -4,6 +4,7 @@ import { ArchiveIcon, ArrowCounterClockwiseIcon, XIcon } from '@phosphor-icons/r
 import type { GiftCard } from '@/shared/api/types';
 import { formatDate, formatPrice, GIFT_CARD_STATUS_LABELS } from '@/shared/lib/format';
 import { listPageStyles, SortableTh } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import {
@@ -33,6 +34,7 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
   onRestore,
   onCancel,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const canUpdate = !showArchived && hasPermission(PermissionCode.GIFT_CARD_UPDATE);
   const canManage = hasPermission(PermissionCode.GIFT_CARD_MANAGE);
@@ -42,17 +44,17 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="code" sort={sort} onSort={onSort}>
-            Код
+            {t('giftCards.code')}
           </SortableTh>
-          <Table.Th className={listPageStyles.headCell}>Клиент</Table.Th>
+          <Table.Th className={listPageStyles.headCell}>{t('giftCards.client')}</Table.Th>
           <SortableTh column="amount" sort={sort} onSort={onSort} w={180}>
-            Остаток
+            {t('giftCards.remainder')}
           </SortableTh>
           <SortableTh column="issued" sort={sort} onSort={onSort} w={140}>
-            Выдан
+            {t('giftCards.issued')}
           </SortableTh>
           <SortableTh column="status" sort={sort} onSort={onSort} w={140}>
-            Статус
+            {t('common.status')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={88} />
         </Table.Tr>
@@ -62,7 +64,7 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
           <Table.Tr>
             <Table.Td colSpan={6}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Купоны не найдены
+                {t('giftCards.notFound')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -83,8 +85,8 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
                 <Table.Td className={listPageStyles.bodyCell}>
                   <Text size="sm" c="rgba(72,72,72,0.7)">
                     {card.client_id != null
-                      ? (clientNameMap.get(card.client_id) ?? `Клиент #${card.client_id}`)
-                      : 'Любой клиент'}
+                      ? (clientNameMap.get(card.client_id) ?? t('form.clientNamed', { id: card.client_id }))
+                      : t('form.anyClient')}
                   </Text>
                 </Table.Td>
                 <Table.Td className={listPageStyles.bodyCell}>
@@ -92,7 +94,7 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
                     {formatPrice(card.remain_amount)}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    из {formatPrice(card.initial_amount)}
+                    {t('common.of')} {formatPrice(card.initial_amount)}
                   </Text>
                 </Table.Td>
                 <Table.Td className={listPageStyles.bodyCell}>
@@ -108,12 +110,12 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
                 <Table.Td className={listPageStyles.bodyCell}>
                   <Group gap={4} wrap="nowrap" justify="flex-end">
                     {canUpdate && canCancelGiftCard(card) && (
-                      <Tooltip label="Отменить">
+                      <Tooltip label={t('common.cancel')}>
                         <ActionIcon
                           variant="subtle"
                           color="orange"
                           size="sm"
-                          aria-label="Отменить"
+                          aria-label={t('common.cancel')}
                           onClick={(event) => onCancel(event, card.id)}
                         >
                           <XIcon size={16} />
@@ -126,7 +128,7 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
                           variant="subtle"
                           color="gray"
                           size="sm"
-                          aria-label="Восстановить"
+                          aria-label={t('common.restore')}
                           onClick={(event) => onRestore(event, card.id)}
                         >
                           <ArrowCounterClockwiseIcon size={18} />
@@ -136,7 +138,7 @@ export const GiftCardsTable: React.FC<GiftCardsTableProps> = ({
                           variant="subtle"
                           color="orange"
                           size="sm"
-                          aria-label="Архивировать"
+                          aria-label={t('common.archive')}
                           onClick={(event) => onArchive(event, card.id)}
                         >
                           <ArchiveIcon size={18} />

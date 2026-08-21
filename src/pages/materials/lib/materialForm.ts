@@ -1,9 +1,8 @@
 import type { Material, MeasurementUnit } from '@/shared/api/types';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 
-export const MEASUREMENT_OPTIONS = Object.entries(MEASUREMENT_UNIT_LABELS).map(
-  ([value, label]) => ({ value, label })
-);
+export const MEASUREMENT_OPTIONS = () =>
+  Object.entries(MEASUREMENT_UNIT_LABELS).map(([value, label]) => ({ value, label }));
 
 export interface MaterialFormState {
   article: string;

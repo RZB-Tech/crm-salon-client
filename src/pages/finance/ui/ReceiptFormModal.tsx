@@ -3,6 +3,7 @@ import { Badge, NumberInput, Select, Stack } from '@mantine/core';
 import { ReceiptIcon } from '@phosphor-icons/react';
 import type { ReceiptType } from '@/shared/api/types';
 import { RECEIPT_TYPE_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { useReceiptForm } from '../lib/useReceiptForm';
 
@@ -12,6 +13,7 @@ interface ReceiptFormModalProps {
 }
 
 export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onClose }) => {
+  const { t } = useI18n();
   const {
     receiptType,
     setReceiptType,
@@ -36,7 +38,7 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Новый чек"
+      title={t('form.newReceipt')}
       icon={<ReceiptIcon />}
       badges={
         <Badge variant="light" color="sage" radius="sm">
@@ -47,7 +49,7 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Создать новый чек"
+          submitLabel={t('form.createReceipt')}
           onSubmit={handleSubmit}
           submitDisabled={!isValid}
           loading={isPending}
@@ -56,29 +58,29 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
     >
       <Stack gap="sm">
           <Select
-            label="Тип чека"
+            label={t('form.receiptType')}
             data={[
-              { value: 'appointment', label: 'По записи' },
-              { value: 'direct sale', label: 'Прямая продажа' },
+              { value: 'appointment', label: t('labels.receiptType.appointment') },
+              { value: 'direct sale', label: t('labels.receiptType.directSale') },
             ]}
             value={receiptType}
             onChange={(value) => setReceiptType((value as ReceiptType) ?? 'appointment')}
           />
           {receiptType === 'appointment' ? (
             <Select
-              label="Запись"
+              label={t('form.appointment')}
               searchable
-              placeholder="Введите запись"
+              placeholder={t('form.enterAppointment')}
               data={appointmentOptions}
               value={appointmentId}
               onChange={setAppointmentId}
             />
           ) : (
             <Select
-              label="Клиент"
+              label={t('form.client')}
               searchable
               clearable
-              placeholder="Выберите клиента"
+              placeholder={t('form.selectClient')}
               data={clientOptions}
               value={clientId}
               onChange={setClientId}
@@ -87,29 +89,33 @@ export const ReceiptFormModal: React.FC<ReceiptFormModalProps> = ({ opened, onCl
       </Stack>
 
       {receiptType === 'direct sale' && (
-        <FormSection title="Позиция">
+        <FormSection title={t('form.line')}>
           <FormFieldGrid cols={2}>
             <Select
-              label="Материал"
+              label={t('form.material')}
               searchable
               data={materialOptions}
               value={materialId}
               onChange={setMaterialId}
-              nothingFoundMessage="Нет материалов на складе"
+              nothingFoundMessage={t('form.noMaterials')}
               comboboxProps={{ withinPortal: true }}
               placeholder={
                 materialOptions.length === 0
-                  ? 'Сначала добавьте остаток на складе'
-                  : 'Выберите материал'
+                  ? t('form.addStockFirst')
+                  : t('form.selectMaterial')
               }
             />
             <NumberInput
-              label="Количество"
+              label={t('materials.quantity')}
               min={1}
               max={selectedMaterial?.quantity ?? undefined}
               value={materialQty}
               onChange={(value) => setMaterialQty(Number(value) || 1)}
-              description={selectedMaterial ? `Доступно: ${selectedMaterial.quantity} шт.` : undefined}
+              description={
+                selectedMaterial
+                  ? t('form.available', { count: selectedMaterial.quantity })
+                  : undefined
+              }
             />
           </FormFieldGrid>
         </FormSection>

@@ -1,4 +1,5 @@
 import type { Client, Employee } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 
 export const getEmployeeFullName = (
   employee: Pick<Employee, 'firstname' | 'lastname' | 'middlename'>,
@@ -24,7 +25,7 @@ export const getClientShortName = (
   const last = client.lastname?.trim() || '';
   const first = client.firstname?.trim() || '';
   const middle = client.middlename?.trim() || '';
-  if (!last) return [first, middle].filter(Boolean).join(' ') || 'Клиент';
+  if (!last) return [first, middle].filter(Boolean).join(' ') || t('form.client');
   const initials = [first, middle]
     .filter(Boolean)
     .map((part) => `${part.charAt(0).toUpperCase()}.`)

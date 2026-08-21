@@ -3,6 +3,7 @@ import { Alert, Box, Loader, Text } from '@mantine/core';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useLoading } from '@/shared/lib/contexts/LoadingContext';
+import { useI18n } from '@/shared/lib/i18n';
 import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
 import { AppointmentFormModal } from './AppointmentForm';
@@ -14,6 +15,7 @@ import { BoardSidebar } from './Sidebar';
 import styles from './board-page.module.css';
 
 export const BoardPage: React.FC = () => {
+  const { t } = useI18n();
   const board = useBoardData();
   const { hasPermission } = useAccess();
   const { isLoading: globalLoading, setIsLoading } = useLoading();
@@ -51,8 +53,8 @@ export const BoardPage: React.FC = () => {
   if (board.employeesError) {
     return (
       <Box className={styles.page}>
-        <Alert color="red" title="Не удалось загрузить данные" m="md">
-          Проверьте доступность API и авторизацию
+        <Alert color="red" title={t('board.loadError')} m="md">
+          {t('common.checkApiAuth')}
         </Alert>
       </Box>
     );
@@ -64,7 +66,7 @@ export const BoardPage: React.FC = () => {
         <Box className={styles.refreshIndicator}>
           <Loader size="xs" />
           <Text size="xs" c="dimmed">
-            Обновление...
+            {t('board.refresh')}
           </Text>
         </Box>
       )}
@@ -131,9 +133,9 @@ export const BoardPage: React.FC = () => {
 
       <ConfirmModal
         opened={form.deleteConfirmOpen}
-        title="Архивировать запись"
-        message="Архивировать эту запись? Она будет скрыта из расписания. Восстановить можно через фильтр «Архив»."
-        confirmLabel="Архивировать"
+        title={t('appointments.archiveTitle')}
+        message={t('board.archiveMessage')}
+        confirmLabel={t('common.archive')}
         loading={board.archiveAppointment.isPending}
         onConfirm={form.handleDelete}
         onClose={() => form.setDeleteConfirmOpen(false)}

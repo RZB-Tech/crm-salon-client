@@ -1,19 +1,27 @@
 import type { PayoutCreatePayload, PayoutMethod, PayoutType } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 
 export const PAYOUT_TYPE_LABELS: Record<PayoutType, string> = {
-  salary: 'Зарплата',
-  'advance salary': 'Аванс',
-  other: 'Прочее',
+  get salary() {
+    return t('labels.payoutType.salary');
+  },
+  get 'advance salary'() {
+    return t('labels.payoutType.advance');
+  },
+  get other() {
+    return t('labels.payoutType.other');
+  },
 };
 
-export const PAYOUT_TYPE_OPTIONS = Object.entries(PAYOUT_TYPE_LABELS).map(([value, label]) => ({
-  value,
-  label,
-}));
+export const PAYOUT_TYPE_OPTIONS = () =>
+  (Object.entries(PAYOUT_TYPE_LABELS) as [PayoutType, string][]).map(([value, label]) => ({
+    value,
+    label,
+  }));
 
-export const PAYOUT_METHOD_OPTIONS = [
-  { value: 'cash', label: 'Наличные' },
-  { value: 'card', label: 'Карта' },
+export const PAYOUT_METHOD_OPTIONS = () => [
+  { value: 'cash' as const, label: t('labels.payment.cash') },
+  { value: 'card' as const, label: t('labels.payment.card') },
 ];
 
 export interface PayoutFormState {

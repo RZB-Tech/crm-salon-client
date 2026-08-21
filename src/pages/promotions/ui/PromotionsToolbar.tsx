@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group, TextInput } from '@mantine/core';
 import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import { ArchiveToggle, ListTabs, listPageStyles } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { PromotionsFilter } from '../lib/usePromotionsPage';
 
@@ -24,6 +25,7 @@ export const PromotionsToolbar: React.FC<PromotionsToolbarProps> = ({
   onShowArchivedChange,
   onCreate,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
 
   return (
@@ -33,12 +35,12 @@ export const PromotionsToolbar: React.FC<PromotionsToolbarProps> = ({
           value={filter}
           onChange={(value) => onFilterChange(value as PromotionsFilter)}
           data={[
-            { value: 'all', label: 'Все' },
-            { value: 'active', label: 'Активные' },
+            { value: 'all', label: t('common.all') },
+            { value: 'active', label: t('common.active') },
           ]}
         />
         <TextInput
-          placeholder="Поиск по названию..."
+          placeholder={t('promotions.searchPlaceholder')}
           leftSection={<MagnifyingGlassIcon size={16} />}
           value={search}
           onChange={(event) => onSearchChange(event.currentTarget.value)}
@@ -54,7 +56,7 @@ export const PromotionsToolbar: React.FC<PromotionsToolbarProps> = ({
             onClick={onCreate}
             size="sm"
           >
-            Добавить акцию
+            {t('form.addPromo')}
           </Button>
         )}
         <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />

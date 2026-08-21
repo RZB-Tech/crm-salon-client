@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatPrice } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import type { Promotion } from '@/shared/api/types';
 import {
   calcServicesTotal,
@@ -30,6 +31,7 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
   onChange,
   readOnly = false,
 }) => {
+  const { t } = useI18n();
   const total = React.useMemo(
     () => calcServicesTotal(values.services, promotions),
     [values.services, promotions],
@@ -50,18 +52,18 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
     <div className={styles.visitBlock}>
       <div className={styles.visitHeader}>
         <div className={styles.visitHeading}>
-          <p className={styles.visitTitle}>Детали визита</p>
-          <p className={styles.sectionHint}>Добавьте услуги или товары</p>
+          <p className={styles.visitTitle}>{t('board.visitDetails')}</p>
+          <p className={styles.sectionHint}>{t('board.addLinesHint')}</p>
         </div>
         {!readOnly && (
           <div className={styles.visitActions}>
             <VisitAddButton
-              label="Услуга"
+              label={t('form.service')}
               onClick={() => handleAdd('service')}
               disabled={!hasEmployee}
             />
             <VisitAddButton
-              label="Товар"
+              label={t('form.product')}
               onClick={() => handleAdd('material')}
               disabled={!hasEmployee}
             />
@@ -71,7 +73,7 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
 
       {!hasEmployee ? (
         <div className={styles.sectionCard}>
-          <div className={styles.emptyLines}>Выберите сначала сотрудника</div>
+          <div className={styles.emptyLines}>{t('board.selectEmployeeFirst')}</div>
         </div>
       ) : (
         <>
@@ -95,7 +97,7 @@ export const ServiceLinesTable: React.FC<ServiceLinesTableProps> = ({
             ))}
           </div>
           <div className={styles.totalBar}>
-            <span>Итого:</span>
+            <span>{t('board.total')}</span>
             <span>{formatPrice(total)}</span>
           </div>
         </>

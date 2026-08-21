@@ -1,4 +1,5 @@
 import { Alert } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface BoardScheduleEmptyStateProps {
   filteredEmployeesCount: number;
@@ -11,18 +12,19 @@ export function BoardScheduleEmptyState({
   employeeFilterSize,
   boardEmployeesCount,
 }: BoardScheduleEmptyStateProps) {
+  const { t } = useI18n();
   if (filteredEmployeesCount === 0 && employeeFilterSize > 0) {
     return (
-      <Alert color="gray" title="Фильтр сотрудников" m="md">
-        Выберите сотрудников в панели выше или сбросьте фильтр
+      <Alert color="gray" title={t('board.filterEmployees')} m="md">
+        {t('board.filterEmployeesHint')}
       </Alert>
     );
   }
 
   if (boardEmployeesCount === 0) {
     return (
-      <Alert color="gray" title="Нет сотрудников с графиком" m="md">
-        На выбранную дату нет сотрудников с рабочим графиком
+      <Alert color="gray" title={t('board.noScheduledEmployees')} m="md">
+        {t('board.noScheduledEmployeesHint')}
       </Alert>
     );
   }

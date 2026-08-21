@@ -11,6 +11,7 @@ import type {
   PayrollCreatePayload,
   PayrollUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const usePayrolls = () =>
@@ -37,7 +38,7 @@ export const useCreatePayroll = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.employees.payrolls(payload.employee_id),
       });
-      addNotification.success({ message: 'Выплата добавлена' });
+      addNotification.success({ message: t('toast.payrollCreated') });
     },
   });
 };
@@ -56,7 +57,7 @@ export const useUpdatePayroll = () => {
           queryKey: queryKeys.employees.payrolls(payload.employee_id),
         });
       }
-      addNotification.success({ message: 'Выплата обновлена' });
+      addNotification.success({ message: t('toast.payrollUpdated') });
     },
   });
 };
@@ -70,7 +71,7 @@ export const useArchivePayroll = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      addNotification.success({ message: 'Выплата архивирована' });
+      addNotification.success({ message: t('toast.payrollArchived') });
     },
   });
 };
@@ -85,7 +86,7 @@ export const useCancelPayroll = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.payrolls.all });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      addNotification.success({ message: 'Начисление отменено' });
+      addNotification.success({ message: t('toast.payrollCancelled') });
     },
   });
 };

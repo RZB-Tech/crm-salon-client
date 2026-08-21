@@ -1,5 +1,6 @@
 import { MultiSelect } from '@mantine/core';
 import { UsersThreeIcon } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
 interface AssignRolesModalProps {
@@ -23,33 +24,34 @@ export function AssignRolesModal({
   onSave,
   isPending,
 }: AssignRolesModalProps) {
+  const { t } = useI18n();
   return (
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Роли"
+      title={t('admin.roles')}
       subtitle={staffLogin}
       icon={<UsersThreeIcon size={22} />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Сохранить"
+          submitLabel={t('common.save')}
           onSubmit={onSave}
           loading={isPending}
         />
       }
     >
       <FormSection
-        title="Назначенные роли"
-        hint="Права ролей будут применены после сохранения"
+        title={t('form.assignedRoles')}
+        hint={t('form.rolesHint')}
       >
         <MultiSelect
           data={rolesOptions}
           value={selectedRoleIds}
           onChange={onSelectedRoleIdsChange}
           searchable
-          placeholder="Выберите роли"
+          placeholder={t('form.selectRoles')}
         />
       </FormSection>
     </FormModal>

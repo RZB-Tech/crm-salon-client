@@ -4,6 +4,7 @@ import { ArrowSquareOutIcon, BellIcon, XIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { sortTime } from '@/shared/lib/hooks/useTableSort';
+import { useI18n } from '@/shared/lib/i18n';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { HeaderNotificationItem } from './HeaderNotificationItem';
 import styles from './header-notifications.module.css';
@@ -13,6 +14,7 @@ const LIST_LIMIT = 8;
 export function HeaderNotifications() {
   const [opened, setOpened] = React.useState(false);
   const navigate = useNavigate();
+  const { t } = useI18n();
   const { data: notifications } = useNotifications();
 
   const items = React.useMemo(() => {
@@ -41,6 +43,8 @@ export function HeaderNotifications() {
       radius={16}
       shadow="none"
       offset={8}
+      withinPortal
+      zIndex={400}
     >
       <Popover.Target>
         <ActionIcon
@@ -48,8 +52,9 @@ export function HeaderNotifications() {
           variant="default"
           size={32}
           radius={8}
-          aria-label="Уведомления"
+          aria-label={t('header.notifications')}
           aria-expanded={opened}
+          onClick={() => setOpened((value) => !value)}
         >
           <BellIcon size={16} />
         </ActionIcon>
@@ -60,7 +65,7 @@ export function HeaderNotifications() {
             <div className={styles.headerIcon}>
               <BellIcon size={20} />
             </div>
-            <h2 className={styles.title}>Уведомления</h2>
+            <h2 className={styles.title}>{t('header.notifications')}</h2>
           </div>
           <div className={styles.headerActions}>
             <ActionIcon
@@ -68,7 +73,7 @@ export function HeaderNotifications() {
               variant="subtle"
               size={32}
               radius={8}
-              aria-label="Все уведомления"
+              aria-label={t('header.allNotifications')}
               onClick={openAll}
             >
               <ArrowSquareOutIcon size={20} />
@@ -78,7 +83,7 @@ export function HeaderNotifications() {
               variant="default"
               size={32}
               radius={8}
-              aria-label="Закрыть"
+              aria-label={t('header.close')}
               onClick={() => setOpened(false)}
             >
               <XIcon size={20} />
@@ -88,7 +93,7 @@ export function HeaderNotifications() {
         <ScrollArea.Autosize mah={360} type="auto">
           <div className={styles.list}>
             {items.length === 0 ? (
-              <div className={styles.empty}>Нет уведомлений</div>
+              <div className={styles.empty}>{t('header.noNotifications')}</div>
             ) : (
               items.map((item) => <HeaderNotificationItem key={item.id} item={item} />)
             )}

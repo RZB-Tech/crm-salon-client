@@ -9,6 +9,7 @@ import {
   TRANSACTION_TYPE_LABELS,
   TRANSACTION_TYPE_OPTIONS,
 } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormFieldGrid, FormModal, FormModalFooter } from '@/shared/ui';
 import { DEFAULT_FORM, type TransactionFormState } from '../lib/transactionHelpers';
@@ -19,6 +20,7 @@ interface TransactionFormModalProps {
 }
 
 export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ opened, onClose }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<TransactionFormState>(DEFAULT_FORM);
   const createTransaction = useCreateTransaction();
 
@@ -45,7 +47,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Новая транзакция"
+      title={t('form.newTransaction')}
       icon={<ArrowsLeftRightIcon />}
       badges={
         <Badge variant="light" color={isIncome ? 'teal' : 'red'} radius="sm">
@@ -56,7 +58,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Создать новую транзакцию"
+          submitLabel={t('form.createTransaction')}
           submitColor={isIncome ? undefined : 'red'}
           onSubmit={handleSubmit}
           submitDisabled={form.amount <= 0}
@@ -66,16 +68,16 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
     >
       <FormFieldGrid cols={2}>
           <Select
-            label="Тип"
-            data={TRANSACTION_TYPE_OPTIONS}
+            label={t('form.type')}
+            data={TRANSACTION_TYPE_OPTIONS()}
             value={form.type}
             onChange={(value) =>
               setForm((prev) => ({ ...prev, type: (value as TransactionType) ?? 'expense' }))
             }
           />
           <Select
-            label="Категория"
-            data={[...MANUAL_TRANSACTION_CATEGORY_OPTIONS]}
+            label={t('form.category')}
+            data={[...MANUAL_TRANSACTION_CATEGORY_OPTIONS()]}
             value={form.category}
             onChange={(value) =>
               setForm((prev) => ({
@@ -85,26 +87,26 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
             }
           />
           <Select
-            label="Способ оплаты"
-            data={TRANSACTION_METHOD_OPTIONS}
+            label={t('form.method')}
+            data={TRANSACTION_METHOD_OPTIONS()}
             value={form.method}
             onChange={(value) =>
               setForm((prev) => ({ ...prev, method: (value as TransactionMethod) ?? 'cash' }))
             }
           />
           <NumberInput
-            label="Сумма"
+            label={t('form.amount')}
             min={1}
             value={form.amount}
             onChange={(value) => setForm((prev) => ({ ...prev, amount: Number(value) || 0 }))}
             thousandSeparator=" "
-            suffix=" сум"
+            suffix={` ${t('common.currency')}`}
           />
       </FormFieldGrid>
 
       <Textarea
-        label="Комментарий"
-        placeholder="Назначение платежа, детали операции..."
+        label={t('common.comment')}
+        placeholder={t('form.paymentPurpose')}
         minRows={2}
         autosize
         value={form.notes}

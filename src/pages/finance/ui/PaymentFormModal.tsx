@@ -6,6 +6,7 @@ import { useCreatePayment } from '@/shared/api/hooks/usePayments';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
 import type { PaymentMethod } from '@/shared/api/types';
 import { formatPrice, PAYMENT_METHOD_OPTIONS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { FormModal, FormModalFooter } from '@/shared/ui';
@@ -17,6 +18,7 @@ interface PaymentFormModalProps {
 }
 
 export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onClose, initialReceiptId }) => {
+  const { t } = useI18n();
   const { isAdmin, hasPermission } = useAccess();
   const canUseGiftCard = isAdmin || hasPermission(PermissionCode.GIFT_CARD_GET);
   const [receiptId, setReceiptId] = React.useState<string | null>(null);
@@ -38,7 +40,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     [receipts],
   );
   const methodOptions = React.useMemo(
-    () => PAYMENT_METHOD_OPTIONS.filter((item) => item.value !== 'gift card' || canUseGiftCard),
+    () => PAYMENT_METHOD_OPTIONS().filter((item) => item.value !== 'gift card' || canUseGiftCard),
     [canUseGiftCard],
   );
 
@@ -77,13 +79,13 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Провести оплату"
+      title={t('form.makePayment')}
       icon={<CurrencyCircleDollarIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Оплатить"
+          submitLabel={t('finance.pay')}
           onSubmit={handleSubmit}
           submitDisabled={!receiptId || amount <= 0 || (isGiftCard && !giftCardId)}
           loading={createPayment.isPending}
@@ -92,23 +94,23 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
     >
       <Stack gap="sm">
         <Select
-          label="Чек"
+          label={t('form.receipt')}
           searchable
-          placeholder="Выберите чек"
+          placeholder={t('form.selectReceipt')}
           data={pendingReceiptOptions}
           value={receiptId}
           onChange={handleReceiptChange}
         />
         <NumberInput
-          label="Сумма"
+          label={t('form.amount')}
           min={1}
           value={amount}
           onChange={(value) => setAmount(Number(value) || 0)}
           thousandSeparator=" "
-          suffix=" сум"
+          suffix={` ${t('common.currency')}`}
         />
         <Select
-          label="Способ оплаты"
+          label={t('form.method')}
           data={methodOptions}
           value={method}
           onChange={(value) => {
@@ -131,7 +133,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ opened, onCl
         )}
         {!isGiftCard && (
           <Checkbox
-            label="Сдачу на депозит клиента"
+            label={t('form.changeToDeposit')}
             checked={addChangeToDeposit}
             onChange={(event) => setAddChangeToDeposit(event.currentTarget.checked)}
           />

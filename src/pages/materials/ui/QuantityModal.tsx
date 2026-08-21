@@ -4,13 +4,9 @@ import { StackIcon } from '@phosphor-icons/react';
 import { useUpdateMaterialQuantity } from '@/shared/api/hooks/useMaterials';
 import type { Material } from '@/shared/api/types';
 import { MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormModal, FormModalFooter } from '@/shared/ui';
-
-const OPERATION_OPTIONS = [
-  { value: '1', label: 'Приход' },
-  { value: '-1', label: 'Расход' }
-];
 
 interface QuantityModalProps {
   material: Material | null;
@@ -18,6 +14,7 @@ interface QuantityModalProps {
 }
 
 export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose }) => {
+  const { t } = useI18n();
   const [value, setValue] = React.useState(1);
   const [operation, setOperation] = React.useState<'1' | '-1'>('1');
   const updateQuantity = useUpdateMaterialQuantity();
@@ -36,12 +33,16 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
   }, [material, operation, value, updateQuantity, onClose]);
 
   const unitLabel = material ? MEASUREMENT_UNIT_LABELS[material.measurement_unit] : '';
+  const operationOptions = [
+    { value: '1', label: t('form.stockIn') },
+    { value: '-1', label: t('form.stockOut') },
+  ];
 
   return (
     <FormModal
       opened={Boolean(material)}
       onClose={onClose}
-      title='Изменить количество'
+      title={t('form.changeQuantity')}
       subtitle={material?.name}
       icon={<StackIcon />}
       badges={
@@ -55,7 +56,7 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel='Применить'
+          submitLabel={t('common.apply')}
           onSubmit={handleSubmit}
           loading={updateQuantity.isPending}
         />
@@ -63,14 +64,14 @@ export const QuantityModal: React.FC<QuantityModalProps> = ({ material, onClose 
     >
       <Stack gap='sm'>
           <Select
-            label='Тип операции'
+            label={t('form.operationType')}
             required
-            data={OPERATION_OPTIONS}
+            data={operationOptions}
             value={operation}
             onChange={(v) => setOperation((v as '1' | '-1') ?? '1')}
           />
           <NumberInput
-            label='Количество'
+            label={t('materials.quantity')}
             required
             min={1}
             value={value}

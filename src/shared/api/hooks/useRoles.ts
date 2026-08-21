@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, apiPatch, apiPost } from '@/shared/api/client';
 import type { Role, RoleCreatePayload, RoleUpdatePayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const QUERY_KEY = ['roles'] as const;
@@ -34,7 +35,7 @@ export const useCreateRole = () => {
     onSuccess: async (result) => {
       patchRoleInList(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      addNotification.success({ message: 'Роль создана' });
+      addNotification.success({ message: t('toast.roleCreated') });
     },
   });
 };
@@ -50,7 +51,7 @@ export const useUpdateRole = () => {
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       await queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, payload.id] });
       await queryClient.invalidateQueries({ queryKey: ['staff'] });
-      addNotification.success({ message: 'Роль обновлена' });
+      addNotification.success({ message: t('toast.roleUpdated') });
     },
   });
 };

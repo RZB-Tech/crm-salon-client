@@ -6,6 +6,7 @@ import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface NotificationsTableProps extends TableSortProps {
   items: SalonNotification[];
@@ -21,20 +22,29 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
   cancelPending,
   onMarkRead,
   onCancel,
-}) => (
+}) => {
+  const { t } = useI18n();
+  const statusLabel = (status: string) =>
+    status === 'read'
+      ? t('notifications.markReadShort')
+      : status === 'cancelled'
+        ? t('notifications.cancelledItem')
+        : t('notifications.newItem');
+
+  return (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
         <SortableTh column="type" sort={sort} onSort={onSort}>
-          Тип
+          {t('form.type')}
         </SortableTh>
-        <Table.Th className={listPageStyles.headCell}>Заголовок</Table.Th>
-        <Table.Th className={listPageStyles.headCell}>Текст</Table.Th>
+        <Table.Th className={listPageStyles.headCell}>{t('form.title')}</Table.Th>
+        <Table.Th className={listPageStyles.headCell}>{t('form.body')}</Table.Th>
         <SortableTh column="status" sort={sort} onSort={onSort} w={140}>
-          Статус
+          {t('common.status')}
         </SortableTh>
         <SortableTh column="scheduled" sort={sort} onSort={onSort} w={180}>
-          Запланировано
+          {t('form.scheduled')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={100} />
       </Table.Tr>
@@ -44,7 +54,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
         <Table.Tr>
           <Table.Td colSpan={6}>
             <Text size="sm" c="dimmed" ta="center" py="xl">
-              Уведомлений нет
+              {t('notifications.empty')}
             </Text>
           </Table.Td>
         </Table.Tr>
@@ -60,7 +70,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="sm" fw={500} c="#484848">
-                  {item.title ?? '—'}
+                  {item.title ?? t('common.dash')}
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
@@ -80,7 +90,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
                     variant="light"
                     color={status === 'read' ? 'green' : status === 'cancelled' ? 'red' : 'orange'}
                   >
-                    {status === 'read' ? 'Прочитано' : status === 'cancelled' ? 'Отменено' : 'Новое'}
+                    {statusLabel(status)}
                   </Badge>
                 </Tooltip>
               </Table.Td>
@@ -93,7 +103,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
                 <Group gap={4} wrap="nowrap">
                   {status === 'pending' && (
                     <>
-                      <Tooltip label="Прочитано">
+                      <Tooltip label={t('notifications.markReadShort')}>
                         <ActionIcon
                           variant="subtle"
                           color="green"
@@ -103,7 +113,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
                           <CheckIcon size={14} />
                         </ActionIcon>
                       </Tooltip>
-                      <Tooltip label="Отменить">
+                      <Tooltip label={t('common.cancel')}>
                         <ActionIcon
                           variant="subtle"
                           color="orange"
@@ -124,4 +134,5 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
       )}
     </Table.Tbody>
   </Table>
-);
+  );
+};

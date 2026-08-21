@@ -3,6 +3,7 @@ import { ActionIcon, Tooltip } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import type { ServiceCategory } from '@/shared/api/types';
 import { ListTabs } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface CategoriesPanelProps {
   activeCategory: string;
@@ -17,13 +18,14 @@ export const CategoriesPanel: React.FC<CategoriesPanelProps> = ({
   onCategoryChange,
   onAddCategory,
 }) => {
+  const { t } = useI18n();
   const segmentData = React.useMemo(() => {
-    const items = [{ value: 'all', label: 'Все' }];
+    const items = [{ value: 'all', label: t('common.all') }];
     for (const c of categories) {
       items.push({ value: String(c.id), label: c.name });
     }
     return items;
-  }, [categories]);
+  }, [categories, t]);
 
   return (
     <ListTabs
@@ -31,13 +33,13 @@ export const CategoriesPanel: React.FC<CategoriesPanelProps> = ({
       onChange={onCategoryChange}
       data={segmentData}
       action={
-        <Tooltip label="Добавить категорию" position="bottom">
+        <Tooltip label={t('services.addCategory')} position="bottom">
           <ActionIcon
             size="sm"
             variant="subtle"
             color="sage"
             onClick={onAddCategory}
-            aria-label="Добавить категорию"
+            aria-label={t('services.addCategory')}
           >
             <PlusIcon size={16} />
           </ActionIcon>

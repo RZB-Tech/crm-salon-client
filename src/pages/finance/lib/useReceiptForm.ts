@@ -5,6 +5,7 @@ import { useMaterials } from '@/shared/api/hooks/useMaterials';
 import { useCreateReceipt } from '@/shared/api/hooks/useReceipts';
 import type { ReceiptType } from '@/shared/api/types';
 import { formatPrice, getClientFullName } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 
 export const useReceiptForm = (opened: boolean, onClose: () => void) => {
@@ -35,7 +36,11 @@ export const useReceiptForm = (opened: boolean, onClose: () => void) => {
         .filter((item) => !item.paid)
         .map((item) => ({
           value: String(item.id),
-          label: `#${item.id} · ${item.client ? getClientFullName(item.client) : 'Клиент'} · ${formatPrice(item.total_price)}`,
+          label: t('form.appointmentOption', {
+            id: item.id,
+            client: item.client ? getClientFullName(item.client) : t('form.client'),
+            price: formatPrice(item.total_price),
+          }),
         })),
     [appointments],
   );
@@ -51,7 +56,11 @@ export const useReceiptForm = (opened: boolean, onClose: () => void) => {
         .filter((material) => material.quantity > 0)
         .map((material) => ({
           value: String(material.id),
-          label: `${material.name} · ${material.quantity} шт. · ${formatPrice(material.sell_price)}`,
+          label: t('form.materialQtyLabel', {
+            name: material.name,
+            count: material.quantity,
+            price: formatPrice(material.sell_price),
+          }),
         })),
     [materials],
   );

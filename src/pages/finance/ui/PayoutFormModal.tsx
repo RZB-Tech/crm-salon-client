@@ -6,6 +6,7 @@ import { useCreatePayout } from '@/shared/api/hooks/usePayouts';
 import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { PayoutMethod, PayoutType } from '@/shared/api/types';
 import { getEmployeeFullName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
@@ -23,6 +24,7 @@ interface PayoutFormModalProps {
 }
 
 export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClose }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<PayoutFormState>(DEFAULT_PAYOUT_FORM);
 
   const { data: employees } = useEmployees();
@@ -51,7 +53,7 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Новая выплата"
+      title={t('form.newPayout')}
       icon={<HandCoinsIcon />}
       badges={
         <Badge variant="light" color="sage" radius="sm">
@@ -62,69 +64,69 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Провести новую выплату"
+          submitLabel={t('form.createPayout')}
           onSubmit={handleSubmit}
           submitDisabled={!form.employeeId}
           loading={createPayout.isPending}
         />
       }
     >
-      <FormSection title="Выплата">
+      <FormSection title={t('form.payout')}>
         <Stack gap="sm">
           <Select
-            label="Сотрудник"
+            label={t('form.employee')}
             required
             searchable
-            placeholder="Выберите сотрудника"
+            placeholder={t('form.selectEmployee')}
             data={employeeOptions}
             value={form.employeeId}
             onChange={(value) => setField('employeeId', value)}
           />
           <FormFieldGrid cols={2}>
             <Select
-              label="Тип выплаты"
+              label={t('form.payoutType')}
               required
-              data={PAYOUT_TYPE_OPTIONS}
+              data={PAYOUT_TYPE_OPTIONS()}
               value={form.payoutType}
               onChange={(v) => setField('payoutType', (v as PayoutType) ?? 'other')}
             />
             <Select
-              label="Способ"
+              label={t('form.methodShort')}
               required
-              data={PAYOUT_METHOD_OPTIONS}
+              data={PAYOUT_METHOD_OPTIONS()}
               value={form.method}
               onChange={(v) => setField('method', (v as PayoutMethod) ?? 'cash')}
             />
           </FormFieldGrid>
           {isAdvance && (
             <NumberInput
-              label="Сумма аванса"
+              label={t('form.advanceAmount')}
               min={1}
               value={form.amount}
               onChange={(v) => setField('amount', Number(v) || 0)}
               thousandSeparator=" "
-              suffix=" сум"
+              suffix={` ${t('common.currency')}`}
             />
           )}
         </Stack>
       </FormSection>
 
       {form.payoutType === 'other' && (
-        <FormSection title="Период" hint="Сумма рассчитывается по начислениям за выбранный период">
+        <FormSection title={t('form.period')} hint={t('form.payoutPeriodHint')}>
           <FormFieldGrid cols={2}>
             <DateInput
-              label="С"
+              label={t('form.from')}
               required
               clearable
-              placeholder="Выберите дату"
+              placeholder={t('form.selectDate')}
               value={form.startDate || null}
               onChange={(value) => setField('startDate', value ?? '')}
             />
             <DateInput
-              label="По"
+              label={t('form.until')}
               required
               clearable
-              placeholder="Выберите дату"
+              placeholder={t('form.selectDate')}
               value={form.endDate || null}
               onChange={(value) => setField('endDate', value ?? '')}
             />
@@ -133,8 +135,8 @@ export const PayoutFormModal: React.FC<PayoutFormModalProps> = ({ opened, onClos
       )}
 
       <Textarea
-        label="Комментарий"
-        placeholder="Основания выплаты, детали расчёта..."
+        label={t('common.comment')}
+        placeholder={t('form.payoutComment')}
         autosize
         minRows={2}
         value={form.notes}

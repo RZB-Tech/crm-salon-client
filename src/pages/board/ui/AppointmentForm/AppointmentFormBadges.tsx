@@ -2,8 +2,11 @@ import React from 'react';
 import { Badge } from '@mantine/core';
 import type { Appointment } from '@/shared/api/types';
 import { APPOINTMENT_CANCELLED_REASON_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
-export const AppointmentPaidBadge: React.FC<{ paid: boolean }> = ({ paid }) => (
+export const AppointmentPaidBadge: React.FC<{ paid: boolean }> = ({ paid }) => {
+  const { t } = useI18n();
+  return (
   <Badge
     size="sm"
     variant="light"
@@ -16,9 +19,10 @@ export const AppointmentPaidBadge: React.FC<{ paid: boolean }> = ({ paid }) => (
         : { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252', textTransform: 'uppercase' },
     }}
   >
-    {paid ? 'оплачено' : 'не оплачено'}
+    {paid ? t('board.paidLower') : t('board.unpaidLower')}
   </Badge>
 );
+};
 
 interface AppointmentStateBadgesProps {
   archived: boolean;
@@ -32,16 +36,18 @@ export const AppointmentStateBadges: React.FC<AppointmentStateBadgesProps> = ({
   cancelled,
   structureLocked,
   appointment,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <>
     {archived && (
       <Badge color="gray" variant="light">
-        В архиве
+        {t('board.inArchive')}
       </Badge>
     )}
     {cancelled && (
       <Badge color="red" variant="light">
-        Отменена
+        {t('labels.appointmentStatus.cancelled')}
       </Badge>
     )}
     {cancelled && appointment?.cancelled_reason && (
@@ -52,8 +58,9 @@ export const AppointmentStateBadges: React.FC<AppointmentStateBadgesProps> = ({
     )}
     {structureLocked && (
       <Badge color="yellow" variant="light">
-        Есть чек
+        {t('board.hasReceipt')}
       </Badge>
     )}
   </>
-);
+  );
+};

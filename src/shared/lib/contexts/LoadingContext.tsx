@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '@/shared/lib/i18n';
 
 const MIN_LOADER_MS = 6000;
 const EXIT_MS = 280;
@@ -16,7 +17,7 @@ const LoadingContext = React.createContext<LoadingContextValue | undefined>(unde
 export const LoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoading, setIsLoadingInternal] = React.useState(false);
   const [isExiting, setIsExiting] = React.useState(false);
-  const [message, setMessage] = React.useState('Загрузка...');
+  const [message, setMessage] = React.useState(() => t('common.loading'));
   const startedAtRef = React.useRef<number | null>(null);
   const exitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -4,6 +4,7 @@ import { ArchiveIcon, Plus } from '@phosphor-icons/react';
 import type { Absence } from '@/shared/api/types';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { ABSENCE_TYPE_LABELS, formatDate } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import profileStyles from '../../employee-profile.module.css';
 
 export interface AbsencesTableProps {
@@ -18,12 +19,14 @@ export const AbsencesTable: React.FC<AbsencesTableProps> = ({
   onAdd,
   onEdit,
   onArchive,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Box>
     <Box className={profileStyles.toolbar}>
-      <Text fw={600}>Отсутствия</Text>
+      <Text fw={600}>{t('employees.absences')}</Text>
       <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={onAdd}>
-        Добавить
+        {t('common.add')}
       </Button>
     </Box>
     <DataTable
@@ -31,13 +34,13 @@ export const AbsencesTable: React.FC<AbsencesTableProps> = ({
       stickyHeader={false}
       maxHeight={300}
       columns={[
-        { key: 'type', label: 'Тип' },
-        { key: 'period', label: 'Период' },
-        { key: 'reason', label: 'Причина' },
+        { key: 'type', label: t('form.type') },
+        { key: 'period', label: t('form.period') },
+        { key: 'reason', label: t('form.reason') },
         { key: 'actions', label: '', width: 48 },
       ]}
       isEmpty={absences.length === 0}
-      emptyMessage="Отсутствий нет"
+      emptyMessage={t('employees.noAbsences')}
     >
       {absences.map((absence) => (
         <DataTableRow key={absence.id} onClick={() => onEdit(absence)} style={{ cursor: 'pointer' }}>
@@ -59,7 +62,7 @@ export const AbsencesTable: React.FC<AbsencesTableProps> = ({
               variant="subtle"
               color="orange"
               size="sm"
-              aria-label="Архивировать"
+              aria-label={t('common.archive')}
               onClick={(e) => {
                 e.stopPropagation();
                 onArchive(absence.id);
@@ -72,4 +75,5 @@ export const AbsencesTable: React.FC<AbsencesTableProps> = ({
       ))}
     </DataTable>
   </Box>
-);
+  );
+};

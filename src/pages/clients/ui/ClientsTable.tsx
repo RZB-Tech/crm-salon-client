@@ -12,6 +12,7 @@ import {
   SEX_LABELS,
 } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface ClientsTableProps extends TableSortProps {
   items: Client[];
@@ -30,6 +31,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   onArchive,
   onRestore,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const canManage = hasPermission(PermissionCode.CLIENT_MANAGE);
 
@@ -38,19 +40,19 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="name" sort={sort} onSort={onSort} miw={220}>
-            Клиенты
+            {t('clients.title')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={160}>
-            Телефон
+            {t('common.phone')}
           </Table.Th>
           <SortableTh column="sex" sort={sort} onSort={onSort} w={110}>
-            Пол
+            {t('clients.sex')}
           </SortableTh>
           <SortableTh column="deposit" sort={sort} onSort={onSort} w={140}>
-            Депозит
+            {t('clients.deposit')}
           </SortableTh>
           <SortableTh column="birth" sort={sort} onSort={onSort} w={130}>
-            Дата рождения
+            {t('clients.birthDate')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
@@ -60,7 +62,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
           <Table.Tr>
             <Table.Td colSpan={6}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Клиенты не найдены
+                {t('clients.notFound')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -81,14 +83,14 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                       {getClientFullName(client)}
                     </Text>
                     <Text size="xs" lh="12px" c="rgba(72,72,72,0.4)">
-                      Клиент
+                      {t('form.client')}
                     </Text>
                   </Box>
                 </Group>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="sm" fw={500} c="rgba(72,72,72,0.4)">
-                  {client.phone ?? '—'}
+                  {client.phone ?? t('common.dash')}
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
@@ -113,7 +115,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                       variant="subtle"
                       color="gray"
                       size="sm"
-                      aria-label="Восстановить"
+                      aria-label={t('common.restore')}
                       onClick={(e) => onRestore(e, client.id)}
                     >
                       <ArrowCounterClockwiseIcon size={18} />
@@ -123,7 +125,7 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                       variant="subtle"
                       color="orange"
                       size="sm"
-                      aria-label="Архивировать"
+                      aria-label={t('common.archive')}
                       onClick={(e) => onArchive(e, client.id)}
                     >
                       <ArchiveIcon size={18} />

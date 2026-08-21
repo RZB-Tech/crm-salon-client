@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCollatorLocale } from '@/shared/lib/i18n';
 
 export type SortDir = 'asc' | 'desc';
 export type SortValue = string | number | boolean | null | undefined;
@@ -30,7 +31,7 @@ export const compareSortValues = (left: SortValue, right: SortValue, dir: SortDi
     return dir === 'asc' ? left - right : right - left;
   }
 
-  const cmp = String(left).localeCompare(String(right), 'ru', {
+  const cmp = String(left).localeCompare(String(right), getCollatorLocale(), {
     numeric: true,
     sensitivity: 'base',
   });

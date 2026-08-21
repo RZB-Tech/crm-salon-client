@@ -1,5 +1,6 @@
 import type { Appointment, AppointmentStatus } from '@/shared/api/types';
 import { parseApiDateTimeParts, toDateInput } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 
 export const SLOT_HEIGHT = 96;
 export const TIME_START = 8;
@@ -83,7 +84,7 @@ export const mapAppointmentsToBoard = (
     const clientId = appt.client_id ?? appt.client?.id ?? 0;
     const clientName = appt.client
       ? [appt.client.firstname, appt.client.lastname].filter(Boolean).join(' ')
-      : `Клиент #${clientId}`;
+      : t('form.clientNamed', { id: clientId });
 
     for (const record of appt.records ?? []) {
       if (employeeFilter && employeeFilter.size > 0 && !employeeFilter.has(record.employee_id)) {
@@ -92,12 +93,15 @@ export const mapAppointmentsToBoard = (
 
       const employeeName = record.employee
         ? [record.employee.firstname, record.employee.lastname].filter(Boolean).join(' ')
-        : `Сотрудник #${record.employee_id}`;
+        : t('form.employeeNamed', { id: record.employee_id });
 
       const serviceName =
         record.services
-          ?.map((s) => s.service?.name ?? (s.material_id != null ? `Товар #${s.material_id}` : 'Услуга'))
-          .join(', ') || 'Запись';
+          ?.map((s) =>
+            s.service?.name ??
+            (s.material_id != null ? t('form.productNamed', { id: s.material_id }) : t('form.service')),
+          )
+          .join(', ') || t('form.appointment');
       const serviceId = record.services?.[0]?.service_id ?? null;
 
       result.push({

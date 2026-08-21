@@ -3,6 +3,7 @@ import type {
   EmployeeCreatePayload,
   EmployeeUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 
 export interface EmployeeFormState {
   firstname: string;
@@ -77,15 +78,15 @@ export const toUpdatePayload = (id: number, form: EmployeeFormState): EmployeeUp
 
 export function validateEmployeeForm(form: EmployeeFormState) {
   const errors: { firstname?: string; lastname?: string; birth_date?: string } = {};
-  if (!form.firstname.trim()) errors.firstname = 'Имя обязательно';
-  if (!form.lastname.trim()) errors.lastname = 'Фамилия обязательна';
+  if (!form.firstname.trim()) errors.firstname = t('employees.firstNameRequired');
+  if (!form.lastname.trim()) errors.lastname = t('employees.lastNameRequired');
   if (form.birth_date) {
     const birth = new Date(form.birth_date);
     const minDate = new Date();
     minDate.setFullYear(minDate.getFullYear() - 18);
-    if (birth > minDate) errors.birth_date = 'Сотруднику должно быть не менее 18 лет';
+    if (birth > minDate) errors.birth_date = t('employees.minAge');
   } else {
-    errors.birth_date = 'Дата рождения обязательна';
+    errors.birth_date = t('employees.birthDateRequired');
   }
   return errors;
 }

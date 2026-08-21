@@ -5,13 +5,16 @@ import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatDateTime, formatPrice } from '@/shared/lib/format';
 import { PAYOUT_TYPE_LABELS } from '../../lib/payoutHelpers';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface PayoutsTableProps extends TableSortProps {
   items: Payout[];
   employeeMap: Map<number, string>;
 }
 
-export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, sort, onSort }) => (
+export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, sort, onSort }) => {
+  const { t } = useI18n();
+  return (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
@@ -19,22 +22,22 @@ export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, 
           ID
         </SortableTh>
         <SortableTh column="employee" sort={sort} onSort={onSort}>
-          Сотрудник
+          {t('form.employee')}
         </SortableTh>
         <SortableTh column="type" sort={sort} onSort={onSort}>
-          Тип
+          {t('form.type')}
         </SortableTh>
         <SortableTh column="amount" sort={sort} onSort={onSort}>
-          Сумма
+          {t('form.amount')}
         </SortableTh>
         <SortableTh column="method" sort={sort} onSort={onSort}>
-          Способ
+          {t('form.methodShort')}
         </SortableTh>
         <SortableTh column="status" sort={sort} onSort={onSort}>
-          Статус
+          {t('common.status')}
         </SortableTh>
         <SortableTh column="date" sort={sort} onSort={onSort}>
-          Дата
+          {t('common.date')}
         </SortableTh>
       </Table.Tr>
     </Table.Thead>
@@ -43,7 +46,7 @@ export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, 
         <Table.Tr>
           <Table.Td colSpan={7}>
             <Text size="sm" c="dimmed" ta="center" py="xl">
-              Выплат нет
+              {t('finance.emptyPayouts')}
             </Text>
           </Table.Td>
         </Table.Tr>
@@ -75,12 +78,12 @@ export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, 
             </Table.Td>
             <Table.Td className={listPageStyles.bodyCell}>
               <Text size="sm" c="rgba(72,72,72,0.4)">
-                {payout.method === 'cash' ? 'Наличные' : 'Карта'}
+                {payout.method === 'cash' ? t('labels.payment.cash') : t('labels.payment.card')}
               </Text>
             </Table.Td>
             <Table.Td className={listPageStyles.bodyCell}>
               <Badge size="sm" variant="light" color={payout.cancelled ? 'red' : 'green'}>
-                {payout.cancelled ? 'Отменена' : 'Проведена'}
+                {payout.cancelled ? t('finance.cancelled') : t('finance.completed')}
               </Badge>
             </Table.Td>
             <Table.Td className={listPageStyles.bodyCell}>
@@ -93,4 +96,5 @@ export const PayoutsTable: React.FC<PayoutsTableProps> = ({ items, employeeMap, 
       )}
     </Table.Tbody>
   </Table>
-);
+  );
+};

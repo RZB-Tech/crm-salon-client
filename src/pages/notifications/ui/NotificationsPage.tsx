@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Box, Button, Skeleton, Stack } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
 import { ListPageShell, ListPaginationFooter, ListTabs } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useNotificationsPage } from '../lib/useNotificationsPage';
 import { NotificationFormModal } from './NotificationFormModal';
@@ -9,6 +10,7 @@ import { NotificationsTable } from './NotificationsTable';
 import { ReadNotificationModal } from './ReadNotificationModal';
 
 export const NotificationsPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const {
     formOpen,
@@ -30,6 +32,7 @@ export const NotificationsPage: React.FC = () => {
     openReadModal,
     closeReadModal,
     confirmRead,
+    confirmCancel,
   } = useNotificationsPage();
 
   if (isLoading) {
@@ -55,8 +58,8 @@ export const NotificationsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить уведомления">
-            Проверьте доступность API
+          <Alert color="red" title={t('notifications.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -73,10 +76,10 @@ export const NotificationsPage: React.FC = () => {
             value={statusFilter}
             onChange={setStatusFilter}
             data={[
-              { value: 'all', label: `Все (${(notifications ?? []).length})` },
-              { value: 'pending', label: `Новые (${pendingCount})` },
-              { value: 'read', label: 'Прочитанные' },
-              { value: 'cancelled', label: 'Отменённые' },
+              { value: 'all', label: t('notifications.allItems', { count: (notifications ?? []).length }) },
+              { value: 'pending', label: t('notifications.newItems', { count: pendingCount }) },
+              { value: 'read', label: t('notifications.read') },
+              { value: 'cancelled', label: t('notifications.cancelled') },
             ]}
           />
           {hasPermission(PermissionCode.NOTIFICATION_CREATE) && (
@@ -86,7 +89,7 @@ export const NotificationsPage: React.FC = () => {
               onClick={() => setFormOpen(true)}
               size="sm"
             >
-              Создать
+              {t('notifications.create')}
             </Button>
           )}
         </>
@@ -107,7 +110,7 @@ export const NotificationsPage: React.FC = () => {
         onSort={toggleSort}
         cancelPending={cancelNotification.isPending}
         onMarkRead={openReadModal}
-        onCancel={(id) => cancelNotification.mutate(id)}
+        onCancel={openReadModal}
       />
 
       <NotificationFormModal opened={formOpen} onClose={() => setFormOpen(false)} />
@@ -115,10 +118,11 @@ export const NotificationsPage: React.FC = () => {
       <ReadNotificationModal
         opened={readTarget != null}
         comment={readComment}
-        loading={readNotification.isPending}
+        loading={readNotification.isPending || cancelNotification.isPending}
         onCommentChange={setReadComment}
         onClose={closeReadModal}
         onConfirm={confirmRead}
+        onCancelNotification={confirmCancel}
       />
     </ListPageShell>
   );

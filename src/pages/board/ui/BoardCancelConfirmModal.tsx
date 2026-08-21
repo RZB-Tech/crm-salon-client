@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Select } from '@mantine/core';
 import type { AppointmentCancelledReason } from '@/shared/api/types';
 import { APPOINTMENT_CANCELLED_REASON_OPTIONS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 
 interface BoardCancelConfirmModalProps {
@@ -22,12 +23,14 @@ export const BoardCancelConfirmModal: React.FC<BoardCancelConfirmModalProps> = (
   onCancelReasonChange,
   onConfirm,
   onClose,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <ConfirmModal
     opened={opened}
-    title="Отменить запись"
-    message="Отменить эту запись? Она останется в системе, но будет помечена как отменённая. Оплаченные записи и записи с активным чеком отменить нельзя — сначала отмените чек."
-    confirmLabel="Отменить запись"
+    title={t('board.cancelVisit')}
+    message={t('board.cancelMessage')}
+    confirmLabel={t('board.cancelVisit')}
     loading={loading}
     confirmDisabled={!cancelReason || hasActiveReceipt}
     onConfirm={onConfirm}
@@ -35,12 +38,12 @@ export const BoardCancelConfirmModal: React.FC<BoardCancelConfirmModalProps> = (
   >
     {hasActiveReceipt && (
       <Alert color="orange" mb="sm">
-        Есть активный чек. Сначала отмените его в блоке оплаты.
+        {t('board.activeReceiptAlert')}
       </Alert>
     )}
     <Select
-      label="Причина отмены"
-      data={APPOINTMENT_CANCELLED_REASON_OPTIONS}
+      label={t('board.cancelReason')}
+      data={APPOINTMENT_CANCELLED_REASON_OPTIONS()}
       value={cancelReason}
       onChange={(value) => {
         if (value) onCancelReasonChange(value as AppointmentCancelledReason);
@@ -48,4 +51,5 @@ export const BoardCancelConfirmModal: React.FC<BoardCancelConfirmModalProps> = (
       allowDeselect={false}
     />
   </ConfirmModal>
-);
+  );
+};

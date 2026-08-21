@@ -7,6 +7,7 @@ import type {
   ServiceCategoryCreatePayload,
   ServiceCategoryUpdatePayload
 } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
@@ -22,6 +23,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   category,
   onClose
 }) => {
+  const { t } = useI18n();
   const [name, setName] = React.useState('');
   const createCategory = useCreateServiceCategory();
   const updateCategory = useUpdateServiceCategory();
@@ -42,31 +44,31 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={category ? 'Редактировать категорию' : 'Новая категория'}
+      title={category ? t('form.editCategory') : t('form.newCategory')}
       icon={<FolderIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={category ? 'Сохранить' : 'Создать'}
+          submitLabel={category ? t('common.save') : t('common.create')}
           onSubmit={handleSubmit}
           submitDisabled={!name}
           loading={createCategory.isPending || updateCategory.isPending}
         />
       }
     >
-      <FormSection title='Основное'>
+      <FormSection title={t('form.main')}>
         <TextInput
-          label='Название'
+          label={t('common.name')}
           required
-          placeholder='Введите название'
+          placeholder={t('form.enterName')}
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
         />
       </FormSection>
 
       {category && (
-        <FormSection title='История изменений' muted>
+        <FormSection title={t('form.changeHistory')} muted>
           <AuditLogsPanel tableName='service_categories' recordId={category.id} />
         </FormSection>
       )}

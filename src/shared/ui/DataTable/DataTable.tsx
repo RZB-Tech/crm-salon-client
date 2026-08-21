@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Card, ScrollArea, Stack, Table, Text } from '@mantine/core';
 import { Table as TableIcon } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './data-table.module.css';
 
 export interface DataTableColumn {
@@ -27,7 +28,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   columns,
   children,
   isEmpty = false,
-  emptyMessage = 'Нет данных',
+  emptyMessage,
   emptyColSpan,
   compact = false,
   stickyHeader = true,
@@ -35,6 +36,8 @@ export const DataTable: React.FC<DataTableProps> = ({
   className,
   hideEmptyIcon = false,
 }) => {
+  const { t } = useI18n();
+  const resolvedEmpty = emptyMessage ?? t('common.noData');
   const colSpan = emptyColSpan ?? columns.length;
 
   return (
@@ -84,7 +87,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                       </Box>
                     )}
                     <Text size={hideEmptyIcon ? 'xs' : 'sm'} fw={hideEmptyIcon ? 600 : undefined} c={hideEmptyIcon ? undefined : 'dimmed'}>
-                      {emptyMessage}
+                      {resolvedEmpty}
                     </Text>
                   </Stack>
                 </Table.Td>

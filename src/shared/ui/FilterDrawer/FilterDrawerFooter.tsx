@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './filter-drawer.module.css';
 
 interface FilterDrawerFooterProps {
@@ -7,13 +8,16 @@ interface FilterDrawerFooterProps {
   onApply: () => void;
 }
 
-export const FilterDrawerFooter: React.FC<FilterDrawerFooterProps> = ({ onReset, onApply }) => (
+export const FilterDrawerFooter: React.FC<FilterDrawerFooterProps> = ({ onReset, onApply }) => {
+  const { t } = useI18n();
+  return (
   <footer className={styles.footer}>
     <Button variant="outline" color="sage" size="md" radius="md" onClick={onReset}>
-      Сбросить фильтры
+      {t('common.resetFilters')}
     </Button>
     <Button color="sage" size="md" radius="md" onClick={onApply}>
-      Применить фильтры
+      {t('common.applyFilters')}
     </Button>
   </footer>
-);
+  );
+};

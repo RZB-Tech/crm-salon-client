@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Text } from '@mantine/core';
 import { Receipt as ReceiptIcon } from '@phosphor-icons/react';
 import type { Appointment } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './pay-appointment-panel.module.css';
 
 interface PaymentReceiptCreateSectionProps {
@@ -16,11 +17,13 @@ export const PaymentReceiptCreateSection: React.FC<PaymentReceiptCreateSectionPr
   cancelledReceiptsCount,
   createPending,
   onCreateReceipt,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <div className={styles.sectionCardMuted}>
-    <p className={styles.sectionTitleMuted}>Выставить счёт</p>
+    <p className={styles.sectionTitleMuted}>{t('finance.issueInvoice')}</p>
     <p className={styles.sectionHint}>
-      После чека состав записи блокируется до отмены оплаты.
+      {t('finance.invoiceLockHint')}
     </p>
     <Button
       leftSection={<ReceiptIcon size={16} />}
@@ -28,12 +31,13 @@ export const PaymentReceiptCreateSection: React.FC<PaymentReceiptCreateSectionPr
       loading={createPending}
       disabled={!appointment.records?.length || appointment.total_price <= 0}
     >
-      Выставить счёт
+      {t('finance.issueInvoice')}
     </Button>
     {cancelledReceiptsCount > 0 && (
       <Text size="xs" c="dimmed" mt="sm">
-        Ранее отменённых чеков: {cancelledReceiptsCount}
+        {t('finance.cancelledReceiptsCount', { count: cancelledReceiptsCount })}
       </Text>
     )}
   </div>
-);
+  );
+};

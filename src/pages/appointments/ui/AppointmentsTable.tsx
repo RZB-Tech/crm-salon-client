@@ -4,6 +4,7 @@ import type { Appointment } from '@/shared/api/types';
 import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { AppointmentTableRow } from './AppointmentTableRow';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface AppointmentsTableProps extends TableSortProps {
   items: Appointment[];
@@ -25,7 +26,9 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   onRowClick,
   onRestore,
   onArchive,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
@@ -33,31 +36,31 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
           №
         </SortableTh>
         <SortableTh column="date" sort={sort} onSort={onSort} miw={160}>
-          Дата и время
+          {t('appointments.dateTime')}
         </SortableTh>
         <SortableTh column="client" sort={sort} onSort={onSort} miw={160}>
-          Клиент
+          {t('appointments.client')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} miw={140}>
-          Сотрудники
+          {t('appointments.employees')}
         </Table.Th>
         <Table.Th className={listPageStyles.headCell} miw={220}>
-          Услуги и товары
+          {t('appointments.servicesAndProducts')}
         </Table.Th>
         <SortableTh column="amount" sort={sort} onSort={onSort} w={120}>
-          Сумма
+          {t('form.amount')}
         </SortableTh>
         <SortableTh column="status" sort={sort} onSort={onSort} w={120}>
-          Статус
+          {t('common.status')}
         </SortableTh>
         <SortableTh column="paid" sort={sort} onSort={onSort} w={110}>
-          Оплата
+          {t('board.tabPayment')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} miw={140}>
-          Комментарий
+          {t('common.comment')}
         </Table.Th>
         <SortableTh column="created" sort={sort} onSort={onSort} w={130}>
-          Создано
+          {t('appointments.created')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={48} />
       </Table.Tr>
@@ -67,7 +70,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         <Table.Tr>
           <Table.Td colSpan={11}>
             <Text c="dimmed" ta="center" py="xl">
-              Посещений не найдено
+              {t('appointments.notFound')}
             </Text>
           </Table.Td>
         </Table.Tr>
@@ -87,4 +90,5 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
       )}
     </Table.Tbody>
   </Table>
-);
+  );
+};

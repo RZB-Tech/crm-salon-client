@@ -2,6 +2,7 @@ import React from 'react';
 import { Avatar, Box, Text, Tooltip } from '@mantine/core';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeInitials } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { LABEL_TOOLTIP_BELOW } from './boardScheduleTypes';
 import styles from './board-page.module.css';
 
@@ -18,6 +19,7 @@ export const BoardResourceLabel: React.FC<BoardResourceLabelProps> = ({
   labelWidth,
   employees,
 }) => {
+  const { t } = useI18n();
   const isNarrow = labelWidth < LABEL_TOOLTIP_BELOW;
   const employee = employees.find((e) => e.id === resourceId);
 
@@ -37,7 +39,7 @@ export const BoardResourceLabel: React.FC<BoardResourceLabelProps> = ({
         </Text>
         {!isNarrow && (
           <Text size="xs" c="dimmed" lineClamp={1}>
-            Сотрудник
+            {t('form.employee')}
           </Text>
         )}
       </Box>

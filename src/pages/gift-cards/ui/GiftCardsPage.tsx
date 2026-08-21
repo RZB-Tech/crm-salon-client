@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
 import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { useCancelGiftCard } from '@/shared/api/hooks/useGiftCards';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { useGiftCardsPage } from '../lib/useGiftCardsPage';
@@ -10,6 +11,7 @@ import { GiftCardsTable } from './GiftCardsTable';
 import { GiftCardsToolbar } from './GiftCardsToolbar';
 
 export const GiftCardsPage: React.FC = () => {
+  const { t } = useI18n();
   const [cancelReason, setCancelReason] = React.useState('');
   const cancelGiftCard = useCancelGiftCard();
   const {
@@ -64,8 +66,8 @@ export const GiftCardsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить купоны">
-            Проверьте доступность API
+          <Alert color="red" title={t('giftCards.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -125,8 +127,8 @@ export const GiftCardsPage: React.FC = () => {
       />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать купон"
-        message={`Архивировать «${archiveTarget?.code ?? ''}»? Купон будет скрыт из списка.`}
+        title={t('giftCards.archiveTitle')}
+        message={t('giftCards.archiveMessage', { code: archiveTarget?.code ?? '' })}
         loading={archiveGiftCard.isPending}
         onConfirm={confirmArchive}
         onClose={() => setArchiveTargetId(null)}

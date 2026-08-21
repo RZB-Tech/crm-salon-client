@@ -3,6 +3,7 @@ import { Box, Skeleton, Text } from '@mantine/core';
 import { ConfirmModal, ListPaginationFooter, listPageStyles } from '@/shared/ui';
 import { TransactionFormModal } from '../TransactionFormModal';
 import { useTransactionsTab } from '../../lib/useTransactionsTab';
+import { useI18n } from '@/shared/lib/i18n';
 import { TransactionsSummary } from './TransactionsSummary';
 import { TransactionsFilters } from './TransactionsFilters';
 import { TransactionsTable } from './TransactionsTable';
@@ -17,6 +18,7 @@ interface TransactionsTabProps {
 
 export const TransactionsTab = React.forwardRef<TransactionsTabHandle, TransactionsTabProps>(
   function TransactionsTab({ enabled }, ref) {
+    const { t } = useI18n();
     const {
       formOpen,
       openForm,
@@ -53,7 +55,7 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
     if (isError) {
       return (
         <Box className={listPageStyles.panel} p="xl">
-          <Text c="red">Не удалось загрузить транзакции</Text>
+          <Text c="red">{t('finance.loadTransactionsError')}</Text>
         </Box>
       );
     }
@@ -96,8 +98,8 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
 
         <ConfirmModal
           opened={cancelTarget != null}
-          title="Отменить транзакцию"
-          message="Отменить эту транзакцию? Действие необратимо."
+          title={t('finance.cancelTransaction')}
+          message={t('finance.cancelTransactionMessage')}
           loading={cancelTransaction.isPending}
           onConfirm={confirmCancel}
           onClose={() => setCancelTarget(null)}

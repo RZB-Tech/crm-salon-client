@@ -1,8 +1,5 @@
 import type { SalonNotification, SalonNotificationStatus, SalonNotificationWsPayload } from '@/shared/api/types';
 
-/** Заметка для API read: бэкенд требует notes min_length=1, в макете поля нет */
-export const DEFAULT_NOTIFICATION_READ_NOTES = 'Прочитано';
-
 /** Вычисляет эффективный статус уведомления (fallback когда бэк не отдаёт status) */
 export const getEffectiveStatus = (n: SalonNotification): SalonNotificationStatus => {
   if (n.status) return n.status;

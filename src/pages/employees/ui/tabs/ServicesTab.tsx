@@ -4,6 +4,7 @@ import { useServices } from '@/shared/api/hooks/useServices';
 import { useUpdateEmployee } from '@/shared/api/hooks/useEmployees';
 import type { Employee } from '@/shared/api/types';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from '../employee-profile.module.css';
 
 interface ServicesTabProps {
@@ -11,6 +12,7 @@ interface ServicesTabProps {
 }
 
 export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
+  const { t } = useI18n();
   const { data: services, isLoading } = useServices();
   const updateEmployee = useUpdateEmployee();
 
@@ -53,15 +55,15 @@ export const ServicesTab: React.FC<ServicesTabProps> = ({ employee }) => {
   return (
     <Box>
       <Box className={styles.toolbar}>
-        <Text fw={600}>Услуги и специализация</Text>
+        <Text fw={600}>{t('employees.servicesAndSpec')}</Text>
         <Button size="sm" onClick={handleSave} loading={updateEmployee.isPending} disabled={!isDirty}>
-          Сохранить
+          {t('common.save')}
         </Button>
       </Box>
 
       <MultiSelect
-        label="Назначенные услуги"
-        placeholder="Выберите услуги"
+        label={t('employees.assignedServices')}
+        placeholder={t('employees.selectServices')}
         data={serviceOptions}
         value={selected}
         onChange={setSelected}

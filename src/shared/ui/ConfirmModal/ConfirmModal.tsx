@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Modal } from '@mantine/core';
 import { WarningIcon } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './confirm-modal.module.css';
 
 interface ConfirmModalProps {
@@ -22,14 +23,16 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   title,
   message,
   loading = false,
-  confirmLabel = 'Архивировать',
+  confirmLabel,
   confirmDisabled = false,
   tone = 'danger',
   children,
   onConfirm,
   onClose,
 }) => {
+  const { t } = useI18n();
   const stackId = React.useId();
+  const resolvedConfirmLabel = confirmLabel ?? t('common.archive');
 
   return (
     <Modal
@@ -51,7 +54,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         {children != null && <div className={styles.extra}>{children}</div>}
         <div className={styles.actions}>
           <Button variant="default" onClick={onClose} disabled={loading}>
-            Отмена
+            {t('common.cancel')}
           </Button>
           <Button
             color={tone === 'warning' ? 'orange' : 'red'}
@@ -59,7 +62,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             loading={loading}
             disabled={confirmDisabled}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </Button>
         </div>
       </div>

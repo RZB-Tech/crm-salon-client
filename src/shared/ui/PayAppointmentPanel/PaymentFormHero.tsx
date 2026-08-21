@@ -3,6 +3,7 @@ import { Text } from '@mantine/core';
 import { Wallet } from '@phosphor-icons/react';
 import type { Appointment, Receipt } from '@/shared/api/types';
 import { formatPrice } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './pay-appointment-panel.module.css';
 
 interface PaymentFormHeroProps {
@@ -19,17 +20,22 @@ export const PaymentFormHero: React.FC<PaymentFormHeroProps> = ({
   step1Done,
   step2Done,
   step3Done,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <>
     <div className={styles.payHero}>
       <div>
-        <div className={styles.payHeroLabel}>К оплате</div>
+        <div className={styles.payHeroLabel}>{t('finance.due')}</div>
         <div className={styles.payHeroAmount}>
           {formatPrice(receipt?.remaining_amount ?? appointment.total_price)}
         </div>
         {receipt && receipt.paid_amount > 0 && (
           <Text size="xs" c="dimmed" mt={4}>
-            Уже оплачено {formatPrice(receipt.paid_amount)} из {formatPrice(receipt.total_amount)}
+            {t('finance.alreadyPaid', {
+              paid: formatPrice(receipt.paid_amount),
+              total: formatPrice(receipt.total_amount),
+            })}
           </Text>
         )}
       </div>
@@ -38,22 +44,23 @@ export const PaymentFormHero: React.FC<PaymentFormHeroProps> = ({
 
     <div className={styles.paySteps}>
       <span className={`${styles.payStep} ${step1Done ? styles.payStepDone : styles.payStepActive}`}>
-        1. Состав
+        {t('finance.stepComposition')}
       </span>
       <span
         className={`${styles.payStep} ${
           step2Done ? styles.payStepDone : step1Done ? styles.payStepActive : ''
         }`}
       >
-        2. Чек
+        {t('finance.stepReceipt')}
       </span>
       <span
         className={`${styles.payStep} ${
           step3Done ? styles.payStepDone : step2Done ? styles.payStepActive : ''
         }`}
       >
-        3. Оплата
+        {t('finance.stepPay')}
       </span>
     </div>
   </>
-);
+  );
+};

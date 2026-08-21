@@ -6,6 +6,7 @@ import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 import { formatDuration } from '../lib/formatDuration';
 import styles from './services-page.module.css';
 
@@ -28,6 +29,7 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
   onArchive,
   onRestore,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const canUpdate = !showArchived && hasPermission(PermissionCode.SERVICE_UPDATE);
   const canManage = hasPermission(PermissionCode.SERVICE_MANAGE);
@@ -37,16 +39,16 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="name" sort={sort} onSort={onSort}>
-            Услуга
+            {t('form.service')}
           </SortableTh>
           <SortableTh column="duration" sort={sort} onSort={onSort} w={275}>
-            Длительность
+            {t('services.duration')}
           </SortableTh>
           <SortableTh column="category" sort={sort} onSort={onSort} w={380}>
-            Категория
+            {t('services.category')}
           </SortableTh>
           <SortableTh column="price" sort={sort} onSort={onSort} w={310}>
-            Цена
+            {t('services.price')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
@@ -56,7 +58,7 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
           <Table.Tr>
             <Table.Td colSpan={5}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Услуги не найдены
+                {t('services.notFound')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -105,7 +107,7 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
                         variant="subtle"
                         color="gray"
                         size="sm"
-                        aria-label="Восстановить"
+                        aria-label={t('common.restore')}
                         onClick={(e) => onRestore(e, service.id)}
                       >
                         <ArrowCounterClockwiseIcon size={18} />
@@ -115,7 +117,7 @@ export const ServicesTable: React.FC<ServicesTableProps> = ({
                         variant="subtle"
                         color="orange"
                         size="sm"
-                        aria-label="Архивировать"
+                        aria-label={t('common.archive')}
                         onClick={(e) => onArchive(e, service.id)}
                       >
                         <ArchiveIcon size={18} />

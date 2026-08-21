@@ -3,6 +3,7 @@ import { Skeleton, Table } from '@mantine/core';
 import { useClientFinanceReport } from '@/shared/api/hooks/useClientFinanceReport';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatPrice } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { formatFinanceMonth } from '../lib/clientDisplay';
 import styles from './client-modals.module.css';
 
@@ -11,6 +12,7 @@ interface ClientFinanceTabProps {
 }
 
 export const ClientFinanceTab: React.FC<ClientFinanceTabProps> = ({ clientId }) => {
+  const { t } = useI18n();
   const { data: financeReport, isLoading } = useClientFinanceReport({ clientID: clientId });
   const months = Object.entries(financeReport?.items ?? {});
 
@@ -18,7 +20,7 @@ export const ClientFinanceTab: React.FC<ClientFinanceTabProps> = ({ clientId }) 
 
   return (
     <div className={styles.tableBlock}>
-      <p className={styles.tableLabel}>Финансы</p>
+      <p className={styles.tableLabel}>{t('clients.finance')}</p>
       <DataTable
         compact
         stickyHeader={false}
@@ -26,13 +28,13 @@ export const ClientFinanceTab: React.FC<ClientFinanceTabProps> = ({ clientId }) 
         className={styles.tableCard}
         hideEmptyIcon
         columns={[
-          { key: 'month', label: 'Месяц' },
-          { key: 'income', label: 'Доход' },
-          { key: 'net', label: 'Нетто' },
-          { key: 'transactions', label: 'Операции' },
+          { key: 'month', label: t('clients.month') },
+          { key: 'income', label: t('clients.income') },
+          { key: 'net', label: t('clients.net') },
+          { key: 'transactions', label: t('clients.operations') },
         ]}
         isEmpty={months.length === 0}
-        emptyMessage="Финансовых данных нет"
+        emptyMessage={t('clients.noFinance')}
       >
         {months.map(([month, data]) => (
           <DataTableRow key={month}>

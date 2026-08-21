@@ -8,6 +8,7 @@ import {
   type MaterialOption,
   type ServiceOption,
 } from '../../lib/appointmentForm';
+import { useI18n } from '@/shared/lib/i18n';
 import { ServiceLineMetrics } from './ServiceLineMetrics';
 import styles from './appointment-form-modal.module.css';
 
@@ -40,6 +41,7 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
   onReasonChange,
   onRemove,
 }) => {
+  const { t } = useI18n();
   const changed = isPriceChanged(line);
   const isService = line.kind === 'service';
 
@@ -50,34 +52,34 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
           <Select
             className={styles.lineSelect}
             searchable
-            placeholder="Выберите услугу"
+            placeholder={t('board.selectService')}
             data={serviceOptions}
             value={line.serviceId}
             onChange={(value) => onServiceSelect(line.key, value)}
-            nothingFoundMessage="Нет услуг у сотрудника"
+            nothingFoundMessage={t('board.noEmployeeServices')}
             disabled={readOnly}
           />
         ) : (
           <Select
             className={styles.lineSelect}
             searchable
-            placeholder="Выберите товар"
+            placeholder={t('board.selectProduct')}
             data={materialOptions}
             value={line.materialId}
             onChange={(value) => onMaterialSelect(line.key, value)}
-            nothingFoundMessage="Нет товаров"
+            nothingFoundMessage={t('board.noProducts')}
             disabled={readOnly}
           />
         )}
         {!readOnly && (
-          <Tooltip label="Удалить позицию" openDelay={300}>
+          <Tooltip label={t('board.deleteLine')} openDelay={300}>
             <ActionIcon
               className={styles.lineTrash}
               variant="outline"
               color="gray"
               size={32}
               radius="md"
-              aria-label="Удалить позицию"
+              aria-label={t('board.deleteLine')}
               onClick={() => onRemove(line.key)}
               disabled={!canRemove}
             >

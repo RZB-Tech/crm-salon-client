@@ -3,6 +3,7 @@ import { apiDelete, apiPost } from '@/shared/api/client';
 import { invalidateAppointmentRelations } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Appointment, AppointmentRecordCreatePayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useCreateAppointmentRecord = () => {
@@ -22,10 +23,10 @@ export const useCreateAppointmentRecord = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Мастер добавлен к записи' });
+      addNotification.success({ message: t('toast.masterAdded') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось добавить мастера' });
+      addNotification.error({ message: error.message || t('toast.masterAddFailed') });
     },
   });
 };
@@ -44,10 +45,10 @@ export const useDeleteAppointmentRecord = () => {
         clientId: result?.client_id ?? result?.client?.id ?? null,
         employeeId: result?.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Мастер убран из записи' });
+      addNotification.success({ message: t('toast.masterRemoved') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось убрать мастера' });
+      addNotification.error({ message: error.message || t('toast.masterRemoveFailed') });
     },
   });
 };

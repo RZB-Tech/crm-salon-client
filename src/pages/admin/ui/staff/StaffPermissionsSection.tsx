@@ -1,4 +1,5 @@
 import { Button, Group, ScrollArea, Stack, Text } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormSection, formModalStyles } from '@/shared/ui';
 import type { Permission, Staff } from '@/shared/api/types';
 
@@ -13,10 +14,11 @@ export function StaffPermissionsSection({
   getPermissionNames,
   onEdit,
 }: StaffPermissionsSectionProps) {
+  const { t } = useI18n();
   return (
     <FormSection
-      title={`Индивидуальные разрешения · ${staff.permissions.length}`}
-      hint="Добавляются к правам, полученным через роли"
+      title={t('admin.permsWithCount', { count: staff.permissions.length })}
+      hint={t('admin.permsHint')}
     >
       <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -32,12 +34,12 @@ export function StaffPermissionsSection({
             </ScrollArea.Autosize>
           ) : (
             <div className={formModalStyles.emptyState}>
-              Нет прямых разрешений — доступ только через роли
+              {t('admin.noDirectPerms')}
             </div>
           )}
         </div>
         <Button variant="subtle" size="compact-xs" onClick={() => onEdit(staff)}>
-          Изменить
+          {t('common.change')}
         </Button>
       </Group>
     </FormSection>

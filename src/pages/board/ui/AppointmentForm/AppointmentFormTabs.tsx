@@ -2,6 +2,7 @@ import React from 'react';
 import { Tabs } from '@mantine/core';
 import type { Appointment } from '@/shared/api/types';
 import { PayAppointmentPanel } from '@/shared/ui/PayAppointmentPanel';
+import { useI18n } from '@/shared/lib/i18n';
 import { AppointmentAuditSection } from './AppointmentAuditSection';
 import styles from './appointment-form-modal.module.css';
 
@@ -17,7 +18,9 @@ export const AppointmentFormTabs: React.FC<AppointmentFormTabsProps> = ({
   tab,
   onTabChange,
   mainForm,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Tabs
     value={tab}
     onChange={onTabChange}
@@ -26,9 +29,9 @@ export const AppointmentFormTabs: React.FC<AppointmentFormTabsProps> = ({
     classNames={{ list: styles.tabsList, tab: styles.tab }}
   >
     <Tabs.List className={styles.tabsList}>
-      <Tabs.Tab value="main">Запись</Tabs.Tab>
-      <Tabs.Tab value="payment">Оплата</Tabs.Tab>
-      <Tabs.Tab value="history">История</Tabs.Tab>
+      <Tabs.Tab value="main">{t('board.tabAppointment')}</Tabs.Tab>
+      <Tabs.Tab value="payment">{t('board.tabPayment')}</Tabs.Tab>
+      <Tabs.Tab value="history">{t('board.tabHistory')}</Tabs.Tab>
     </Tabs.List>
     <Tabs.Panel value="main">{mainForm}</Tabs.Panel>
     <Tabs.Panel value="payment">
@@ -38,4 +41,5 @@ export const AppointmentFormTabs: React.FC<AppointmentFormTabsProps> = ({
       <AppointmentAuditSection appointment={appointment} />
     </Tabs.Panel>
   </Tabs>
-);
+  );
+};

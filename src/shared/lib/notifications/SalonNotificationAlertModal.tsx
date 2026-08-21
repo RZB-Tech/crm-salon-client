@@ -1,29 +1,39 @@
 import React from 'react';
-import { ActionIcon, Button, Modal } from '@mantine/core';
+import { ActionIcon, Button, Modal, Textarea } from '@mantine/core';
 import { XIcon } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import illustrationSrc from '@/shared/assets/notification-alert-illustration.png';
 import { formatNotificationAlertStamp, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
-import { DEFAULT_NOTIFICATION_READ_NOTES } from '@/shared/lib/notifications/notificationDelivery';
+import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { useI18n } from '@/shared/lib/i18n';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './salon-notification-alert-modal.module.css';
 
 interface SalonNotificationAlertModalProps {
   notification: SalonNotificationWsPayload | null;
-  loading?: boolean;
+  readLoading?: boolean;
+  cancelLoading?: boolean;
   onDismiss: () => void;
   onRead: (id: number, notes: string) => void;
+  onCancel: (id: number, notes: string) => void;
 }
 
 export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalProps> = ({
   notification,
-  loading = false,
+  readLoading = false,
+  cancelLoading = false,
   onDismiss,
   onRead,
+  onCancel,
 }) => {
-  const handleRead = React.useCallback(() => {
-    if (!notification) return;
-    onRead(notification.id, DEFAULT_NOTIFICATION_READ_NOTES);
-  }, [notification, onRead]);
+  const { t } = useI18n();
+  const [notes, setNotes] = React.useState('');
+  const { hasPermission } = useAccess();
+  const canCancel = hasPermission(PermissionCode.NOTIFICATION_CANCEL);
+  const busy = readLoading || cancelLoading;
+  const canSubmit = notes.trim().length > 0 && !busy;
+
+  useResetOnOpen(notification?.id ?? null, () => setNotes(''));
 
   return (
     <Modal
@@ -48,7 +58,7 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
               variant="default"
               size={32}
               radius={8}
-              aria-label="Закрыть"
+              aria-label={t('header.close')}
               onClick={onDismiss}
             >
               <XIcon size={20} />
@@ -71,24 +81,49 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
 
             <div className={styles.copy}>
               <div className={styles.titles}>
-                <h2 className={styles.title}>{notification.title ?? 'Напоминание'}</h2>
+                <h2 className={styles.title}>{notification.title ?? t('notifications.reminderFallback')}</h2>
                 {notification.body ? <p className={styles.description}>{notification.body}</p> : null}
               </div>
               <p className={styles.stamp}>{formatNotificationAlertStamp(notification.scheduled_at)}</p>
             </div>
           </div>
 
-          <Button
-            className={styles.readBtn}
-            fullWidth
-            radius={8}
-            variant="subtle"
-            color="gray"
-            loading={loading}
-            onClick={handleRead}
-          >
-            Отметить прочитанным
-          </Button>
+          <Textarea
+            placeholder={t('notifications.comment')}
+            minRows={3}
+            autosize
+            maxRows={6}
+            value={notes}
+            onChange={(event) => setNotes(event.currentTarget.value)}
+            disabled={busy}
+          />
+
+          <div className={styles.actions}>
+            {canCancel && (
+              <Button
+                className={styles.cancelBtn}
+                radius={8}
+                variant="subtle"
+                color="gray"
+                loading={cancelLoading}
+                disabled={!canSubmit}
+                onClick={() => onCancel(notification.id, notes.trim())}
+              >
+                {t('notifications.cancelItem')}
+              </Button>
+            )}
+            <Button
+              className={styles.readBtn}
+              radius={8}
+              variant="subtle"
+              color="gray"
+              loading={readLoading}
+              disabled={!canSubmit}
+              onClick={() => onRead(notification.id, notes.trim())}
+            >
+              {t('notifications.markRead')}
+            </Button>
+          </div>
         </div>
       )}
     </Modal>

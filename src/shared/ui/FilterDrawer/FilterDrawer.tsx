@@ -1,6 +1,7 @@
 import React from 'react';
 import { Drawer } from '@mantine/core';
 import { FunnelIcon } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModalHeader } from '../FormModal';
 import styles from './filter-drawer.module.css';
 
@@ -15,10 +16,12 @@ interface FilterDrawerProps {
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   opened,
   onClose,
-  title = 'Фильтрация',
+  title,
   children,
   footer,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Drawer
     opened={opened}
     onClose={onClose}
@@ -30,9 +33,10 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
     classNames={{ content: styles.panel, body: styles.body }}
   >
     <div className={styles.top}>
-      <FormModalHeader title={title} icon={<FunnelIcon />} onClose={onClose} />
+      <FormModalHeader title={title ?? t('common.filters')} icon={<FunnelIcon />} onClose={onClose} />
       <div className={styles.fields}>{children}</div>
     </div>
     {footer}
   </Drawer>
-);
+  );
+};

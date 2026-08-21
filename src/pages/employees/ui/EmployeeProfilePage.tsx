@@ -13,6 +13,7 @@ import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { getEmployeeFullName } from '@/shared/lib/format';
 import { isTabValue, type TabValue } from '../lib/profileTabs';
+import { useI18n } from '@/shared/lib/i18n';
 import { EmployeeProfileHeader } from './EmployeeProfileHeader';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -23,6 +24,7 @@ import { ServicesTab } from './tabs/ServicesTab';
 import styles from './employee-profile.module.css';
 
 export const EmployeeProfilePage: React.FC = () => {
+  const { t } = useI18n();
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -76,10 +78,10 @@ export const EmployeeProfilePage: React.FC = () => {
           onClick={() => navigate('/employees')}
           w="fit-content"
         >
-          К сотрудникам
+          {t('employees.backToList')}
         </Button>
-        <Alert color="red" title="Некорректный ID">
-          URL содержит невалидный идентификатор сотрудника.
+        <Alert color="red" title={t('employees.invalidId')}>
+          {t('employees.invalidIdHint')}
         </Alert>
       </Box>
     );
@@ -103,10 +105,10 @@ export const EmployeeProfilePage: React.FC = () => {
           onClick={() => navigate('/employees')}
           w="fit-content"
         >
-          К сотрудникам
+          {t('employees.backToList')}
         </Button>
-        <Alert color="red" title="Сотрудник не найден">
-          Проверьте доступность API или вернитесь к списку.
+        <Alert color="red" title={t('employees.notFoundTitle')}>
+          {t('employees.notFoundHint')}
         </Alert>
       </Box>
     );
@@ -128,12 +130,12 @@ export const EmployeeProfilePage: React.FC = () => {
       <ScrollArea className={styles.pageBody} offsetScrollbars>
         <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>
           <Tabs.List>
-            <Tabs.Tab value="overview">Обзор</Tabs.Tab>
-            <Tabs.Tab value="schedule">График</Tabs.Tab>
-            <Tabs.Tab value="payments">Выплаты</Tabs.Tab>
-            <Tabs.Tab value="finance">Финансы</Tabs.Tab>
-            <Tabs.Tab value="services">Услуги</Tabs.Tab>
-            <Tabs.Tab value="audit">История</Tabs.Tab>
+            <Tabs.Tab value="overview">{t('employees.overview')}</Tabs.Tab>
+            <Tabs.Tab value="schedule">{t('employees.schedule')}</Tabs.Tab>
+            <Tabs.Tab value="payments">{t('employees.payments')}</Tabs.Tab>
+            <Tabs.Tab value="finance">{t('employees.finance')}</Tabs.Tab>
+            <Tabs.Tab value="services">{t('employees.services')}</Tabs.Tab>
+            <Tabs.Tab value="audit">{t('finance.history')}</Tabs.Tab>
           </Tabs.List>
 
           <Tabs.Panel value="overview" className={styles.tabPanel}>
@@ -167,8 +169,8 @@ export const EmployeeProfilePage: React.FC = () => {
 
       <ConfirmModal
         opened={archiveOpen}
-        title="Архивировать сотрудника"
-        message={`Архивировать ${getEmployeeFullName(employee)}? Сотрудник будет скрыт из списка.`}
+        title={t('employees.archiveTitle')}
+        message={t('employees.archiveMessage', { name: getEmployeeFullName(employee) })}
         loading={archiveEmployee.isPending}
         onConfirm={handleArchive}
         onClose={() => setArchiveOpen(false)}

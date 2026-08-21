@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Button, ScrollArea, Text, TextInput } from '@mantine/core';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { formatPrice } from '@/shared/lib/format';
+import { getDateLocale, useI18n } from '@/shared/lib/i18n';
 import styles from './board-sidebar.module.css';
 import { BoardMiniCalendar } from './BoardMiniCalendar';
 
@@ -24,6 +25,7 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
   onDateChange,
   onGoToday
 }) => {
+  const { t } = useI18n();
   const [now, setNow] = React.useState(() => new Date());
 
   React.useEffect(() => {
@@ -31,13 +33,13 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
     return () => window.clearInterval(timer);
   }, []);
 
-  const clockLabel = now.toLocaleTimeString('ru-RU', {
+  const clockLabel = now.toLocaleTimeString(getDateLocale(), {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
   });
 
-  const dateLabel = date.toLocaleDateString('ru-RU', {
+  const dateLabel = date.toLocaleDateString(getDateLocale(), {
     weekday: 'long',
     day: 'numeric',
     month: 'long'
@@ -54,7 +56,7 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
           </Text>
           {!isAtToday && (
             <Button variant='light' color='gray' size='xs' fullWidth mt='xs' onClick={onGoToday}>
-              Сегодня
+              {t('board.today')}
             </Button>
           )}
         </Box>
@@ -65,28 +67,28 @@ export const BoardSidebar: React.FC<BoardSidebarProps> = ({
 
         <Box className={styles.section}>
           <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
-            Выручка за день
+            {t('board.dayRevenue')}
           </Text>
           <Text size='xl' fw={700} className={styles.revenueValue}>
             {formatPrice(dayRevenue)}
           </Text>
           <Text size='xs' c='dimmed' mt={4}>
-            {appointmentsCount} {appointmentsCount === 1 ? 'запись' : 'записей'}
+            {appointmentsCount} {appointmentsCount === 1 ? t('board.appointmentOne') : t('board.appointmentMany')}
           </Text>
         </Box>
 
         <Box className={styles.section}>
           <Text size='xs' fw={600} c='dimmed' tt='uppercase' mb={8}>
-            Клиент
+            {t('form.client')}
           </Text>
           <TextInput
-            placeholder='Поиск клиента'
+            placeholder={t('board.searchClient')}
             leftSection={<MagnifyingGlassIcon size={16} />}
             size='sm'
             disabled
           />
           <Text size='xs' c='dimmed' mt={6}>
-            Скоро: быстрый поиск и запись
+            {t('board.soonSearch')}
           </Text>
         </Box>
       </ScrollArea>

@@ -3,16 +3,17 @@ import {
   APPOINTMENT_STATUS_LABELS,
   getClientFullName,
 } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 import type { Client } from '@/shared/api/types';
 
-export const APPOINTMENT_FILTER_LABELS: Record<string, string> = {
-  client_id: 'Клиент',
-  start_time_est: 'Период с',
-  end_time_est: 'Период по',
-  status: 'Статус',
-  paid: 'Оплата',
-  archived: 'Архив',
-};
+export const getAppointmentFilterLabels = (): Record<string, string> => ({
+  client_id: t('form.client'),
+  start_time_est: t('form.periodFrom'),
+  end_time_est: t('form.periodTo'),
+  status: t('common.status'),
+  paid: t('finance.pay'),
+  archived: t('common.archiveTitle'),
+});
 
 export interface AppointmentFilterFormState {
   clientId: string | null;

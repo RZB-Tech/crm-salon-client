@@ -2,6 +2,7 @@ import React from 'react';
 import { Group, Select } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { FilterDrawer, FilterDrawerFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import {
   emptyAppointmentFilterForm,
   type AppointmentFilterFormState,
@@ -27,6 +28,7 @@ export const AppointmentsFilterDrawer: React.FC<AppointmentsFilterDrawerProps> =
   onClose,
   onApply,
 }) => {
+  const { t } = useI18n();
   const [draft, setDraft] = React.useState(filterForm);
 
   React.useEffect(() => {
@@ -55,7 +57,7 @@ export const AppointmentsFilterDrawer: React.FC<AppointmentsFilterDrawerProps> =
     >
       {hasFilterField('client_id') && (
         <Select
-          placeholder="Клиент"
+          placeholder={t('form.client')}
           searchable
           clearable
           data={clientOptions}
@@ -66,7 +68,7 @@ export const AppointmentsFilterDrawer: React.FC<AppointmentsFilterDrawerProps> =
       )}
       {hasFilterField('status') && (
         <Select
-          placeholder="Статус"
+          placeholder={t('common.status')}
           clearable
           data={statusOptions}
           value={draft.status}
@@ -76,9 +78,9 @@ export const AppointmentsFilterDrawer: React.FC<AppointmentsFilterDrawerProps> =
       )}
       {hasFilterField('paid') && (
         <Select
-          placeholder="Оплата"
+          placeholder={t('finance.pay')}
           clearable
-          data={PAID_OPTIONS}
+          data={PAID_OPTIONS()}
           value={draft.paid}
           onChange={(value) => patchDraft({ paid: value })}
           size="md"
@@ -87,14 +89,14 @@ export const AppointmentsFilterDrawer: React.FC<AppointmentsFilterDrawerProps> =
       {hasFilterField('start_time_est') && (
         <Group grow gap={12} align="flex-end">
           <DateInput
-            placeholder="Период с"
+            placeholder={t('form.periodFrom')}
             clearable
             value={draft.dateFrom || null}
             onChange={(value) => patchDraft({ dateFrom: value ?? '' })}
             size="md"
           />
           <DateInput
-            placeholder="Период по"
+            placeholder={t('form.periodTo')}
             clearable
             value={draft.dateTo || null}
             onChange={(value) => patchDraft({ dateTo: value ?? '' })}

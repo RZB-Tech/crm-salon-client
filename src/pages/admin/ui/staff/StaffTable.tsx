@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge, Box, Table, Text } from '@mantine/core';
 import { ListPanelBody, ListPaginationFooter, listPageStyles, SortableTh } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import type { Staff } from '@/shared/api/types';
@@ -17,6 +18,7 @@ const STAFF_SORT_GETTERS = {
 };
 
 export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
+  const { t } = useI18n();
   const { sort, sortedItems, toggleSort } = useTableSort(staffList, STAFF_SORT_GETTERS, {
     key: 'login',
     dir: 'asc',
@@ -39,14 +41,14 @@ export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
           <Table.Thead>
             <Table.Tr>
               <SortableTh column="login" sort={sort} onSort={toggleSort}>
-                Логин
+                {t('common.login')}
               </SortableTh>
               <SortableTh column="name" sort={sort} onSort={toggleSort}>
-                Имя
+                {t('common.firstName')}
               </SortableTh>
-              <Table.Th className={listPageStyles.headCell}>Роли</Table.Th>
+              <Table.Th className={listPageStyles.headCell}>{t('admin.roles')}</Table.Th>
               <SortableTh column="status" sort={sort} onSort={toggleSort}>
-                Статус
+                {t('common.status')}
               </SortableTh>
             </Table.Tr>
           </Table.Thead>
@@ -55,7 +57,7 @@ export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
               <Table.Tr>
                 <Table.Td colSpan={4}>
                   <Text size="sm" c="dimmed" ta="center" py="xl">
-                    Нет пользователей
+                    {t('admin.emptyStaff')}
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -73,7 +75,7 @@ export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
                     <Text size="sm" c="#484848">
-                      {[s.firstname, s.lastname].filter(Boolean).join(' ') || '—'}
+                      {[s.firstname, s.lastname].filter(Boolean).join(' ') || t('common.dash')}
                     </Text>
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
@@ -82,12 +84,12 @@ export function StaffTable({ staffList, onSelectStaff }: StaffTableProps) {
                       variant="light"
                       size="sm"
                     >
-                      {s.roles.length > 0 ? s.roles.map((r) => r.name).join(', ') : '—'}
+                      {s.roles.length > 0 ? s.roles.map((r) => r.name).join(', ') : t('common.dash')}
                     </Badge>
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
                     <Badge color={s.active ? 'green' : 'gray'} variant="dot" size="sm">
-                      {s.active ? 'Активен' : 'Неактивен'}
+                      {s.active ? t('form.staffActive') : t('form.staffInactive')}
                     </Badge>
                   </Table.Td>
                 </Table.Tr>

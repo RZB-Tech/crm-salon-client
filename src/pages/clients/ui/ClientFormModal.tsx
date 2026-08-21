@@ -4,6 +4,7 @@ import { UserPlusIcon } from '@phosphor-icons/react';
 import { useCreateClient, useUpdateClient } from '@/shared/api/hooks/useClients';
 import type { Client, ClientUpdatePayload } from '@/shared/api/types';
 import { getClientInitials } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
@@ -23,6 +24,7 @@ interface ClientFormModalProps {
 }
 
 export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client, onClose }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<ClientFormState>(emptyClientForm);
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -44,14 +46,14 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={client ? 'Редактировать клиента' : 'Добавить клиента'}
+      title={client ? t('clients.editClient') : t('clients.add')}
       initials={client ? getClientInitials(client) : null}
       icon={<UserPlusIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={client ? 'Сохранить' : 'Добавить клиента'}
+          submitLabel={client ? t('common.save') : t('clients.add')}
           onSubmit={handleSubmit}
           submitDisabled={!form.firstname.trim()}
           loading={isSaving}
@@ -63,11 +65,11 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
         <div className={styles.layout}>
           <ClientPersonalFields form={form} onChange={setForm} />
           {!client && (
-            <FormSection title="Депозит" hint="Стартовый баланс клиента на счёте салона">
+            <FormSection title={t('clients.deposit')} hint={t('clients.depositHint')}>
               <NumberInput
-                label="Начальный депозит"
+                label={t('clients.initialDeposit')}
                 min={0}
-                placeholder="0 сум"
+                placeholder={t('services.pricePlaceholder')}
                 value={form.deposit || ''}
                 onChange={(v) => setForm({ ...form, deposit: Number(v) || 0 })}
                 thousandSeparator=" "
@@ -75,10 +77,10 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({ opened, client
             </FormSection>
           )}
           <Textarea
-            label="Заметки"
+            label={t('common.notes')}
             autosize
             minRows={2}
-            placeholder="Предпочтения, аллергии, договорённости"
+            placeholder={t('clients.notesPlaceholder')}
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.currentTarget.value })}
           />

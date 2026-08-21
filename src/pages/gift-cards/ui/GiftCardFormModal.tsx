@@ -4,6 +4,7 @@ import { useCreateGiftCard, useUpdateGiftCard } from '@/shared/api/hooks/useGift
 import { useClients } from '@/shared/api/hooks/useClients';
 import type { GiftCard } from '@/shared/api/types';
 import { getClientFullName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import {
@@ -27,6 +28,7 @@ export const GiftCardFormModal: React.FC<GiftCardFormModalProps> = ({
   giftCard,
   onClose,
 }) => {
+  const { t } = useI18n();
   const [form, setForm] = React.useState<GiftCardFormState>(emptyGiftCardForm);
   const { data: clients } = useClients(false);
   const createGiftCard = useCreateGiftCard();
@@ -58,13 +60,13 @@ export const GiftCardFormModal: React.FC<GiftCardFormModalProps> = ({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title={giftCard ? `Купон ${giftCard.code}` : 'Новый купон'}
+      title={giftCard ? t('form.giftCardNamed', { code: giftCard.code }) : t('giftCards.newCard')}
       icon={<TicketIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel={giftCard ? 'Сохранить' : 'Создать купон'}
+          submitLabel={giftCard ? t('common.save') : t('form.createGiftCard')}
           onSubmit={handleSubmit}
           submitDisabled={!isGiftCardFormValid(form, Boolean(giftCard))}
           loading={loading}

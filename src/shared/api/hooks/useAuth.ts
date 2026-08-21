@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiPatch, apiPost, authStorage } from '@/shared/api/client';
 import type { LoginPayload, StaffLoginResponse } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export interface ChangePasswordPayload {
@@ -22,7 +23,7 @@ export const useLogin = () =>
       if (staff.tenant_name) {
         authStorage.setTenantName(staff.tenant_name);
       }
-      addNotification.success({ message: 'Вход выполнен' });
+      addNotification.success({ message: t('toast.loggedIn') });
     },
   });
 
@@ -41,7 +42,7 @@ export const useLogout = () => {
       // Редирект на login
       window.location.href = '/login';
       
-      addNotification.success({ message: 'Выход выполнен' });
+      addNotification.success({ message: t('toast.loggedOut') });
     },
     onError: () => {
       // Даже если запрос упал, выполняем logout локально
@@ -65,11 +66,11 @@ export const useChangePassword = () =>
     mutationFn: (payload: ChangePasswordPayload) =>
       apiPost<void, ChangePasswordPayload>('/api/v1/auth/change-password', payload),
     onSuccess: () => {
-      addNotification.success({ message: 'Пароль успешно изменён' });
+      addNotification.success({ message: t('toast.passwordChanged') });
     },
     onError: (error: Error) => {
       addNotification.error({
-        message: error.message || 'Не удалось изменить пароль',
+        message: error.message || t('toast.passwordChangeFailed'),
       });
     },
   });
@@ -83,12 +84,12 @@ export const useResetPassword = () =>
       ),
     onSuccess: (result) => {
       addNotification.success({
-        message: `Новый пароль: ${result.new_password}`,
+        message: t('toast.passwordReset', { password: result.new_password }),
       });
     },
     onError: (error: Error) => {
       addNotification.error({
-        message: error.message || 'Не удалось сбросить пароль',
+        message: error.message || t('toast.passwordResetFailed'),
       });
     },
   });

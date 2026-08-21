@@ -1,4 +1,5 @@
 import { Badge, Button, Group } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface PermissionsTreeToolbarProps {
   selectedCount: number;
@@ -17,6 +18,7 @@ export function PermissionsTreeToolbar({
   onToggleExpandAll,
   onToggleSelectAll,
 }: PermissionsTreeToolbarProps) {
+  const { t } = useI18n();
   return (
     <Group justify="space-between" wrap="nowrap" mb="xs">
       <Group gap={8}>
@@ -27,7 +29,7 @@ export function PermissionsTreeToolbar({
           radius="xs"
           onClick={onToggleExpandAll}
         >
-          {allExpanded ? 'Свернуть' : 'Развернуть'}
+          {allExpanded ? t('form.collapse') : t('form.expand')}
         </Button>
         <Button
           variant="light"
@@ -36,7 +38,7 @@ export function PermissionsTreeToolbar({
           radius="xs"
           onClick={onToggleSelectAll}
         >
-          {allSelected ? 'Снять все' : 'Выбрать все'}
+          {allSelected ? t('form.deselectAll') : t('form.selectAll')}
         </Button>
       </Group>
       <Badge size="sm" variant="transparent" color="gray">

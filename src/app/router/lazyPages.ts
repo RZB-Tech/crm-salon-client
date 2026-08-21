@@ -33,6 +33,9 @@ export const PromotionsPage = lazy(() =>
 export const GiftCardsPage = lazy(() =>
   import('@/pages/gift-cards').then((m) => ({ default: m.GiftCardsPage })),
 );
+export const BranchesPage = lazy(() =>
+  import('@/pages/branches').then((m) => ({ default: m.BranchesPage })),
+);
 export const AdminPage = lazy(() =>
   import('@/pages/admin').then((m) => ({ default: m.AdminPage })),
 );

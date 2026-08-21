@@ -12,6 +12,7 @@ import {
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { formatPrice, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './employees-page.module.css';
 
 export interface EmployeeCardProps {
@@ -33,6 +34,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
   onDelete,
   onRestore,
 }) => {
+  const { t } = useI18n();
   const servicesCount = employee.services?.length ?? 0;
 
   return (
@@ -63,7 +65,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
         </Group>
         <Group gap={6}>
           <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
-            {employee.active ? 'Активен' : 'Неактивен'}
+            {employee.active ? t('form.staffActive') : t('form.staffInactive')}
           </Badge>
           {canManage &&
             (showArchived ? (
@@ -71,7 +73,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
                 variant="subtle"
                 color="gray"
                 size="sm"
-                aria-label="Восстановить"
+                aria-label={t('common.restore')}
                 onClick={(e) => {
                   e.stopPropagation();
                   onRestore(employee);
@@ -84,7 +86,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
                 variant="subtle"
                 color="orange"
                 size="sm"
-                aria-label="Архивировать"
+                aria-label={t('common.archive')}
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(employee);
@@ -98,23 +100,23 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
 
       <Group gap={6} mb="md">
         <Badge size="xs" variant="light" color="gray">
-          Услуг: {servicesCount}
+          {t('employees.servicesCount', { count: servicesCount })}
         </Badge>
         {employee.salary_fixed > 0 && (
           <Badge size="xs" variant="light" color="sage">
-            Фикс: {formatPrice(employee.salary_fixed)}
+            {t('employees.fixed', { amount: formatPrice(employee.salary_fixed) })}
           </Badge>
         )}
         {employee.percent_from_services > 0 && (
           <Badge size="xs" variant="light" color="teal">
-            % услуг: {employee.percent_from_services}
+            {t('employees.percentServicesShort', { n: employee.percent_from_services })}
           </Badge>
         )}
       </Group>
 
       <Divider mb="md" />
       <Text size="xs" c="dimmed">
-        Дата рождения: {employee.birth_date}
+        {t('employees.birthDateLabel', { date: employee.birth_date })}
       </Text>
     </Card>
   );

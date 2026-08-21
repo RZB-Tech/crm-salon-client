@@ -4,6 +4,7 @@ import { queryKeys } from '@/shared/api/query-keys';
 import { invalidateAppointmentRelations } from '@/shared/api/invalidate';
 import type { Appointment, AppointmentCancelledReason } from '@/shared/api/types';
 import { addNotification } from '@/shared/lib/notifications';
+import { t } from '@/shared/lib/i18n';
 import { formValuesToPayload, type AppointmentFormValues } from './appointmentForm';
 import {
   AppointmentEditBlockedError,
@@ -63,7 +64,7 @@ export const useBoardFormActions = ({
         employeeId: editingEmployeeId,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.materials.all });
-      addNotification.success({ message: 'Запись сохранена' });
+      addNotification.success({ message: t('toast.appointmentSaved') });
       afterSave();
     } catch (error) {
       const message =
@@ -71,7 +72,7 @@ export const useBoardFormActions = ({
           ? error.message
           : error instanceof Error
             ? error.message
-            : 'Не удалось сохранить запись';
+            : t('toast.appointmentSaveFailed');
       addNotification.error({ message });
     } finally {
       setIsSyncing(false);

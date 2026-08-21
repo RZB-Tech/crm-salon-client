@@ -19,11 +19,13 @@ import {
 } from '@/shared/api/hooks/useTenantPreferences';
 import { ListPageShell } from '@/shared/ui';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { SpecializationsSection } from './SpecializationsSection';
 import styles from './settings-page.module.css';
 
 export const SettingsPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const { data: prefs, isLoading, isError } = useTenantPreferences();
   const updatePrefs = useUpdateTenantPreferences();
@@ -42,7 +44,7 @@ export const SettingsPage: React.FC = () => {
       <ListPageShell
         toolbar={
           <Text size="sm" fw={700} c="#484848">
-            Настройки
+            {t('settings.title')}
           </Text>
         }
       >
@@ -57,8 +59,8 @@ export const SettingsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить настройки">
-            Проверьте доступность API
+          <Alert color="red" title={t('settings.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -72,11 +74,11 @@ export const SettingsPage: React.FC = () => {
       toolbar={
         <>
           <Text size="sm" fw={700} c="#484848">
-            Настройки
+            {t('settings.title')}
           </Text>
           {hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE) && (
             <Button color="sage.7" size="sm" onClick={handleSave} loading={updatePrefs.isPending}>
-              Сохранить
+              {t('common.save')}
             </Button>
           )}
         </>
@@ -84,40 +86,40 @@ export const SettingsPage: React.FC = () => {
     >
       <Box className={styles.formSection}>
         <Text fw={600} size="sm" c="#484848" className={styles.sectionTitle}>
-          Общие
+          {t('settings.general')}
         </Text>
         <Stack gap="md">
           <Group grow>
             <Select
-              label="Тема"
+              label={t('settings.theme')}
               data={[
-                { value: 'light', label: 'Светлая' },
-                { value: 'dark', label: 'Тёмная' },
+                { value: 'light', label: t('settings.light') },
+                { value: 'dark', label: t('settings.dark') },
               ]}
               value={form.theme}
               onChange={(v) => setForm({ ...form, theme: (v as 'light' | 'dark') ?? 'light' })}
             />
             <TextInput
-              label="Часовой пояс"
+              label={t('settings.timezone')}
               value={form.timezone}
               onChange={(e) => setForm({ ...form, timezone: e.currentTarget.value })}
             />
           </Group>
           <Group grow>
             <TextInput
-              label="Валюта"
+              label={t('settings.currency')}
               value={form.currency}
               onChange={(e) => setForm({ ...form, currency: e.currentTarget.value })}
             />
             <NumberInput
-              label="Срок отмены оплаты (часы)"
+              label={t('settings.cancelDue')}
               min={0}
               value={form.cancel_payment_due}
               onChange={(v) => setForm({ ...form, cancel_payment_due: Number(v) || 0 })}
             />
           </Group>
           <Switch
-            label="Telegram-бронирование"
+            label={t('settings.telegram')}
             checked={form.enable_telegram_booking}
             onChange={(e) =>
               setForm({ ...form, enable_telegram_booking: e.currentTarget.checked })

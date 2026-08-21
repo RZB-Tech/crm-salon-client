@@ -3,6 +3,7 @@ import { Box, Button, Group } from '@mantine/core';
 import { Plus } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { ArchiveToggle } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { EmployeeFilterPopover } from './EmployeeFilterPopover';
 import styles from './board-page.module.css';
 
@@ -26,7 +27,9 @@ export const BoardToolbar: React.FC<BoardToolbarProps> = ({
   canCreateAppointment,
   canOpenCreateForm,
   onCreateAppointment,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Box className={styles.toolbar}>
     <Box className={styles.toolbarMain}>
       {boardEmployees.length > 0 && (
@@ -46,10 +49,11 @@ export const BoardToolbar: React.FC<BoardToolbarProps> = ({
           onClick={onCreateAppointment}
           disabled={!canOpenCreateForm}
         >
-          Новая запись
+          {t('board.newAppointment')}
         </Button>
       )}
       <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />
     </Group>
   </Box>
-);
+  );
+};

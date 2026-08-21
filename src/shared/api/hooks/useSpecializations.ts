@@ -6,6 +6,7 @@ import type {
   SpecializationCreatePayload,
   SpecializationUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useSpecializations = (archived = false) =>
@@ -30,7 +31,7 @@ export const useCreateSpecialization = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Специализация создана' });
+      addNotification.success({ message: t('toast.specCreated') });
     },
   });
 };
@@ -45,7 +46,7 @@ export const useUpdateSpecialization = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.detail(payload.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Специализация обновлена' });
+      addNotification.success({ message: t('toast.specUpdated') });
     },
   });
 };
@@ -59,7 +60,7 @@ export const useArchiveSpecialization = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Специализация архивирована' });
+      addNotification.success({ message: t('toast.specArchived') });
     },
   });
 };
@@ -73,7 +74,7 @@ export const useRestoreSpecialization = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.specializations.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Специализация восстановлена' });
+      addNotification.success({ message: t('toast.specRestored') });
     },
   });
 };

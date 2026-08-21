@@ -2,6 +2,7 @@ import React from 'react';
 import { NumberInput, TextInput } from '@mantine/core';
 import type { Promotion } from '@/shared/api/types';
 import { formatPrice } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import {
   getLinePromoView,
   isPriceChanged,
@@ -27,6 +28,7 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
   onPriceChange,
   onReasonChange,
 }) => {
+  const { t } = useI18n();
   const changed = isPriceChanged(line);
   const promo = getLinePromoView(line, promotions);
   const unitFinal = promo.final;
@@ -35,7 +37,7 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
     <>
       <div className={styles.lineMetrics}>
         <NumberInput
-          label="Количество"
+          label={t('board.quantity')}
           min={1}
           placeholder="1"
           value={line.quantity}
@@ -43,13 +45,13 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
           disabled={readOnly}
         />
         <NumberInput
-          label="Цена"
+          label={t('services.price')}
           min={0}
-          placeholder="200 000 сум"
+          placeholder={t('board.pricePlaceholder')}
           value={line.price || ''}
           onChange={(value) => onPriceChange(Number(value) || 0)}
           thousandSeparator=" "
-          suffix=" сум"
+          suffix={` ${t('common.currency')}`}
           disabled={readOnly}
         />
       </div>
@@ -57,9 +59,9 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
       <ServiceLinePromo view={promo} />
 
       <TextInput
-        label="Заметка"
-        placeholder="Добавьте заметку"
-        description={changed ? undefined : 'Необязательно'}
+        label={t('board.note')}
+        placeholder={t('board.addNote')}
+        description={changed ? undefined : t('common.optional')}
         required={changed}
         value={line.priceChangedReason}
         onChange={(event) => onReasonChange(event.currentTarget.value)}
@@ -68,12 +70,12 @@ export const ServiceLineMetrics: React.FC<ServiceLineMetricsProps> = ({
           changed &&
           line.priceChangedReason.trim().length > 0 &&
           line.priceChangedReason.trim().length < 5
-            ? 'Слишком коротко'
+            ? t('board.tooShort')
             : undefined
         }
       />
 
-      <p className={styles.lineSubtotal}>Итого: {formatPrice(line.quantity * unitFinal)}</p>
+      <p className={styles.lineSubtotal}>{t('board.total')} {formatPrice(line.quantity * unitFinal)}</p>
     </>
   );
 };

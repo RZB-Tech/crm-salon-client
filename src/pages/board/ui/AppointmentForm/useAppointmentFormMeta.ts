@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Client, Promotion } from '@/shared/api/types';
 import { getClientShortName } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 import {
   calcServicesTotal,
   isAppointmentFormValid,
@@ -40,12 +41,12 @@ export const useAppointmentFormMeta = ({
 
   const title =
     mode === 'create'
-      ? 'Новая запись'
+      ? t('board.newAppointment')
       : selectedClient
         ? getClientShortName(selectedClient)
-        : 'Запись клиента';
+        : t('board.clientAppointment');
 
-  const subtitle = mode === 'create' ? undefined : 'Визит клиента';
+  const subtitle = mode === 'create' ? undefined : t('board.clientVisit');
 
   return { title, subtitle, total, isValid, fieldsLocked };
 };

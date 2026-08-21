@@ -5,6 +5,7 @@ import {
   parseApiDateFromDateTime,
   parseApiTimeFromDateTime,
 } from '@/shared/lib/format';
+import { getDateLocale, t } from '@/shared/lib/i18n';
 
 export const getAppointmentClientId = (appointment: Appointment): number =>
   appointment.client_id ?? appointment.client?.id ?? 0;
@@ -14,7 +15,7 @@ export const getAppointmentClientName = (appointment: Appointment): string => {
     return getClientFullName(appointment.client);
   }
   const id = getAppointmentClientId(appointment);
-  return id ? `Клиент #${id}` : '—';
+  return id ? t('form.clientNamed', { id }) : t('common.dash');
 };
 
 export const getAppointmentEmployeesLabel = (appointment: Appointment): string => {
@@ -22,9 +23,9 @@ export const getAppointmentEmployeesLabel = (appointment: Appointment): string =
     if (record.employee) {
       return [record.employee.firstname, record.employee.lastname].filter(Boolean).join(' ');
     }
-    return `Сотрудник #${record.employee_id}`;
+    return t('form.employeeNamed', { id: record.employee_id });
   });
-  return names.length > 0 ? names.join(', ') : '—';
+  return names.length > 0 ? names.join(', ') : t('common.dash');
 };
 
 export const getAppointmentServicesLabel = (appointment: Appointment): string => {
@@ -32,12 +33,14 @@ export const getAppointmentServicesLabel = (appointment: Appointment): string =>
     (record.services ?? []).map((service) => {
       const name =
         service.service?.name ??
-        (service.material_id != null ? `Товар #${service.material_id}` : `Позиция #${service.id}`);
+        (service.material_id != null
+          ? t('form.productNamed', { id: service.material_id })
+          : t('form.lineNamed', { id: service.id }));
       const qty = service.quantity > 1 ? ` ×${service.quantity}` : '';
       return `${name}${qty} (${formatPrice(service.final_price ?? service.price ?? 0)})`;
     }),
   );
-  return lines.length > 0 ? lines.join('; ') : '—';
+  return lines.length > 0 ? lines.join('; ') : t('common.dash');
 };
 
 export const getAppointmentWhenLabel = (appointment: Appointment): string => {
@@ -46,7 +49,7 @@ export const getAppointmentWhenLabel = (appointment: Appointment): string => {
   const end = parseApiTimeFromDateTime(appointment.end_time_est);
   const [year, month, day] = date.split('-').map(Number);
   const local = new Date(year, month - 1, day);
-  const dateLabel = local.toLocaleDateString('ru-RU', {
+  const dateLabel = local.toLocaleDateString(getDateLocale(), {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

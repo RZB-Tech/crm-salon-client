@@ -50,7 +50,7 @@ export function useNotificationsPage() {
   const closeReadModal = React.useCallback(() => setReadTarget(null), []);
 
   const confirmRead = React.useCallback(() => {
-    if (readTarget == null) return;
+    if (readTarget == null || !readComment.trim()) return;
     readNotification.mutate(
       { id: readTarget, notes: readComment.trim() },
       {
@@ -61,6 +61,19 @@ export function useNotificationsPage() {
       },
     );
   }, [readTarget, readComment, readNotification]);
+
+  const confirmCancel = React.useCallback(() => {
+    if (readTarget == null || !readComment.trim()) return;
+    cancelNotification.mutate(
+      { id: readTarget, notes: readComment.trim() },
+      {
+        onSuccess: () => {
+          setReadTarget(null);
+          setReadComment('');
+        },
+      },
+    );
+  }, [readTarget, readComment, cancelNotification]);
 
   return {
     formOpen,
@@ -82,5 +95,6 @@ export function useNotificationsPage() {
     openReadModal,
     closeReadModal,
     confirmRead,
+    confirmCancel,
   };
 }

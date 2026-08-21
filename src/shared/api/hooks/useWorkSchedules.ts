@@ -12,6 +12,7 @@ import type {
   WorkScheduleCreatePayload,
   WorkScheduleUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useEmployeeWorkSchedule = (employeeId: number) =>
@@ -29,7 +30,7 @@ export const useCreateWorkSchedule = () => {
       apiPost<WorkSchedule, WorkScheduleCreatePayload>('/api/v1/work-schedules', payload),
     onSuccess: async (_, payload) => {
       await invalidateEmployeeSchedule(queryClient, payload.employee_id);
-      addNotification.success({ message: 'График сохранён' });
+      addNotification.success({ message: t('toast.scheduleSaved') });
     },
   });
 };
@@ -42,7 +43,7 @@ export const useUpdateWorkSchedule = () => {
       apiPatch<WorkSchedule, WorkScheduleUpdatePayload>('/api/v1/work-schedules', payload),
     onSuccess: async (result) => {
       await invalidateEmployeeSchedule(queryClient, result.employee_id);
-      addNotification.success({ message: 'График обновлён' });
+      addNotification.success({ message: t('toast.scheduleUpdated') });
     },
   });
 };
@@ -54,7 +55,7 @@ export const useDeleteWorkSchedule = () => {
     mutationFn: (id: number) => apiDelete<WorkSchedule>(`/api/v1/work-schedules/${id}`),
     onSuccess: async (result) => {
       await invalidateEmployeeSchedule(queryClient, result?.employee_id);
-      addNotification.success({ message: 'Смена удалена' });
+      addNotification.success({ message: t('toast.shiftDeleted') });
     },
   });
 };

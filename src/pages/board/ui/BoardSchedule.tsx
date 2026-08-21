@@ -3,6 +3,7 @@ import { Box } from '@mantine/core';
 import { ResourcesDayView } from '@mantine/schedule';
 import type { Employee } from '@/shared/api/types';
 import type { AppointmentFormValues } from '../lib/appointmentForm';
+import { getDayjsLocale, useI18n } from '@/shared/lib/i18n';
 import type { BoardAppointment } from './boardScheduleTypes';
 import { BoardResourceLabel } from './BoardResourceLabel';
 import { BoardScheduleEmptyState } from './BoardScheduleEmptyState';
@@ -30,6 +31,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
   onEventClick,
   onSlotCreate,
 }) => {
+  const { t } = useI18n();
   const schedule = useBoardSchedule({
     date,
     dateStr,
@@ -57,7 +59,7 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
         startTime="08:00:00"
         endTime="24:00:00"
         intervalMinutes={60}
-        locale="ru"
+        locale={getDayjsLocale()}
         withCurrentTimeIndicator
         withDragSlotSelect
         withHeader={false}
@@ -96,13 +98,13 @@ export const BoardSchedule: React.FC<BoardScheduleProps> = ({
           />
         )}
         labels={{
-          today: 'Сегодня',
-          day: 'День',
-          week: 'Неделя',
-          month: 'Месяц',
-          resources: 'Сотрудники',
-          previous: 'Назад',
-          next: 'Вперёд',
+          today: t('board.today'),
+          day: t('board.day'),
+          week: t('board.week'),
+          month: t('board.month'),
+          resources: t('board.employees'),
+          previous: t('board.previous'),
+          next: t('board.next'),
         }}
       />
     </Box>

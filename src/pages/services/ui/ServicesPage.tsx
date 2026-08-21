@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
 import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useServicesPage } from '../lib/useServicesPage';
 import { ServiceFormModal } from './ServiceFormModal';
@@ -9,6 +10,7 @@ import { ServicesTable } from './ServicesTable';
 import { ServicesToolbar } from './ServicesToolbar';
 
 export const ServicesPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const {
     activeCategory,
@@ -65,8 +67,8 @@ export const ServicesPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить данные">
-            Проверьте доступность API
+          <Alert color="red" title={t('services.loadDataError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -136,8 +138,8 @@ export const ServicesPage: React.FC = () => {
 
       <ConfirmModal
         opened={Boolean(archiveServiceTarget)}
-        title="Архивировать услугу"
-        message={`Архивировать «${archiveServiceTarget?.name ?? ''}»? Услуга будет скрыта из списка.`}
+        title={t('services.archiveTitle')}
+        message={t('services.archiveMessage', { name: archiveServiceTarget?.name ?? '' })}
         loading={archiveService.isPending}
         onConfirm={confirmArchive}
         onClose={() => setArchiveServiceTargetId(null)}

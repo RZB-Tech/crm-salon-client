@@ -13,6 +13,7 @@ import { formatPrice } from '@/shared/lib/format';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { PayrollFormModal } from './payments/PayrollFormModal';
 import { PayrollTable } from './payments/PayrollTable';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from '../employee-profile.module.css';
 
 interface PaymentsTabProps {
@@ -20,6 +21,7 @@ interface PaymentsTabProps {
 }
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
+  const { t } = useI18n();
   const [formOpen, setFormOpen] = React.useState(false);
   const [editingId, setEditingId] = React.useState<number | null>(null);
   const [payrollType, setPayrollType] = React.useState<PayrollType>('salary');
@@ -81,10 +83,12 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
     <Box>
       <Box className={styles.toolbar}>
         <Text fw={600}>
-          Выплаты {payrolls && payrolls.length > 0 ? `· итого ${formatPrice(total)}` : ''}
+          {payrolls && payrolls.length > 0
+            ? t('employees.payoutsTotal', { amount: formatPrice(total) })
+            : t('employees.payments')}
         </Text>
         <Button size="sm" leftSection={<Plus size={15} />} onClick={openCreate}>
-          Добавить выплату
+          {t('form.addPayroll')}
         </Button>
       </Box>
 
@@ -111,8 +115,8 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ employeeId }) => {
 
       <ConfirmModal
         opened={Boolean(deleteTarget)}
-        title="Архивировать выплату"
-        message="Архивировать эту выплату? Запись будет скрыта."
+        title={t('employees.archivePayroll')}
+        message={t('employees.archivePayrollMessage')}
         loading={archivePayroll.isPending}
         onConfirm={() =>
           deleteTarget &&

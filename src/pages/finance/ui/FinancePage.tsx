@@ -11,8 +11,10 @@ import { PayoutsTab, type PayoutsTabHandle } from './tabs/PayoutsTab';
 import { ReceiptFormModal } from './ReceiptFormModal';
 import { PaymentFormModal } from './PaymentFormModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 
 export const FinancePage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('receipts');
   const [receiptFormOpen, setReceiptFormOpen] = React.useState(false);
@@ -38,7 +40,7 @@ export const FinancePage: React.FC = () => {
         <Group gap={8} wrap="nowrap">
           {hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT) && (
             <Button variant="light" color="sage" size="sm" onClick={() => openPaymentForm()}>
-              Провести оплату
+              {t('form.makePayment')}
             </Button>
           )}
           {hasPermission(PermissionCode.RECEIPT_CREATE) && (
@@ -48,7 +50,7 @@ export const FinancePage: React.FC = () => {
               size="sm"
               onClick={() => setReceiptFormOpen(true)}
             >
-              Новый чек
+              {t('form.newReceipt')}
             </Button>
           )}
         </Group>
@@ -63,7 +65,7 @@ export const FinancePage: React.FC = () => {
           size="sm"
           onClick={() => transactionsRef.current?.openCreate()}
         >
-          Новая транзакция
+          {t('form.newTransaction')}
         </Button>
       );
     }
@@ -76,7 +78,7 @@ export const FinancePage: React.FC = () => {
           size="sm"
           onClick={() => payoutsRef.current?.openCreate()}
         >
-          Новая выплата
+          {t('form.newPayout')}
         </Button>
       );
     }
@@ -106,8 +108,8 @@ export const FinancePage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить финансы">
-            Проверьте доступность API
+          <Alert color="red" title={t('finance.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -122,10 +124,10 @@ export const FinancePage: React.FC = () => {
             value={tab}
             onChange={setTab}
             data={[
-              { value: 'receipts', label: 'Чеки' },
-              { value: 'payments', label: 'Оплаты' },
-              { value: 'transactions', label: 'Транзакции' },
-              { value: 'payouts', label: 'Выплаты' },
+              { value: 'receipts', label: t('finance.receipts') },
+              { value: 'payments', label: t('finance.payments') },
+              { value: 'transactions', label: t('finance.transactions') },
+              { value: 'payouts', label: t('finance.payouts') },
             ]}
           />
           {toolbarActions}

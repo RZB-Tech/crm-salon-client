@@ -4,6 +4,7 @@ import { AirplaneTakeoffIcon } from '@phosphor-icons/react';
 import { DateInput } from '@mantine/dates';
 import type { Absence, AbsenceType } from '@/shared/api/types';
 import { ABSENCE_TYPE_OPTIONS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { FormFieldGrid, FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 
@@ -37,57 +38,60 @@ export const AbsenceFormModal: React.FC<AbsenceFormModalProps> = ({
   onStartDateChange,
   onEndDateChange,
   onReasonChange,
-}) => (
-  <FormModal
-    opened={opened}
-    onClose={onClose}
-    title={editingAbsence ? 'Редактировать отсутствие' : 'Добавить отсутствие'}
-    icon={<AirplaneTakeoffIcon />}
-    size={567}
-    footer={
-      <FormModalFooter
-        onCancel={onClose}
-        submitLabel="Сохранить"
-        onSubmit={onSubmit}
-        loading={loading}
-      />
-    }
-  >
-    <FormSection title="Период">
-      <Stack gap="sm">
-        <Select
-          label="Тип"
-          data={ABSENCE_TYPE_OPTIONS}
-          value={absenceType}
-          onChange={(v) => onAbsenceTypeChange((v as AbsenceType) ?? 'vacation')}
+}) => {
+  const { t } = useI18n();
+  return (
+    <FormModal
+      opened={opened}
+      onClose={onClose}
+      title={editingAbsence ? t('form.editAbsence') : t('form.addAbsence')}
+      icon={<AirplaneTakeoffIcon />}
+      size={567}
+      footer={
+        <FormModalFooter
+          onCancel={onClose}
+          submitLabel={t('common.save')}
+          onSubmit={onSubmit}
+          loading={loading}
         />
-        <FormFieldGrid>
-          <DateInput
-            label="С"
-            value={startDate || null}
-            onChange={(value) => onStartDateChange(value ?? '')}
+      }
+    >
+      <FormSection title={t('form.period')}>
+        <Stack gap="sm">
+          <Select
+            label={t('form.type')}
+            data={ABSENCE_TYPE_OPTIONS()}
+            value={absenceType}
+            onChange={(v) => onAbsenceTypeChange((v as AbsenceType) ?? 'vacation')}
           />
-          <DateInput
-            label="По"
-            value={endDate || null}
-            onChange={(value) => onEndDateChange(value ?? '')}
-          />
-        </FormFieldGrid>
-      </Stack>
-    </FormSection>
-
-    <FormSection title="Комментарий">
-      <TextInput
-        label="Причина"
-        value={reason}
-        onChange={(e) => onReasonChange(e.currentTarget.value)}
-      />
-    </FormSection>
-
-    {editingAbsence && (
-      <FormSection title="История изменений" muted>
-        <AuditLogsPanel tableName="employee_absences" recordId={editingAbsence.id} />
+          <FormFieldGrid>
+            <DateInput
+              label={t('form.from')}
+              value={startDate || null}
+              onChange={(value) => onStartDateChange(value ?? '')}
+            />
+            <DateInput
+              label={t('form.until')}
+              value={endDate || null}
+              onChange={(value) => onEndDateChange(value ?? '')}
+            />
+          </FormFieldGrid>
+        </Stack>
       </FormSection>
-    )}
-  </FormModal>
-);
+
+      <FormSection title={t('common.comment')}>
+        <TextInput
+          label={t('form.reason')}
+          value={reason}
+          onChange={(e) => onReasonChange(e.currentTarget.value)}
+        />
+      </FormSection>
+
+      {editingAbsence && (
+        <FormSection title={t('form.changeHistory')} muted>
+          <AuditLogsPanel tableName="employee_absences" recordId={editingAbsence.id} />
+        </FormSection>
+      )}
+    </FormModal>
+  );
+};

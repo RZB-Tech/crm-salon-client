@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, apiPost, apiRequest } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Payout, PayoutCreatePayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const usePayouts = () =>
@@ -33,10 +34,10 @@ export const useCreatePayout = () => {
           queryKey: queryKeys.employees.payrolls(result.employee_id),
         });
       }
-      addNotification.success({ message: 'Выплата проведена' });
+      addNotification.success({ message: t('toast.payoutCreated') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось создать выплату' });
+      addNotification.error({ message: error.message || t('toast.payoutCreateFailed') });
     },
   });
 };

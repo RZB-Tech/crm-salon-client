@@ -1,6 +1,7 @@
 import { Badge, Button } from '@mantine/core';
 import { KeyIcon, UserIcon } from '@phosphor-icons/react';
 import type { Permission, Staff } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 import { getStaffFullName, getStaffInitials } from '../../lib/staffDisplay';
 import { PasswordResultAlert } from './PasswordResultAlert';
@@ -29,6 +30,7 @@ export function StaffDetailModal({
   onOpenReset,
   resetResult,
 }: StaffDetailModalProps) {
+  const { t } = useI18n();
   if (!staff) return null;
 
   return (
@@ -41,7 +43,7 @@ export function StaffDetailModal({
       icon={<UserIcon size={22} />}
       headerAside={
         <Badge color={staff.active ? 'green' : 'gray'} variant="dot" size="lg">
-          {staff.active ? 'Активен' : 'Неактивен'}
+          {staff.active ? t('form.staffActive') : t('form.staffInactive')}
         </Badge>
       }
       badges={
@@ -56,7 +58,7 @@ export function StaffDetailModal({
       size={567}
       footer={
         <FormModalFooter
-          cancelLabel="Закрыть"
+          cancelLabel={t('common.close')}
           onCancel={onClose}
           dangerActions={
             <Button
@@ -66,7 +68,7 @@ export function StaffDetailModal({
               leftSection={<KeyIcon size={14} />}
               onClick={() => onOpenReset(staff)}
             >
-              Сбросить пароль
+              {t('form.resetPasswordAction')}
             </Button>
           }
         />
@@ -74,8 +76,8 @@ export function StaffDetailModal({
     >
       {resetResult ? (
         <PasswordResultAlert
-          title="Пароль сброшен"
-          label="Новый пароль:"
+          title={t('form.passwordResetTitle')}
+          label={t('form.newPasswordLabel')}
           password={resetResult}
         />
       ) : null}

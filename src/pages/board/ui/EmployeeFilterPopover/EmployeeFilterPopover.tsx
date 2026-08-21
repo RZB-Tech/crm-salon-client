@@ -1,6 +1,7 @@
 import React from 'react';
 import { Popover } from '@mantine/core';
 import type { Employee } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { EmployeeFilterDropdown } from './EmployeeFilterDropdown';
 import { EmployeeFilterTrigger } from './EmployeeFilterTrigger';
 
@@ -19,6 +20,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
   onChange,
   embedded = false,
 }) => {
+  const { t } = useI18n();
   const [opened, setOpened] = React.useState(false);
   const [search, setSearch] = React.useState('');
 
@@ -42,9 +44,9 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
   }, [onChange]);
 
   const buttonLabel = React.useMemo(() => {
-    if (selectedIds.size === 0) return 'Сотрудники';
-    return `Сотрудники (${selectedIds.size})`;
-  }, [selectedIds.size]);
+    if (selectedIds.size === 0) return t('board.employees');
+    return `${t('board.employees')} (${selectedIds.size})`;
+  }, [selectedIds.size, t]);
 
   return (
     <Popover

@@ -4,6 +4,7 @@ import type { Employee } from '@/shared/api/types';
 import { EmployeeCard } from './EmployeeCard';
 import { EmployeesTable } from './EmployeesTable';
 import type { ListViewMode } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import styles from './employees-page.module.css';
 
@@ -30,12 +31,13 @@ export const EmployeesListBody: React.FC<EmployeesListBodyProps> = ({
   onArchive,
   onRestore,
 }) => {
+  const { t } = useI18n();
   if (view === 'cards') {
     return (
       <Box className={styles.cardsArea}>
         {employees.length === 0 ? (
           <Text size="sm" c="dimmed" ta="center" py="xl">
-            Сотрудники не найдены
+            {t('employees.notFound')}
           </Text>
         ) : (
           <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">

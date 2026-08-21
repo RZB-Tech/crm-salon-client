@@ -5,8 +5,10 @@ import { Link } from 'react-router-dom';
 import { authStorage } from '@/shared/api/client';
 import LogoSvg from '@/shared/assets/logo.svg?url';
 import MiniLogoSvg from '@/shared/assets/miniLogo.svg?url';
+import { useI18n } from '@/shared/lib/i18n';
 import { HeaderNotifications } from './HeaderNotifications';
 import { HeaderUserMenu } from './HeaderUserMenu';
+import { LanguageSwitch } from './LanguageSwitch';
 import styles from './header.module.css';
 
 interface HeaderProps {
@@ -16,6 +18,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   const tenantName = authStorage.getTenantName() ?? 'Salon CRM';
+  const { t } = useI18n();
 
   const toggleButton = (
     <ActionIcon
@@ -23,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
       color="gray"
       size="lg"
       onClick={onToggle}
-      aria-label={collapsed ? 'Развернуть меню' : 'Свернуть меню'}
+      aria-label={collapsed ? t('header.expandMenu') : t('header.collapseMenu')}
       aria-expanded={!collapsed}
       className={styles.toggle}
     >
@@ -34,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
   return (
     <header className={styles.header}>
       <Box className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`}>
-        <Link to="/board" className={styles.logoLink} aria-label="На рабочий стол">
+        <Link to="/board" className={styles.logoLink} aria-label={t('header.toBoard')}>
           <Image
             src={collapsed ? MiniLogoSvg : LogoSvg}
             alt="Logo"
@@ -53,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
         </Text>
 
         <Group gap="sm" className={styles.right}>
+          <LanguageSwitch />
           <HeaderNotifications />
           <HeaderUserMenu />
         </Group>

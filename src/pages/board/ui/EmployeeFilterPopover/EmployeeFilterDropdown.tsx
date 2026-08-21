@@ -3,6 +3,7 @@ import { Avatar, Box, Button, Checkbox, Group, ScrollArea, Text, TextInput } fro
 import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import type { Employee } from '@/shared/api/types';
 import { getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 import styles from './employee-filter-popover.module.css';
 
@@ -25,6 +26,7 @@ export const EmployeeFilterDropdown: React.FC<EmployeeFilterDropdownProps> = ({
   onSelectAll,
   onReset,
 }) => {
+  const { t } = useI18n();
   const filteredEmployees = React.useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return employees;
@@ -37,7 +39,7 @@ export const EmployeeFilterDropdown: React.FC<EmployeeFilterDropdownProps> = ({
     <>
       <TextInput
         className={styles.employeeFilterSearch}
-        placeholder="Поиск сотрудника"
+        placeholder={t('board.searchEmployee')}
         leftSection={<MagnifyingGlassIcon size={16} />}
         value={search}
         onChange={(event) => onSearchChange(event.currentTarget.value)}
@@ -45,17 +47,17 @@ export const EmployeeFilterDropdown: React.FC<EmployeeFilterDropdownProps> = ({
 
       <Group className={styles.employeeFilterActions}>
         <Button variant="subtle" size="xs" color="gray" onClick={onSelectAll}>
-          Выбрать всех
+          {t('board.selectAll')}
         </Button>
         <Button variant="subtle" size="xs" color="gray" onClick={onReset}>
-          Сбросить
+          {t('board.reset')}
         </Button>
       </Group>
 
       <ScrollArea.Autosize mah={320} offsetScrollbars>
         {filteredEmployees.length === 0 ? (
           <Text size="sm" c="dimmed" className={styles.employeeFilterEmpty}>
-            Ничего не найдено
+            {t('form.nothingFound')}
           </Text>
         ) : (
           filteredEmployees.map((employee) => {

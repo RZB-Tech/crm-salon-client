@@ -74,4 +74,9 @@ export const queryKeys = {
     list: (tableName: string, recordId: number, page: number) =>
       ['audit-logs', tableName, recordId, page] as const,
   },
+  tenantBranches: {
+    all: ['tenant-branches'] as const,
+    report: ['tenant-branches', 'report'] as const,
+    reportDetail: (id: number) => ['tenant-branches', 'report', id] as const,
+  },
 };

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
 import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { usePromotionsPage } from '../lib/usePromotionsPage';
 import { PromotionFormModal } from './PromotionFormModal';
 import { PromotionsTable } from './PromotionsTable';
 import { PromotionsToolbar } from './PromotionsToolbar';
 
 export const PromotionsPage: React.FC = () => {
+  const { t } = useI18n();
   const {
     search,
     setSearch,
@@ -56,8 +58,8 @@ export const PromotionsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить акции">
-            Проверьте доступность API
+          <Alert color="red" title={t('promotions.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -114,8 +116,8 @@ export const PromotionsPage: React.FC = () => {
       />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать акцию"
-        message={`Архивировать «${archiveTarget?.name ?? ''}»? Акция будет скрыта из списка.`}
+        title={t('promotions.archiveTitle')}
+        message={t('promotions.archiveMessage', { name: archiveTarget?.name ?? '' })}
         loading={archivePromotion.isPending}
         onConfirm={confirmArchive}
         onClose={() => setArchiveTargetId(null)}

@@ -5,6 +5,7 @@ import type {
   TransactionType,
 } from '@/shared/api/types';
 import { TRANSACTION_CATEGORY_LABELS } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 
 export interface TransactionFormState {
   type: TransactionType;
@@ -22,13 +23,12 @@ export const DEFAULT_FORM: TransactionFormState = {
   notes: '',
 };
 
-export const CATEGORY_FILTER_OPTIONS = Object.entries(TRANSACTION_CATEGORY_LABELS).map(
-  ([value, label]) => ({ value, label }),
-);
+export const CATEGORY_FILTER_OPTIONS = () =>
+  Object.entries(TRANSACTION_CATEGORY_LABELS).map(([value, label]) => ({ value, label }));
 
-export const SOURCE_FILTER_OPTIONS = [
-  { value: 'auto', label: 'Автоматические' },
-  { value: 'manual', label: 'Ручные' },
+export const SOURCE_FILTER_OPTIONS = () => [
+  { value: 'auto', label: t('finance.sourceAuto') },
+  { value: 'manual', label: t('finance.sourceManual') },
 ];
 
 export const isActiveTransaction = (transaction: Transaction): boolean => !transaction.cancelled;

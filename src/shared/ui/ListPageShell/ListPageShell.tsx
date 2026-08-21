@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Group, Pagination as MantinePagination, ScrollArea, Select, Text } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './list-page-shell.module.css';
 
 export const LIST_PAGE_SIZE_OPTIONS = [
@@ -56,6 +57,7 @@ export const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
+  const { t } = useI18n();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, total);
@@ -65,7 +67,7 @@ export const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
       <Box className={styles.paginationMeta}>
         <Group gap={8}>
           <Text size="sm" fw={500} c="#484848">
-            Показать:
+            {t('common.show')}
           </Text>
           <Select
             size="xs"
@@ -79,7 +81,7 @@ export const ListPaginationFooter: React.FC<ListPaginationFooterProps> = ({
           />
         </Group>
         <Text size="sm" c="#484848">
-          {from}–{to} из {total}
+          {from}–{to} {t('common.of')} {total}
         </Text>
       </Box>
 

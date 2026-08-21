@@ -1,4 +1,5 @@
 import { notifications } from '@mantine/notifications';
+import { t } from '@/shared/lib/i18n';
 
 interface NotificationOptions {
   title?: string;
@@ -6,18 +7,18 @@ interface NotificationOptions {
 }
 
 export const addNotification = {
-  success: ({ title = 'Успешно', message }: NotificationOptions) => {
+  success: ({ title, message }: NotificationOptions) => {
     notifications.show({
-      title,
+      title: title ?? t('common.success'),
       message,
       color: 'green',
       autoClose: 3000,
     });
   },
 
-  error: ({ title = 'Ошибка', message }: NotificationOptions) => {
+  error: ({ title, message }: NotificationOptions) => {
     notifications.show({
-      title,
+      title: title ?? t('common.errorTitle'),
       message,
       color: 'red',
       autoClose: 5000,

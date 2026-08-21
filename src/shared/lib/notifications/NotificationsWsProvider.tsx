@@ -8,8 +8,10 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
     contextValue,
     currentAlert,
     readPending,
+    cancelPending,
     dismissAlert,
     handleReadAlert,
+    handleCancelAlert,
   } = useNotificationsWs();
 
   return (
@@ -17,9 +19,11 @@ export const NotificationsWsProvider: React.FC<{ children: React.ReactNode }> = 
       {children}
       <SalonNotificationAlertModal
         notification={currentAlert}
-        loading={readPending}
+        readLoading={readPending}
+        cancelLoading={cancelPending}
         onDismiss={dismissAlert}
         onRead={handleReadAlert}
+        onCancel={handleCancelAlert}
       />
     </NotificationsWsContext.Provider>
   );

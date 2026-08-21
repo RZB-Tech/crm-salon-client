@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Stack } from '@mantine/core';
 import type { Appointment, PaymentMethod, Receipt } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
+import { useI18n } from '@/shared/lib/i18n';
 import { PaymentFormHero } from './PaymentFormHero';
 import { PaymentReceiptCreateSection } from './PaymentReceiptCreateSection';
 import { PaymentReceiptPaySection } from './PaymentReceiptPaySection';
@@ -60,7 +61,9 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
   onOpenCancelConfirm,
   onCloseCancelConfirm,
   onConfirmCancel,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Stack gap="sm">
     <PaymentFormHero
       appointment={appointment}
@@ -71,8 +74,8 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
     />
 
     {!appointment.records?.length && (
-      <Alert color="orange" variant="light" title="Нет позиций">
-        Вернитесь на вкладку «Запись» и добавьте услугу или товар.
+      <Alert color="orange" variant="light" title={t('finance.noLines')}>
+        {t('finance.noLinesHint')}
       </Alert>
     )}
 
@@ -106,12 +109,13 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
     <ConfirmModal
       opened={cancelConfirmOpen}
-      title="Отменить чек"
-      message="После отмены чека можно снова менять состав записи. Уже проведённые платежи будут отменены."
-      confirmLabel="Отменить чек"
+      title={t('form.cancelReceipt')}
+      message={t('finance.cancelReceiptMessage')}
+      confirmLabel={t('form.cancelReceipt')}
       loading={cancelPending}
       onConfirm={onConfirmCancel}
       onClose={onCloseCancelConfirm}
     />
   </Stack>
-);
+  );
+};

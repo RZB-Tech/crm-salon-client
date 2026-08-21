@@ -1,5 +1,6 @@
 import React from 'react';
 import { NumberInput, Select, TextInput } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormFieldGrid } from '@/shared/ui';
 
 interface ServiceFormFieldsProps {
@@ -24,43 +25,46 @@ export const ServiceFormFields: React.FC<ServiceFormFieldsProps> = ({
   onCategoryChange,
   onPriceChange,
   onTimeChange,
-}) => (
-  <>
-    <TextInput
-      label="Название"
-      required
-      placeholder="Введите название"
-      value={name}
-      onChange={(e) => onNameChange(e.currentTarget.value)}
-    />
-    <Select
-      label="Категория"
-      required
-      placeholder="Выберите категорию"
-      data={categoryOptions}
-      clearable
-      value={categoryId}
-      onChange={onCategoryChange}
-    />
-    <FormFieldGrid>
-      <NumberInput
-        label="Цена"
-        min={0}
-        placeholder="0 сум"
-        value={price || ''}
-        onChange={(v) => onPriceChange(Number(v) || 0)}
-        thousandSeparator=" "
-        suffix={price ? ' сум' : undefined}
+}) => {
+  const { t } = useI18n();
+  return (
+    <>
+      <TextInput
+        label={t('common.name')}
+        required
+        placeholder={t('form.enterName')}
+        value={name}
+        onChange={(e) => onNameChange(e.currentTarget.value)}
       />
-      <NumberInput
-        label="Длительность"
-        min={0}
-        step={5}
-        placeholder="0 минут"
-        value={estimatedTime || ''}
-        onChange={(v) => onTimeChange(Number(v) || 0)}
-        suffix={estimatedTime ? ' минут' : undefined}
+      <Select
+        label={t('services.category')}
+        required
+        placeholder={t('services.selectCategory')}
+        data={categoryOptions}
+        clearable
+        value={categoryId}
+        onChange={onCategoryChange}
       />
-    </FormFieldGrid>
-  </>
-);
+      <FormFieldGrid>
+        <NumberInput
+          label={t('services.price')}
+          min={0}
+          placeholder={t('services.pricePlaceholder')}
+          value={price || ''}
+          onChange={(v) => onPriceChange(Number(v) || 0)}
+          thousandSeparator=" "
+          suffix={price ? ` ${t('common.currency')}` : undefined}
+        />
+        <NumberInput
+          label={t('services.duration')}
+          min={0}
+          step={5}
+          placeholder={t('services.durationPlaceholder')}
+          value={estimatedTime || ''}
+          onChange={(v) => onTimeChange(Number(v) || 0)}
+          suffix={estimatedTime ? ` ${t('services.minutes')}` : undefined}
+        />
+      </FormFieldGrid>
+    </>
+  );
+};

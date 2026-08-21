@@ -3,6 +3,7 @@ import { apiFetchAllPost, apiPost, apiRequest } from '@/shared/api/client';
 import { invalidatePaymentFlow } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Appointment, Receipt, ReceiptCreatePayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const upsertAppointmentReceipt = (queryClient: ReturnType<typeof useQueryClient>, receipt: Receipt) => {
@@ -45,7 +46,7 @@ export const useCreateReceipt = () => {
         queryClient.setQueryData(queryKeys.receipts.detail(result.id), result);
       }
       await invalidatePaymentFlow(queryClient, result.appointment_id);
-      addNotification.success({ message: 'Чек создан' });
+      addNotification.success({ message: t('toast.receiptCreated') });
     },
   });
 };
@@ -72,7 +73,7 @@ export const useCancelReceipt = () => {
         );
       }
       await invalidatePaymentFlow(queryClient, result.appointment_id);
-      addNotification.success({ message: 'Чек отменён' });
+      addNotification.success({ message: t('toast.receiptCancelled') });
     },
   });
 };

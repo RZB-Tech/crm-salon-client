@@ -1,5 +1,6 @@
 import { ShieldCheckIcon } from '@phosphor-icons/react';
 import type { Permission } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormModal, FormModalFooter, FormSection } from '@/shared/ui';
 import {
   groupPermissionsByResource,
@@ -35,6 +36,7 @@ export function StaffPermissionsModal({
   onSave,
   isPending,
 }: StaffPermissionsModalProps) {
+  const { t } = useI18n();
   const permissionsByResource = groupPermissionsByResource(permissions);
   const allPermissionCodes = (permissions ?? []).map((p) => p.code);
   const isAllPermsSelected =
@@ -59,22 +61,22 @@ export function StaffPermissionsModal({
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Разрешения"
+      title={t('form.permissions')}
       subtitle={staffLogin}
       icon={<ShieldCheckIcon size={22} />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Сохранить"
+          submitLabel={t('common.save')}
           onSubmit={onSave}
           loading={isPending}
         />
       }
     >
       <FormSection
-        title="Индивидуальные разрешения"
-        hint="Эти разрешения добавляются к правам, полученным через роли"
+        title={t('form.individualPerms')}
+        hint={t('form.individualPermsHint')}
       >
         <PermissionsTreeToolbar
           selectedCount={selectedPerms.length}

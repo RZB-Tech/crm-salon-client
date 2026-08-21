@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, apiPost, apiRequest } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Transaction, TransactionCreatePayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 interface UseTransactionsOptions {
@@ -23,11 +24,11 @@ export const useCreateTransaction = () => {
       apiPost<Transaction, TransactionCreatePayload>('/api/v1/transactions', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      addNotification.success({ message: 'Транзакция добавлена' });
+      addNotification.success({ message: t('toast.transactionCreated') });
     },
     onError: (error: Error) => {
       addNotification.error({
-        message: error.message || 'Не удалось создать транзакцию',
+        message: error.message || t('toast.transactionCreateFailed'),
       });
     },
   });
@@ -56,11 +57,11 @@ export const useCancelTransaction = () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       await queryClient.invalidateQueries({ queryKey: queryKeys.payouts.all });
-      addNotification.success({ message: 'Транзакция отменена' });
+      addNotification.success({ message: t('toast.transactionCancelled') });
     },
     onError: (error: Error) => {
       addNotification.error({
-        message: error.message || 'Не удалось отменить транзакцию',
+        message: error.message || t('toast.transactionCancelFailed'),
       });
     },
   });

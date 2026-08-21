@@ -4,6 +4,7 @@ import { ArchiveIcon } from '@phosphor-icons/react';
 import type { Payroll } from '@/shared/api/types';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatDate, formatPrice, PAYROLL_TYPE_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface PayrollTableProps {
   payrolls: Payroll[] | undefined;
@@ -18,6 +19,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({
   onEdit,
   onArchive,
 }) => {
+  const { t } = useI18n();
   if (isLoading) {
     return <Skeleton height={160} radius="md" />;
   }
@@ -30,14 +32,14 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({
       stickyHeader={false}
       maxHeight={420}
       columns={[
-        { key: 'type', label: 'Тип' },
-        { key: 'amount', label: 'Сумма' },
-        { key: 'notes', label: 'Заметка' },
-        { key: 'date', label: 'Дата' },
+        { key: 'type', label: t('form.type') },
+        { key: 'amount', label: t('form.amount') },
+        { key: 'notes', label: t('board.note') },
+        { key: 'date', label: t('common.date') },
         { key: 'actions', label: '', width: 48 },
       ]}
       isEmpty={items.length === 0}
-      emptyMessage="Выплат пока нет"
+      emptyMessage={t('employees.noPayrolls')}
     >
       {items.map((payroll) => (
         <DataTableRow
@@ -66,7 +68,7 @@ export const PayrollTable: React.FC<PayrollTableProps> = ({
               variant="subtle"
               color="orange"
               size="sm"
-              aria-label="Архивировать"
+              aria-label={t('common.archive')}
               onClick={(e) => {
                 e.stopPropagation();
                 onArchive(payroll.id);

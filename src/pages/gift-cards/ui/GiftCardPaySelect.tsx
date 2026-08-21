@@ -1,6 +1,7 @@
 import React from 'react';
 import { Select } from '@mantine/core';
 import { useGiftCards } from '@/shared/api/hooks/useGiftCards';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { isGiftCardUsable, toGiftCardPayLabel } from '../lib/giftCardHelpers';
 
@@ -15,6 +16,7 @@ export const GiftCardPaySelect: React.FC<GiftCardPaySelectProps> = ({
   value,
   onChange,
 }) => {
+  const { t } = useI18n();
   const { isAdmin, hasPermission } = useAccess();
   const canRead = isAdmin || hasPermission(PermissionCode.GIFT_CARD_GET);
   const { data: giftCards } = useGiftCards(false, canRead);
@@ -29,17 +31,17 @@ export const GiftCardPaySelect: React.FC<GiftCardPaySelectProps> = ({
 
   return (
     <Select
-      label="Купон"
+      label={t('form.coupon')}
       required
       searchable
-      placeholder="Выберите купон"
+      placeholder={t('form.selectGiftCard')}
       data={options}
       value={value}
       onChange={(next) => {
         const card = (giftCards ?? []).find((item) => String(item.id) === next);
         onChange(next, card?.remain_amount);
       }}
-      nothingFoundMessage="Нет доступных купонов"
+      nothingFoundMessage={t('form.noGiftCards')}
     />
   );
 };

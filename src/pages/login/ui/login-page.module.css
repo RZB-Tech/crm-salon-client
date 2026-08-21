@@ -18,6 +18,13 @@
   background: var(--login-mist);
 }
 
+.langSwitch {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+}
+
 .atmosphere {
   position: absolute;
   inset: 0;

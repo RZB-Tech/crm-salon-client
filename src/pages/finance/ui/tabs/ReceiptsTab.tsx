@@ -7,6 +7,7 @@ import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { ReceiptHistoryModal } from './ReceiptHistoryModal';
+import { useI18n } from '@/shared/lib/i18n';
 import { ReceiptsTable } from './ReceiptsTable';
 
 const RECEIPT_SORT_GETTERS = {
@@ -24,6 +25,7 @@ interface ReceiptsTabProps {
 }
 
 export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt }) => {
+  const { t } = useI18n();
   const [cancelTarget, setCancelTarget] = React.useState<number | null>(null);
   const [historyReceiptId, setHistoryReceiptId] = React.useState<number | null>(null);
   const cancelReceipt = useCancelReceipt();
@@ -65,8 +67,8 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
 
       <ConfirmModal
         opened={cancelTarget != null}
-        title="Отменить чек"
-        message="Отменить этот чек?"
+        title={t('finance.cancelReceiptTitle')}
+        message={t('finance.cancelReceiptConfirm')}
         loading={cancelReceipt.isPending}
         onConfirm={() =>
           cancelTarget != null &&

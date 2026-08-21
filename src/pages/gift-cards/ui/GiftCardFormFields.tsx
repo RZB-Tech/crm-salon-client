@@ -2,6 +2,7 @@ import React from 'react';
 import { NumberInput, Select } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { GIFT_CARD_PURCHASE_METHOD_OPTIONS, toDateInput } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import type { PaymentMethod } from '@/shared/api/types';
 import { FormFieldGrid, FormSection } from '@/shared/ui';
 import type { GiftCardFormState } from '../lib/giftCardForm';
@@ -18,52 +19,55 @@ export const GiftCardFormFields: React.FC<GiftCardFormFieldsProps> = ({
   isEdit,
   clientOptions,
   onChange,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <>
-    <FormSection title="Купон">
+    <FormSection title={t('form.coupon')}>
       <Select
-        label="Клиент"
+        label={t('form.client')}
         searchable
         clearable
         disabled={isEdit}
-        placeholder="Необязательно — купон для любого клиента"
+        placeholder={t('giftCards.anyClient')}
         data={clientOptions}
         value={form.clientId}
         onChange={(value) => onChange('clientId', value)}
-        nothingFoundMessage="Клиент не найден"
+        nothingFoundMessage={t('giftCards.clientNotFound')}
       />
       <FormFieldGrid>
         <NumberInput
-          label="Номинал"
+          label={t('giftCards.faceValue')}
           required
           disabled={isEdit}
           min={1}
-          placeholder="Сумма купона"
+          placeholder={t('form.couponAmount')}
           value={form.initialAmount || ''}
           onChange={(value) => onChange('initialAmount', Number(value) || 0)}
           thousandSeparator=" "
-          suffix=" сум"
+          suffix={` ${t('common.currency')}`}
         />
         <Select
-          label="Оплата при продаже"
+          label={t('form.payOnSale')}
           required
           disabled={isEdit}
-          data={GIFT_CARD_PURCHASE_METHOD_OPTIONS}
+          data={GIFT_CARD_PURCHASE_METHOD_OPTIONS()}
           value={form.paymentMethod}
           onChange={(value) => onChange('paymentMethod', (value as PaymentMethod) ?? 'cash')}
         />
       </FormFieldGrid>
     </FormSection>
 
-    <FormSection title="Срок" hint="Если не указать — купон бессрочный">
+    <FormSection title={t('form.period')} hint={t('form.unlimitedHint')}>
       <DateInput
-        label="Действует до"
+        label={t('form.validUntil')}
         clearable
-        placeholder="Выберите дату"
+        placeholder={t('form.selectDate')}
         value={form.expirationDate || null}
         minDate={toDateInput(new Date())}
         onChange={(value) => onChange('expirationDate', value ?? '')}
       />
     </FormSection>
   </>
-);
+  );
+};

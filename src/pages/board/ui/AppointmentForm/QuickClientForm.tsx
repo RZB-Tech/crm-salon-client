@@ -3,6 +3,7 @@ import { Button, Group, SegmentedControl, Stack, Text, TextInput } from '@mantin
 import { useCreateClient } from '@/shared/api/hooks/useClients';
 import type { Sex } from '@/shared/api/types';
 import { SEX_OPTIONS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './appointment-form-modal.module.css';
 
 interface QuickClientFormProps {
@@ -11,6 +12,7 @@ interface QuickClientFormProps {
 }
 
 export const QuickClientForm: React.FC<QuickClientFormProps> = ({ onCreated, onCancel }) => {
+  const { t } = useI18n();
   const [name, setName] = React.useState('');
   const [phone, setPhone] = React.useState('');
   const [sex, setSex] = React.useState<Sex>('female');
@@ -33,19 +35,19 @@ export const QuickClientForm: React.FC<QuickClientFormProps> = ({ onCreated, onC
 
   return (
     <div className={styles.quickClientPanel}>
-      <p className={styles.sectionTitle}>Новый клиент</p>
+      <p className={styles.sectionTitle}>{t('clients.newClient')}</p>
       <Stack gap="xs">
         <Group grow>
           <TextInput
-            label="Имя"
+            label={t('common.firstName')}
             required
             value={name}
             onChange={(event) => setName(event.currentTarget.value)}
-            placeholder="Имя клиента"
+            placeholder={t('board.clientNamePh')}
             autoFocus
           />
           <TextInput
-            label="Телефон"
+            label={t('common.phone')}
             value={phone}
             onChange={(event) => setPhone(event.currentTarget.value)}
             placeholder="+998..."
@@ -53,21 +55,21 @@ export const QuickClientForm: React.FC<QuickClientFormProps> = ({ onCreated, onC
         </Group>
         <div>
           <Text size="sm" fw={500} mb={4}>
-            Пол{' '}
+            {t('clients.sex')}{' '}
             <Text span c="red">
               *
             </Text>
           </Text>
           <SegmentedControl
             fullWidth
-            data={[...SEX_OPTIONS]}
+            data={[...SEX_OPTIONS()]}
             value={sex}
             onChange={(value) => setSex(value as Sex)}
           />
         </div>
         <Group gap="xs" justify="flex-end">
           <Button variant="subtle" color="gray" size="xs" onClick={onCancel}>
-            Отмена
+            {t('common.cancel')}
           </Button>
           <Button
             size="xs"
@@ -75,7 +77,7 @@ export const QuickClientForm: React.FC<QuickClientFormProps> = ({ onCreated, onC
             loading={createClient.isPending}
             onClick={handleCreate}
           >
-            Создать клиента
+            {t('board.createClient')}
           </Button>
         </Group>
       </Stack>

@@ -7,6 +7,7 @@ import type {
   AppointmentServiceCreatePayload,
   AppointmentServiceUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const cacheAppointment = (
@@ -32,10 +33,10 @@ export const useCreateAppointmentService = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Позиция добавлена' });
+      addNotification.success({ message: t('toast.lineAdded') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось добавить позицию' });
+      addNotification.error({ message: error.message || t('toast.lineAddFailed') });
     },
   });
 };
@@ -56,10 +57,10 @@ export const useUpdateAppointmentService = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Позиция обновлена' });
+      addNotification.success({ message: t('toast.lineUpdated') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось обновить позицию' });
+      addNotification.error({ message: error.message || t('toast.lineUpdateFailed') });
     },
   });
 };
@@ -76,10 +77,10 @@ export const useDeleteAppointmentService = () => {
         clientId: result?.client_id ?? result?.client?.id ?? null,
         employeeId: result?.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Позиция удалена' });
+      addNotification.success({ message: t('toast.lineDeleted') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось удалить позицию' });
+      addNotification.error({ message: error.message || t('toast.lineDeleteFailed') });
     },
   });
 };

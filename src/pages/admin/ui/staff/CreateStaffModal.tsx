@@ -1,6 +1,7 @@
 import { PasswordInput, Select, TextInput } from '@mantine/core';
 import { UserPlusIcon } from '@phosphor-icons/react';
 import type { StaffType } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 import { FormFieldGrid, FormModal, FormModalFooter } from '@/shared/ui';
 import { PasswordResultAlert } from './PasswordResultAlert';
 import type { CreateForm } from './types';
@@ -15,11 +16,6 @@ interface CreateStaffModalProps {
   createdPassword: string | null;
 }
 
-const STAFF_TYPE_OPTIONS = [
-  { value: 'employee', label: 'Сотрудник' },
-  { value: 'administrator', label: 'Администратор' },
-];
-
 export function CreateStaffModal({
   opened,
   onClose,
@@ -29,17 +25,23 @@ export function CreateStaffModal({
   isPending,
   createdPassword,
 }: CreateStaffModalProps) {
+  const { t } = useI18n();
+  const staffTypeOptions = [
+    { value: 'employee', label: t('form.staffTypeEmployee') },
+    { value: 'administrator', label: t('form.staffTypeAdmin') },
+  ];
+
   return (
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Добавить пользователя"
+      title={t('form.addUser')}
       icon={<UserPlusIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Добавить пользователя"
+          submitLabel={t('form.addUser')}
           onSubmit={onCreate}
           submitDisabled={!form.login}
           loading={isPending}
@@ -48,47 +50,47 @@ export function CreateStaffModal({
     >
       <FormFieldGrid>
         <TextInput
-          label="Логин"
+          label={t('common.login')}
           required
-          placeholder="Введите логин"
+          placeholder={t('form.enterLogin')}
           value={form.login}
           onChange={(e) => onFormChange({ ...form, login: e.currentTarget.value })}
         />
         <Select
-          label="Тип"
+          label={t('form.type')}
           required
-          data={STAFF_TYPE_OPTIONS}
+          data={staffTypeOptions}
           value={form.staff_type}
           onChange={(v) => onFormChange({ ...form, staff_type: (v as StaffType) ?? 'employee' })}
         />
       </FormFieldGrid>
       <FormFieldGrid>
         <TextInput
-          label="Фамилия"
+          label={t('common.lastName')}
           required
-          placeholder="Введите фамилию"
+          placeholder={t('clients.enterLastName')}
           value={form.lastname}
           onChange={(e) => onFormChange({ ...form, lastname: e.currentTarget.value })}
         />
         <TextInput
-          label="Имя"
+          label={t('common.firstName')}
           required
-          placeholder="Введите имя пользователя"
+          placeholder={t('form.enterUserFirstName')}
           value={form.firstname}
           onChange={(e) => onFormChange({ ...form, firstname: e.currentTarget.value })}
         />
       </FormFieldGrid>
       <PasswordInput
-        label="Пароль"
-        description="Если не указан, пароль будет сгенерирован автоматически"
-        placeholder="Введите пароль"
+        label={t('common.password')}
+        description={t('form.passwordAutoHint')}
+        placeholder={t('form.enterPassword')}
         value={form.password}
         onChange={(e) => onFormChange({ ...form, password: e.currentTarget.value })}
       />
       {createdPassword && (
         <PasswordResultAlert
-          title="Пользователь создан"
-          label="Пароль:"
+          title={t('form.createdUser')}
+          label={t('form.passwordLabel')}
           password={createdPassword}
         />
       )}

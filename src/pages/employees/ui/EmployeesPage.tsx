@@ -22,12 +22,14 @@ import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getEmployeeFullName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { readStoredView, VIEW_STORAGE_KEY } from '../lib/viewMode';
 import { EmployeesListBody } from './EmployeesListBody';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 
 export const EmployeesPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = React.useState(false);
@@ -121,8 +123,8 @@ export const EmployeesPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить сотрудников">
-            Проверьте доступность API
+          <Alert color="red" title={t('employees.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -142,7 +144,7 @@ export const EmployeesPage: React.FC = () => {
                 size="sm"
                 onClick={() => setFormOpen(true)}
               >
-                Добавить сотрудника
+                {t('employees.add')}
               </Button>
             )}
             <ArchiveToggle active={showArchived} onChange={setShowArchived} />
@@ -182,8 +184,10 @@ export const EmployeesPage: React.FC = () => {
 
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать сотрудника"
-        message={`Архивировать ${archiveTarget ? getEmployeeFullName(archiveTarget) : ''}? Сотрудник будет скрыт из списка.`}
+        title={t('employees.archiveTitle')}
+        message={t('employees.archiveMessage', {
+          name: archiveTarget ? getEmployeeFullName(archiveTarget) : '',
+        })}
         loading={archiveEmployee.isPending}
         onConfirm={handleArchive}
         onClose={() => setArchiveTargetId(null)}

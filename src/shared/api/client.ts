@@ -5,7 +5,7 @@ export {
   isSessionAlive,
   logoutOnUnauthorized,
 } from '@/shared/api/apiRequest';
-export { ApiError } from '@/shared/api/apiError';
+export { ApiError, getApiErrorMessage } from '@/shared/api/apiError';
 export { authStorage } from '@/shared/api/authStorage';
 
 import { apiRequest } from '@/shared/api/apiRequest';

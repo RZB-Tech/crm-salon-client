@@ -5,6 +5,7 @@ import { BellRingingIcon } from '@phosphor-icons/react';
 import { useCreateNotification } from '@/shared/api/hooks/useNotifications';
 import type { SalonNotificationType } from '@/shared/api/types';
 import { toDateInput } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { FormFieldGrid, FormModal, FormModalFooter } from '@/shared/ui';
 import {
@@ -18,6 +19,7 @@ interface NotificationFormModalProps {
 }
 
 export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ opened, onClose }) => {
+  const { t } = useI18n();
   const [title, setTitle] = React.useState('');
   const [body, setBody] = React.useState('');
   const [type, setType] = React.useState<SalonNotificationType>('reminder');
@@ -54,13 +56,13 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
     <FormModal
       opened={opened}
       onClose={onClose}
-      title="Новое уведомление"
+      title={t('form.newNotification')}
       icon={<BellRingingIcon />}
       size={567}
       footer={
         <FormModalFooter
           onCancel={onClose}
-          submitLabel="Создать уведомление"
+          submitLabel={t('form.createNotification')}
           onSubmit={handleSubmit}
           submitDisabled={!title.trim() || !scheduledAt}
           loading={createNotification.isPending}
@@ -69,39 +71,39 @@ export const NotificationFormModal: React.FC<NotificationFormModalProps> = ({ op
     >
       <Stack gap="sm">
         <Select
-          label="Тип"
+          label={t('form.type')}
           required
           data={[
-            { value: 'reminder', label: 'Напоминание' },
-            { value: 'other', label: 'Другое' },
+            { value: 'reminder', label: t('labels.notificationType.reminder') },
+            { value: 'other', label: t('labels.notificationType.other') },
           ]}
           value={type}
           onChange={(v) => setType((v as SalonNotificationType) ?? 'reminder')}
         />
         <TextInput
-          label="Заголовок"
+          label={t('form.title')}
           required
-          placeholder="Введите заголовок"
+          placeholder={t('form.enterTitle')}
           value={title}
           onChange={(e) => setTitle(e.currentTarget.value)}
         />
         <TextInput
-          label="Описание"
-          placeholder="Введите описание"
+          label={t('form.description')}
+          placeholder={t('form.enterDescription')}
           value={body}
           onChange={(e) => setBody(e.currentTarget.value)}
         />
         <FormFieldGrid>
           <DateInput
-            label="Дата"
+            label={t('form.date')}
             required
-            placeholder="ДД.ММ.ГГГГ"
+            placeholder={t('board.datePlaceholder')}
             value={date || null}
             minDate={minDate}
             onChange={(value) => setDate(value ?? '')}
           />
           <TimePicker
-            label="Время"
+            label={t('form.time')}
             required
             minutesStep={5}
             value={time}

@@ -5,6 +5,7 @@ import type { Employee } from '@/shared/api/types';
 import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice, getEmployeeFullName, getEmployeeInitials } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 export interface EmployeesTableProps extends TableSortProps {
   employees: Employee[];
@@ -26,24 +27,26 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   onOpen,
   onArchive,
   onRestore,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
         <SortableTh column="name" sort={sort} onSort={onSort}>
-          Сотрудник
+          {t('form.employee')}
         </SortableTh>
         <SortableTh column="spec" sort={sort} onSort={onSort}>
-          Специализация
+          {t('employees.specialization')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={120}>
-          Услуги
+          {t('employees.services')}
         </Table.Th>
         <SortableTh column="salary" sort={sort} onSort={onSort} w={180}>
-          Ставка
+          {t('employees.rate')}
         </SortableTh>
         <SortableTh column="status" sort={sort} onSort={onSort} w={120}>
-          Статус
+          {t('common.status')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={48} />
       </Table.Tr>
@@ -53,7 +56,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
         <Table.Tr>
           <Table.Td colSpan={6}>
             <Text size="sm" c="dimmed" ta="center" py="xl">
-              Сотрудники не найдены
+              {t('employees.notFound')}
             </Text>
           </Table.Td>
         </Table.Tr>
@@ -101,7 +104,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Badge color={employee.active ? 'green' : 'gray'} variant="light" size="sm">
-                  {employee.active ? 'Активен' : 'Неактивен'}
+                  {employee.active ? t('form.staffActive') : t('form.staffInactive')}
                 </Badge>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
@@ -111,7 +114,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       variant="subtle"
                       color="gray"
                       size="sm"
-                      aria-label="Восстановить"
+                      aria-label={t('common.restore')}
                       onClick={(e) => {
                         e.stopPropagation();
                         onRestore(employee);
@@ -124,7 +127,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       variant="subtle"
                       color="orange"
                       size="sm"
-                      aria-label="Архивировать"
+                      aria-label={t('common.archive')}
                       onClick={(e) => {
                         e.stopPropagation();
                         onArchive(employee);
@@ -140,4 +143,5 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
       )}
     </Table.Tbody>
   </Table>
-);
+  );
+};

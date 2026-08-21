@@ -3,6 +3,7 @@ import { Tabs } from '@mantine/core';
 import type { Client } from '@/shared/api/types';
 import { FormModal, FormModalFooter } from '@/shared/ui';
 import { getClientInitials, getClientShortName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { ClientAppointmentsTab } from './ClientAppointmentsTab';
@@ -24,6 +25,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
   onEdit,
   onDeposit,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('appointments');
 
@@ -36,16 +38,16 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
     <FormModal
       opened={Boolean(client)}
       onClose={onClose}
-      title={client ? getClientShortName(client) : 'Клиент'}
+      title={client ? getClientShortName(client) : t('form.client')}
       subtitle={client?.phone || undefined}
       initials={client ? getClientInitials(client) : null}
       size={567}
       footer={
         client && (canEdit || canDeposit) ? (
           <FormModalFooter
-            cancelLabel="Редактировать"
+            cancelLabel={t('common.edit')}
             onCancel={canEdit ? () => onEdit?.(client) : undefined}
-            submitLabel="Депозит"
+            submitLabel={t('clients.deposit')}
             onSubmit={canDeposit ? () => onDeposit?.(client) : undefined}
           />
         ) : undefined
@@ -61,9 +63,9 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
           classNames={{ root: styles.tabs, list: styles.tabsList, tab: styles.tab }}
         >
           <Tabs.List>
-            <Tabs.Tab value="appointments">Записи</Tabs.Tab>
-            <Tabs.Tab value="finance">Финансы</Tabs.Tab>
-            <Tabs.Tab value="audit">История</Tabs.Tab>
+            <Tabs.Tab value="appointments">{t('clients.tabAppointments')}</Tabs.Tab>
+            <Tabs.Tab value="finance">{t('clients.tabFinance')}</Tabs.Tab>
+            <Tabs.Tab value="audit">{t('clients.tabHistory')}</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel value="appointments">
             {client && <ClientAppointmentsTab clientId={client.id} />}

@@ -1,0 +1,39 @@
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px 0 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+  color: #484848;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.trigger:hover {
+  border-color: #c9b09a;
+  background: #faf7f4;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid #c9b09a;
+  outline-offset: 2px;
+}
+
+.code {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.caret {
+  color: #ad9178;
+  flex-shrink: 0;
+}
+
+.dropdown {
+  border: 1px solid #f1eae3;
+  box-shadow: 4px 4px 8px rgba(173, 145, 120, 0.3);
+}

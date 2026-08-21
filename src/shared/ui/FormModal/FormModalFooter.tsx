@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@mantine/core';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './form-modal.module.css';
 
 export interface FormModalFooterProps {
@@ -12,6 +13,7 @@ export interface FormModalFooterProps {
   dangerActions?: React.ReactNode;
   cancelLabel?: string;
   onCancel?: () => void;
+  cancelDisabled?: boolean;
   submitLabel?: string;
   submitColor?: string;
   submitDisabled?: boolean;
@@ -26,8 +28,9 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
   metaValue,
   meta,
   dangerActions,
-  cancelLabel = 'Отмена',
+  cancelLabel,
   onCancel,
+  cancelDisabled = false,
   submitLabel,
   submitColor,
   submitDisabled = false,
@@ -35,6 +38,8 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
   loading = false,
   children,
 }) => {
+  const { t } = useI18n();
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
   const hasMeta = meta != null || metaValue != null;
   const stretch = !hasMeta && !dangerActions && !children;
 
@@ -58,9 +63,9 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
             color="sage"
             size="sm"
             onClick={onCancel}
-            disabled={loading}
+            disabled={loading || cancelDisabled}
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </Button>
         )}
         {onSubmit && submitLabel && (

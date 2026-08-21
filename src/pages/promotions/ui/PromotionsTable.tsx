@@ -3,6 +3,7 @@ import { ActionIcon, Badge, Table, Text } from '@mantine/core';
 import { ArchiveIcon, ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
 import type { Promotion } from '@/shared/api/types';
 import { listPageStyles, SortableTh } from '@/shared/ui';
+import { t, useI18n } from '@/shared/lib/i18n';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import {
@@ -29,12 +30,12 @@ const targetLabel = (
   materialNameMap: Map<number, string>,
 ): string => {
   if (promo.service_id != null) {
-    return serviceNameMap.get(promo.service_id) ?? `Услуга #${promo.service_id}`;
+    return serviceNameMap.get(promo.service_id) ?? t('promotions.serviceNamed', { id: promo.service_id });
   }
   if (promo.material_id != null) {
-    return materialNameMap.get(promo.material_id) ?? `Товар #${promo.material_id}`;
+    return materialNameMap.get(promo.material_id) ?? t('promotions.materialNamed', { id: promo.material_id });
   }
-  return '—';
+  return t('common.dash');
 };
 
 export const PromotionsTable: React.FC<PromotionsTableProps> = ({
@@ -48,6 +49,7 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
   onArchive,
   onRestore,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const canUpdate = !showArchived && hasPermission(PermissionCode.PROMOTION_UPDATE);
   const canManage = hasPermission(PermissionCode.PROMOTION_MANAGE);
@@ -57,17 +59,17 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="name" sort={sort} onSort={onSort}>
-            Название
+            {t('common.name')}
           </SortableTh>
-          <Table.Th className={listPageStyles.headCell}>Цель</Table.Th>
+          <Table.Th className={listPageStyles.headCell}>{t('promotions.target')}</Table.Th>
           <SortableTh column="discount" sort={sort} onSort={onSort} w={160}>
-            Скидка
+            {t('form.discount')}
           </SortableTh>
           <SortableTh column="period" sort={sort} onSort={onSort} w={220}>
-            Период
+            {t('form.period')}
           </SortableTh>
           <SortableTh column="status" sort={sort} onSort={onSort} w={140}>
-            Статус
+            {t('common.status')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
@@ -77,7 +79,7 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
           <Table.Tr>
             <Table.Td colSpan={6}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Акции не найдены
+                {t('promotions.notFound')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -97,7 +99,7 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
                 </Table.Td>
                 <Table.Td className={listPageStyles.bodyCell}>
                   <Text size="sm" c="rgba(72,72,72,0.7)">
-                    {promo.service_id != null ? 'Услуга' : 'Товар'}
+                    {promo.service_id != null ? t('form.service') : t('form.product')}
                     {' · '}
                     {targetLabel(promo, serviceNameMap, materialNameMap)}
                   </Text>
@@ -124,7 +126,7 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
                         variant="subtle"
                         color="gray"
                         size="sm"
-                        aria-label="Восстановить"
+                        aria-label={t('common.restore')}
                         onClick={(event) => onRestore(event, promo.id)}
                       >
                         <ArrowCounterClockwiseIcon size={18} />
@@ -134,7 +136,7 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
                         variant="subtle"
                         color="orange"
                         size="sm"
-                        aria-label="Архивировать"
+                        aria-label={t('common.archive')}
                         onClick={(event) => onArchive(event, promo.id)}
                       >
                         <ArchiveIcon size={18} />

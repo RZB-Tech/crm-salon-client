@@ -6,6 +6,7 @@ import { usePagination } from '@/shared/lib/hooks/usePagination';
 import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { formatDateTime, formatPrice, PAYMENT_METHOD_LABELS } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { PaymentHistoryModal } from './PaymentHistoryModal';
 
 interface PaymentsTabProps {
@@ -21,6 +22,7 @@ const PAYMENT_SORT_GETTERS = {
 };
 
 export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
+  const { t } = useI18n();
   const [historyPaymentId, setHistoryPaymentId] = React.useState<number | null>(null);
   const historyPayment = useResolvedById(payments, historyPaymentId);
 
@@ -47,16 +49,16 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
                 ID
               </SortableTh>
               <SortableTh column="receipt" sort={sort} onSort={toggleSort}>
-                Чек
+                {t('form.receipt')}
               </SortableTh>
               <SortableTh column="amount" sort={sort} onSort={toggleSort}>
-                Сумма
+                {t('form.amount')}
               </SortableTh>
               <SortableTh column="method" sort={sort} onSort={toggleSort}>
-                Способ
+                {t('form.methodShort')}
               </SortableTh>
               <SortableTh column="date" sort={sort} onSort={toggleSort}>
-                Дата
+                {t('common.date')}
               </SortableTh>
               <Table.Th className={listPageStyles.headCell} w={100} />
             </Table.Tr>
@@ -66,7 +68,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
               <Table.Tr>
                 <Table.Td colSpan={6}>
                   <Text size="sm" c="dimmed" ta="center" py="xl">
-                    Оплат нет
+                    {t('finance.emptyPayments')}
                   </Text>
                 </Table.Td>
               </Table.Tr>
@@ -100,7 +102,7 @@ export const PaymentsTab: React.FC<PaymentsTabProps> = ({ payments }) => {
                   </Table.Td>
                   <Table.Td className={listPageStyles.bodyCell}>
                     <Button size="xs" variant="subtle" onClick={() => setHistoryPaymentId(payment.id)}>
-                      История
+                      {t('finance.history')}
                     </Button>
                   </Table.Td>
                 </Table.Tr>

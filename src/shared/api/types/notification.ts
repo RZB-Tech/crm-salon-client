@@ -30,6 +30,11 @@ export interface SalonNotificationReadPayload {
   notes: string;
 }
 
+export interface SalonNotificationCancelPayload {
+  id: number;
+  notes: string;
+}
+
 export interface SalonNotificationCreatePayload {
   client_id?: number | null;
   title?: string | null;

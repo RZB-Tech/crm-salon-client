@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetchAllPost, authStorage } from '@/shared/api/client';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { SalonNotification, SalonNotificationWsPayload } from '@/shared/api/types';
-import { useReadNotification } from '@/shared/api/hooks/useNotifications';
+import { useReadNotification, useCancelNotification } from '@/shared/api/hooks/useNotifications';
 import {
   getNotificationDelayMs,
   shouldShowNotification,
@@ -17,6 +17,7 @@ import { useNotificationsSse } from './useNotificationsSse';
 export function useNotificationsWs() {
   const queryClient = useQueryClient();
   const readNotification = useReadNotification();
+  const cancelNotification = useCancelNotification();
   const alertQueue = useNotificationAlertQueue();
   const isAuthenticated = authStorage.isAuthenticated();
 
@@ -108,12 +109,27 @@ export function useNotificationsWs() {
     [readNotification, alertQueue],
   );
 
+  const handleCancelAlert = React.useCallback(
+    (id: number, notes: string) => {
+      cancelNotification.mutate(
+        { id, notes },
+        {
+          onSuccess: () => alertQueue.dismissAlert(),
+          onError: () => alertQueue.dismissAlert(),
+        },
+      );
+    },
+    [cancelNotification, alertQueue],
+  );
+
   return {
     contextValue,
     currentAlert: alertQueue.currentAlert,
     alertQueueLength: alertQueue.alertQueueLength,
     readPending: readNotification.isPending,
+    cancelPending: cancelNotification.isPending,
     dismissAlert: alertQueue.dismissAlert,
     handleReadAlert,
+    handleCancelAlert,
   };
 }

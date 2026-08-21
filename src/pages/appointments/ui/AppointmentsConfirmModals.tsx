@@ -6,6 +6,7 @@ import {
   APPOINTMENT_CANCELLED_REASON_OPTIONS,
 } from '@/shared/lib/format';
 import { getAppointmentClientName } from '../lib/appointmentList';
+import { useI18n } from '@/shared/lib/i18n';
 import type { useBoardForm } from '@/pages/board/lib/useBoardForm';
 
 type BoardForm = ReturnType<typeof useBoardForm>;
@@ -26,13 +27,15 @@ export const AppointmentsConfirmModals: React.FC<AppointmentsConfirmModalsProps>
   cancelPending,
   onConfirmArchiveRow,
   onCloseArchiveRow,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <>
     <ConfirmModal
       opened={form.deleteConfirmOpen}
-      title="Архивировать посещение"
-      message="Архивировать это посещение? Оно будет скрыто из списка и расписания."
-      confirmLabel="Архивировать"
+      title={t('appointments.archiveVisitTitle')}
+      message={t('appointments.archiveVisitList')}
+      confirmLabel={t('common.archive')}
       loading={archivePending}
       onConfirm={form.handleDelete}
       onClose={() => form.setDeleteConfirmOpen(false)}
@@ -40,9 +43,12 @@ export const AppointmentsConfirmModals: React.FC<AppointmentsConfirmModalsProps>
 
     <ConfirmModal
       opened={Boolean(archiveTarget)}
-      title="Архивировать посещение"
-      message={`Архивировать посещение №${archiveTarget?.id ?? ''} (${archiveTarget ? getAppointmentClientName(archiveTarget) : ''})?`}
-      confirmLabel="Архивировать"
+      title={t('appointments.archiveVisitTitle')}
+      message={t('appointments.archiveVisitNamed', {
+        id: archiveTarget?.id ?? '',
+        name: archiveTarget ? getAppointmentClientName(archiveTarget) : '',
+      })}
+      confirmLabel={t('common.archive')}
       loading={archivePending}
       onConfirm={onConfirmArchiveRow}
       onClose={onCloseArchiveRow}
@@ -50,9 +56,9 @@ export const AppointmentsConfirmModals: React.FC<AppointmentsConfirmModalsProps>
 
     <ConfirmModal
       opened={form.cancelConfirmOpen}
-      title="Отменить посещение"
-      message="Отменить это посещение? Оплаченные и посещения с активным чеком отменить нельзя — сначала отмените чек."
-      confirmLabel="Отменить посещение"
+      title={t('appointments.cancelVisitTitle')}
+      message={t('appointments.cancelVisitMessage')}
+      confirmLabel={t('appointments.cancelVisitLabel')}
       loading={cancelPending}
       confirmDisabled={!form.cancelReason || form.hasActiveReceipt}
       onConfirm={form.handleCancel}
@@ -60,12 +66,12 @@ export const AppointmentsConfirmModals: React.FC<AppointmentsConfirmModalsProps>
     >
       {form.hasActiveReceipt && (
         <Alert color="orange" mb="sm">
-          Есть активный чек. Сначала отмените его в блоке оплаты.
+          {t('board.activeReceiptAlert')}
         </Alert>
       )}
       <Select
-        label="Причина отмены"
-        data={APPOINTMENT_CANCELLED_REASON_OPTIONS}
+        label={t('appointments.cancelReason')}
+        data={APPOINTMENT_CANCELLED_REASON_OPTIONS()}
         value={form.cancelReason}
         onChange={(value) => {
           if (value) form.setCancelReason(value as AppointmentCancelledReason);
@@ -74,4 +80,5 @@ export const AppointmentsConfirmModals: React.FC<AppointmentsConfirmModalsProps>
       />
     </ConfirmModal>
   </>
-);
+  );
+};

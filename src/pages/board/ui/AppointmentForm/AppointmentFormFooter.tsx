@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@mantine/core';
 import { ArrowCounterClockwise, Prohibit } from '@phosphor-icons/react';
 import { FormModalFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface AppointmentFormFooterProps {
   mode: 'create' | 'edit';
@@ -34,6 +35,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
   onRestore,
   onCancel,
 }) => {
+  const { t } = useI18n();
   const onMainTab = mode === 'create' || tab === 'main';
   const canSubmit = onMainTab && !cancelled && !archived;
 
@@ -49,7 +51,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
             onClick={onRestore}
             loading={loading}
           >
-            Восстановить
+            {t('common.restore')}
           </Button>
         )}
         {!archived && onCancel && !cancelled && !paid && (
@@ -62,7 +64,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
             loading={loading}
             disabled={structureLocked}
           >
-            Отменить
+            {t('common.cancel')}
           </Button>
         )}
         {!archived && onDelete && (
@@ -74,7 +76,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
             loading={loading}
             styles={{ root: { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252' } }}
           >
-            В архив
+            {t('board.toArchive')}
           </Button>
         )}
       </>
@@ -85,7 +87,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
       meta={
         onMainTab ? undefined : (
           <Button variant="subtle" color="gray" size="compact-sm" onClick={onClose}>
-            Закрыть
+            {t('common.close')}
           </Button>
         )
       }
@@ -93,7 +95,7 @@ export const AppointmentFormFooter: React.FC<AppointmentFormFooterProps> = ({
       metaValue={undefined}
       dangerActions={dangerActions}
       onCancel={onMainTab ? onClose : undefined}
-      submitLabel={canSubmit ? (mode === 'edit' ? 'Сохранить' : 'Добавить запись') : undefined}
+      submitLabel={canSubmit ? (mode === 'edit' ? t('common.save') : t('board.addAppointment')) : undefined}
       onSubmit={canSubmit ? onSubmit : undefined}
       submitDisabled={!isValid}
       loading={loading}

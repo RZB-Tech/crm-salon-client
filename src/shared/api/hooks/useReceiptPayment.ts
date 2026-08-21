@@ -3,6 +3,7 @@ import { apiPost } from '@/shared/api/client';
 import { invalidatePaymentFlow } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Appointment, Receipt, ReceiptPaymentPayload } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 /** @deprecated Prefer useCreatePayment — kept for compatibility */
@@ -31,7 +32,7 @@ export const useMakeReceiptPayment = () => {
         );
       }
       await invalidatePaymentFlow(queryClient, result.appointment_id);
-      addNotification.success({ message: 'Оплата проведена' });
+      addNotification.success({ message: t('toast.paymentDone') });
     },
   });
 };

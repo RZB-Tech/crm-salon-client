@@ -8,6 +8,7 @@ import {
   type AppointmentFormValues,
   type ServiceOption,
 } from '../../lib/appointmentForm';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './appointment-form-modal.module.css';
 
 interface AppointmentScheduleFieldsProps {
@@ -25,6 +26,7 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
   fieldsLocked,
   onChange,
 }) => {
+  const { t } = useI18n();
   const handleEmployeeChange = React.useCallback(
     (employeeId: string | null) => {
       onChange({ ...values, employeeId, services: [createEmptyServiceLine()] });
@@ -36,18 +38,17 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
     <>
       <div className={styles.scheduleGrid}>
         <DateInput
-          label="Дата"
+          label={t('form.date')}
           required
-          placeholder="ДД.ММ.ГГГГ"
+          placeholder={t('board.datePlaceholder')}
           value={values.date || null}
           onChange={(value) => onChange({ ...values, date: value ?? '' })}
           disabled={fieldsLocked}
         />
         <TimePicker
-          label="Начало"
+          label={t('board.start')}
           required
           minutesStep={15}
-          placeholder="--:--"
           value={values.startTime}
           onChange={(value) =>
             onChange(
@@ -61,25 +62,24 @@ export const AppointmentScheduleFields: React.FC<AppointmentScheduleFieldsProps>
           disabled={fieldsLocked}
         />
         <TimePicker
-          label="Конец"
+          label={t('board.end')}
           required
           minutesStep={15}
-          placeholder="--:--"
           value={values.endTime}
           onChange={(value) => onChange({ ...values, endTime: value })}
           disabled={fieldsLocked}
-          error={values.startTime >= values.endTime ? 'Конец должен быть позже начала' : undefined}
+          error={values.startTime >= values.endTime ? t('board.endAfterStart') : undefined}
         />
       </div>
 
       <Select
-        label="Сотрудник"
+        label={t('form.employee')}
         searchable
         data={employeeOptions}
         value={values.employeeId}
         onChange={handleEmployeeChange}
         disabled={fieldsLocked}
-        placeholder="Выберите сотрудника"
+        placeholder={t('board.selectEmployee')}
       />
     </>
   );

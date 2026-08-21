@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import { CaretDownIcon, CaretRightIcon } from '@phosphor-icons/react';
 import type { Permission } from '@/shared/api/types';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface PermissionsResourceTreeProps {
   permissionsByResource: Record<string, Permission[]>;
@@ -32,6 +33,7 @@ export function PermissionsResourceTree({
   onToggleExpanded,
   maxHeight = 400,
 }: PermissionsResourceTreeProps) {
+  const { t } = useI18n();
   return (
     <ScrollArea.Autosize mah={maxHeight} type="auto">
       <Stack gap="xs">
@@ -41,6 +43,9 @@ export function PermissionsResourceTree({
           const allInGroupSelected = selectedInGroup === codes.length;
           const partialInGroup = selectedInGroup > 0 && !allInGroupSelected;
           const isExpanded = expandedResources.has(resource);
+          const resourceKey = `permissions.resources.${resource}`;
+          const resourceLabel = t(resourceKey);
+          const displayResource = resourceLabel === resourceKey ? resource : resourceLabel;
 
           return (
             <Paper key={resource} p="xs" withBorder>
@@ -49,7 +54,7 @@ export function PermissionsResourceTree({
                   <Group gap="xs">
                     {isExpanded ? <CaretDownIcon size={14} /> : <CaretRightIcon size={14} />}
                     <Text size="xs" fw={600} tt="uppercase">
-                      {resource}
+                      {displayResource}
                     </Text>
                     <Badge
                       size="xs"
@@ -65,7 +70,7 @@ export function PermissionsResourceTree({
                   checked={allInGroupSelected}
                   indeterminate={partialInGroup}
                   onChange={() => onToggleResource(resource, codes)}
-                  aria-label={`Выбрать все в ${resource}`}
+                  aria-label={t('admin.selectAllIn', { resource: displayResource })}
                 />
               </Group>
               <Collapse expanded={isExpanded}>

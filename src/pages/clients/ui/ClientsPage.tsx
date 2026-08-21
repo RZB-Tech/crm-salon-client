@@ -9,6 +9,7 @@ import {
   listPageStyles,
 } from '@/shared/ui';
 import { getClientFullName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useClientsPage } from '../lib/useClientsPage';
 import { ClientFormModal } from './ClientFormModal';
@@ -17,6 +18,7 @@ import { ClientDetailModal } from './ClientDetailModal';
 import { ClientsTable } from './ClientsTable';
 
 export const ClientsPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const {
     search,
@@ -68,8 +70,8 @@ export const ClientsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить клиентов">
-            Проверьте доступность API и авторизацию
+          <Alert color="red" title={t('clients.loadError')}>
+            {t('common.checkApiAuth')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -83,7 +85,7 @@ export const ClientsPage: React.FC = () => {
       toolbar={
         <>
           <TextInput
-            placeholder="Поиск по имени, телефону..."
+            placeholder={t('clients.searchPlaceholder')}
             leftSection={<MagnifyingGlassIcon size={16} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
@@ -98,7 +100,7 @@ export const ClientsPage: React.FC = () => {
                 onClick={openCreate}
                 size="sm"
               >
-                Добавить клиента
+                {t('clients.add')}
               </Button>
             )}
             <ArchiveToggle active={showArchived} onChange={setShowArchived} />
@@ -141,8 +143,10 @@ export const ClientsPage: React.FC = () => {
       />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать клиента"
-        message={`Архивировать ${archiveTarget ? getClientFullName(archiveTarget) : ''}? Клиент будет скрыт из списка.`}
+        title={t('clients.archiveTitle')}
+        message={t('clients.archiveMessage', {
+          name: archiveTarget ? getClientFullName(archiveTarget) : '',
+        })}
         loading={archiveClient.isPending}
         onConfirm={confirmArchive}
         onClose={() => setArchiveTargetId(null)}

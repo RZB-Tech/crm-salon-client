@@ -14,6 +14,7 @@ import type {
   ServicesImportResult,
   ServiceUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useCreateService = () => {
@@ -25,7 +26,7 @@ export const useCreateService = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Услуга создана' });
+      addNotification.success({ message: t('toast.serviceCreated') });
     },
   });
 };
@@ -40,7 +41,7 @@ export const useUpdateService = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.services.detail(payload.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Услуга обновлена' });
+      addNotification.success({ message: t('toast.serviceUpdated') });
     },
   });
 };
@@ -54,7 +55,7 @@ export const useArchiveService = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Услуга архивирована' });
+      addNotification.success({ message: t('toast.serviceArchived') });
     },
   });
 };
@@ -68,7 +69,7 @@ export const useRestoreService = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.services.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Услуга восстановлена' });
+      addNotification.success({ message: t('toast.serviceRestored') });
     },
   });
 };
@@ -84,7 +85,7 @@ export const useCreateServiceCategory = () => {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
-      addNotification.success({ message: 'Категория создана' });
+      addNotification.success({ message: t('toast.categoryCreated') });
     },
   });
 };
@@ -103,7 +104,7 @@ export const useUpdateServiceCategory = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.serviceCategories.detail(payload.id),
       });
-      addNotification.success({ message: 'Категория обновлена' });
+      addNotification.success({ message: t('toast.categoryUpdated') });
     },
   });
 };
@@ -120,7 +121,7 @@ export const useArchiveServiceCategory = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
-      addNotification.success({ message: 'Категория архивирована' });
+      addNotification.success({ message: t('toast.categoryArchived') });
     },
   });
 };
@@ -137,7 +138,7 @@ export const useRestoreServiceCategory = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.detail(id) });
-      addNotification.success({ message: 'Категория восстановлена' });
+      addNotification.success({ message: t('toast.categoryRestored') });
     },
   });
 };
@@ -153,7 +154,7 @@ export const useDeleteServiceCategory = () => {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
-      addNotification.success({ message: 'Категория архивирована' });
+      addNotification.success({ message: t('toast.categoryArchived') });
     },
   });
 };
@@ -172,7 +173,10 @@ export const useImportServices = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.serviceCategories.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
       addNotification.success({
-        message: `Импортировано: ${result.created_services} услуг, ${result.created_categories} категорий`,
+        message: t('toast.servicesImported', {
+          services: result.created_services,
+          categories: result.created_categories,
+        }),
       });
     },
   });

@@ -4,10 +4,12 @@ import { KeyIcon, SignOutIcon } from '@phosphor-icons/react';
 import { useLogout } from '@/shared/api/hooks/useAuth';
 import { useMe } from '@/shared/api/hooks/useMe';
 import { AUTH_ENABLED } from '@/shared/config/env';
+import { useI18n } from '@/shared/lib/i18n';
 import { ChangePasswordModal } from './ChangePasswordModal';
 import styles from './header.module.css';
 
 export const HeaderUserMenu: React.FC = () => {
+  const { t } = useI18n();
   const { data: me } = useMe();
   const logout = useLogout();
 
@@ -39,17 +41,17 @@ export const HeaderUserMenu: React.FC = () => {
     <>
       <Menu shadow="md" width={200} position="bottom-end" radius="md">
         <Menu.Target>
-          <UnstyledButton className={styles.avatarTarget} aria-label="Аккаунт">
+          <UnstyledButton className={styles.avatarTarget} aria-label={t('header.account')}>
             <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
           </UnstyledButton>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Label>{meDisplayName || 'Аккаунт'}</Menu.Label>
+          <Menu.Label>{meDisplayName || t('header.account')}</Menu.Label>
           <Menu.Item
             leftSection={<KeyIcon size={14} />}
             onClick={() => setChangePasswordOpen(true)}
           >
-            Сменить пароль
+            {t('header.changePassword')}
           </Menu.Item>
           <Menu.Divider />
           <Menu.Item
@@ -58,7 +60,7 @@ export const HeaderUserMenu: React.FC = () => {
             onClick={handleLogout}
             disabled={logout.isPending}
           >
-            {logout.isPending ? 'Выход...' : 'Выйти'}
+            {logout.isPending ? t('header.loggingOut') : t('header.logout')}
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>

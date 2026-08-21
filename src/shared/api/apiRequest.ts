@@ -1,4 +1,5 @@
 import { API_BASE_URL, AUTH_ENABLED } from '@/shared/config/env';
+import { t } from '@/shared/lib/i18n';
 import { authStorage } from '@/shared/api/authStorage';
 import { ApiError, parseApiError } from '@/shared/api/apiError';
 
@@ -57,7 +58,7 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
     return response.json() as Promise<T>;
   } catch (error) {
     if (error instanceof TypeError) {
-      const networkError = new Error('Нет соединения с сервером. Проверьте интернет-соединение.');
+      const networkError = new Error(t('common.networkError'));
       (networkError as { cause?: unknown }).cause = error;
       throw networkError;
     }

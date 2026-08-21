@@ -118,6 +118,9 @@ export const PermissionCode = {
   TENANT_PREFERENCES_READ: 12002,
   TENANT_PREFERENCES_UPDATE: 12003,
   TENANT_MANAGE: 12004,
+  TENANT_BRANCH_CREATE: 12011,
+  TENANT_BRANCH_READ: 12012,
+  TENANT_BRANCH_MANAGE: 12013,
 } as const;
 
 export type PermissionCodeValue = (typeof PermissionCode)[keyof typeof PermissionCode];

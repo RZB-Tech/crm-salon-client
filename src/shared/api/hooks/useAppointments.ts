@@ -15,6 +15,7 @@ import type {
   ListFilters,
   Receipt,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const normalizeAppointmentFilters = (
@@ -60,10 +61,10 @@ export const useCreateAppointment = () => {
         employeeId,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.employees.all });
-      addNotification.success({ message: 'Запись создана' });
+      addNotification.success({ message: t('toast.appointmentCreated') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось создать запись' });
+      addNotification.error({ message: error.message || t('toast.appointmentCreateFailed') });
     },
   });
 };
@@ -80,10 +81,10 @@ export const useCancelAppointment = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Запись отменена' });
+      addNotification.success({ message: t('toast.appointmentCancelled') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось отменить запись' });
+      addNotification.error({ message: error.message || t('toast.appointmentCancelFailed') });
     },
   });
 };
@@ -103,10 +104,10 @@ export const useArchiveAppointment = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Запись архивирована' });
+      addNotification.success({ message: t('toast.appointmentArchived') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось архивировать запись' });
+      addNotification.error({ message: error.message || t('toast.appointmentArchiveFailed') });
     },
   });
 };
@@ -126,10 +127,10 @@ export const useRestoreAppointment = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Запись восстановлена из архива' });
+      addNotification.success({ message: t('toast.appointmentRestored') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось восстановить запись' });
+      addNotification.error({ message: error.message || t('toast.appointmentRestoreFailed') });
     },
   });
 };
@@ -148,10 +149,10 @@ export const useUpdateAppointment = () => {
         clientId: result.client_id ?? result.client?.id ?? null,
         employeeId: result.records?.[0]?.employee_id ?? null,
       });
-      addNotification.success({ message: 'Запись обновлена' });
+      addNotification.success({ message: t('toast.appointmentUpdated') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось обновить запись' });
+      addNotification.error({ message: error.message || t('toast.appointmentUpdateFailed') });
     },
   });
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { ActionIcon, Box, Text, UnstyledButton } from '@mantine/core';
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { isSameDay, toDateInput } from '@/shared/lib/format';
+import { getDateLocale, t } from '@/shared/lib/i18n';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import styles from './board-mini-calendar.module.css';
 
@@ -11,7 +12,15 @@ interface BoardMiniCalendarProps {
   onDateChange: (date: Date) => void;
 }
 
-const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+const WEEKDAY_LABELS = () => [
+  t('labels.weekday.1'),
+  t('labels.weekday.2'),
+  t('labels.weekday.3'),
+  t('labels.weekday.4'),
+  t('labels.weekday.5'),
+  t('labels.weekday.6'),
+  t('labels.weekday.7'),
+];
 
 const buildMonthGrid = (year: number, month: number): Array<Date | null> => {
   const firstDay = new Date(year, month, 1);
@@ -45,7 +54,7 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
 
   const monthLabel = React.useMemo(
     () =>
-      new Date(viewMonth.year, viewMonth.month, 1).toLocaleDateString('ru-RU', {
+      new Date(viewMonth.year, viewMonth.month, 1).toLocaleDateString(getDateLocale(), {
         month: 'long',
         year: 'numeric'
       }),
@@ -86,7 +95,7 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
       </Box>
 
       <Box className={styles.weekdays}>
-        {WEEKDAY_LABELS.map((label) => (
+        {WEEKDAY_LABELS().map((label) => (
           <Text span key={label} className={styles.weekday}>
             {label}
           </Text>

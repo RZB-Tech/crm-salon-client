@@ -3,6 +3,7 @@ import { Box, Text, Skeleton, Badge, Table } from '@mantine/core';
 import { useEmployeePayrolls } from '@/shared/api/hooks/useEmployees';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatPrice, PAYROLL_TYPE_LABELS } from '@/shared/lib/format';
+import { getDateLocale, useI18n } from '@/shared/lib/i18n';
 import styles from '../employee-profile.module.css';
 
 interface FinanceTabProps {
@@ -10,12 +11,13 @@ interface FinanceTabProps {
 }
 
 export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
+  const { t, locale } = useI18n();
   const { data: payrolls, isLoading } = useEmployeePayrolls(employeeId);
 
   const summary = React.useMemo(() => {
     const map = new Map<string, number>();
     for (const payroll of payrolls ?? []) {
-      const month = new Date(payroll.created_at).toLocaleDateString('ru-RU', {
+      const month = new Date(payroll.created_at).toLocaleDateString(getDateLocale(), {
         year: 'numeric',
         month: 'long',
       });
@@ -23,7 +25,7 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
       map.set(month, (map.get(month) ?? 0) + sign * payroll.amount);
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [payrolls]);
+  }, [payrolls, locale]);
 
   const byType = React.useMemo(() => {
     const map = new Map<string, number>();
@@ -45,22 +47,22 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
   return (
     <Box>
       <Text fw={600} mb="md">
-        Финансовый отчёт · итого {formatPrice(total)}
+        {t('employees.financeReport', { amount: formatPrice(total) })}
       </Text>
 
       <Text size="sm" fw={600} mb="sm">
-        По месяцам
+        {t('employees.byMonth')}
       </Text>
       <DataTable
         compact
         stickyHeader={false}
         maxHeight={280}
         columns={[
-          { key: 'period', label: 'Период' },
-          { key: 'total', label: 'Итог' },
+          { key: 'period', label: t('form.period') },
+          { key: 'total', label: t('employees.result') },
         ]}
         isEmpty={summary.length === 0}
-        emptyMessage="Нет данных"
+        emptyMessage={t('common.noData')}
       >
         {summary.map(([period, amount]) => (
           <DataTableRow key={period}>
@@ -77,7 +79,7 @@ export const FinanceTab: React.FC<FinanceTabProps> = ({ employeeId }) => {
       </DataTable>
 
       <Text size="sm" fw={600} mb="sm" mt="xl">
-        По типам
+        {t('employees.byType')}
       </Text>
       <Box className={styles.salaryGrid}>
         {byType.map(([type, amount]) => (

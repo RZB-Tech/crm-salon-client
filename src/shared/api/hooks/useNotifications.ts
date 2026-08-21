@@ -8,8 +8,10 @@ import { queryKeys } from '@/shared/api/query-keys';
 import type {
   SalonNotification,
   SalonNotificationCreatePayload,
+  SalonNotificationCancelPayload,
   SalonNotificationReadPayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useNotifications = () =>
@@ -41,7 +43,7 @@ export const useCreateNotification = () => {
         return [created, ...old];
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      addNotification.success({ message: 'Уведомление создано' });
+      addNotification.success({ message: t('toast.notificationCreated') });
     },
   });
 };
@@ -70,15 +72,22 @@ export const useCancelNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) =>
-      apiPost<SalonNotification, Record<string, never>>(
+    mutationFn: ({ id, notes }: SalonNotificationCancelPayload) =>
+      apiPost<SalonNotification, { notes: string }>(
         `/api/v1/notifications/${id}/cancel`,
-        {},
+        { notes },
       ),
-    onSuccess: (_, id) => {
+    onSuccess: (updated, payload) => {
+      queryClient.setQueryData<SalonNotification[]>(queryKeys.notifications.all, (old) =>
+        old
+          ? old.map((item) =>
+              item.id === payload.id ? { ...item, ...updated, notes: payload.notes } : item,
+            )
+          : old,
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(id) });
-      addNotification.success({ message: 'Уведомление отменено' });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.detail(payload.id) });
+      addNotification.success({ message: t('toast.notificationCancelled') });
     },
   });
 };

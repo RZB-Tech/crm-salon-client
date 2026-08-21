@@ -1,14 +1,25 @@
 import type { Promotion } from '@/shared/api/types';
 import { formatDate, formatPrice } from '@/shared/lib/format';
+import { t } from '@/shared/lib/i18n';
 
 export type PromotionPeriodStatus = 'active' | 'off' | 'upcoming' | 'expired' | 'archived';
 
 export const PROMOTION_STATUS_LABELS: Record<PromotionPeriodStatus, string> = {
-  active: 'Активна',
-  off: 'Выключена',
-  upcoming: 'Не началась',
-  expired: 'Истекла',
-  archived: 'Архив',
+  get active() {
+    return t('promotions.active');
+  },
+  get off() {
+    return t('promotions.off');
+  },
+  get upcoming() {
+    return t('promotions.upcoming');
+  },
+  get expired() {
+    return t('promotions.expired');
+  },
+  get archived() {
+    return t('promotions.archived');
+  },
 };
 
 export const PROMOTION_STATUS_COLORS: Record<PromotionPeriodStatus, string> = {
@@ -40,7 +51,7 @@ export const formatDiscountLabel = (promo: Promotion): string => {
 };
 
 export const formatPromotionPeriod = (promo: Promotion): string => {
-  if (!promo.start_time && !promo.end_time) return 'Бессрочно';
+  if (!promo.start_time && !promo.end_time) return t('promotions.unlimited');
   const start = promo.start_time ? formatDate(promo.start_time) : '…';
   const end = promo.end_time ? formatDate(promo.end_time) : '…';
   return `${start} – ${end}`;

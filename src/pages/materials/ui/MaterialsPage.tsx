@@ -9,12 +9,14 @@ import {
   listPageStyles,
 } from '@/shared/ui';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 import { useMaterialsPage } from '../lib/useMaterialsPage';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
 import { MaterialsTable } from './MaterialsTable';
 
 export const MaterialsPage: React.FC = () => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const {
     search,
@@ -64,8 +66,8 @@ export const MaterialsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить материалы">
-            Проверьте доступность API
+          <Alert color="red" title={t('materials.loadError')}>
+            {t('common.checkApi')}
           </Alert>
         </Box>
       </ListPageShell>
@@ -79,7 +81,7 @@ export const MaterialsPage: React.FC = () => {
       toolbar={
         <>
           <TextInput
-            placeholder="Поиск по названию или артикулу..."
+            placeholder={t('materials.searchPlaceholder')}
             leftSection={<MagnifyingGlassIcon size={16} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
@@ -94,7 +96,7 @@ export const MaterialsPage: React.FC = () => {
                 onClick={openCreate}
                 size="sm"
               >
-                Добавить материал
+                {t('materials.add')}
               </Button>
             )}
             <ArchiveToggle active={showArchived} onChange={setShowArchived} />
@@ -136,8 +138,8 @@ export const MaterialsPage: React.FC = () => {
       <QuantityModal material={quantityTarget} onClose={() => setQuantityTargetId(null)} />
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать материал"
-        message={`Архивировать «${archiveTarget?.name ?? ''}»? Материал будет скрыт из списка.`}
+        title={t('materials.archiveTitle')}
+        message={t('materials.archiveMessage', { name: archiveTarget?.name ?? '' })}
         loading={archiveMaterial.isPending}
         onConfirm={confirmArchive}
         onClose={() => setArchiveTargetId(null)}

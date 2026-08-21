@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, FileButton, Group, TextInput } from '@mantine/core';
 import { DownloadSimpleIcon, MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import { ArchiveToggle, listPageStyles } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import type { ServiceCategory } from '@/shared/api/types';
 import { CategoriesPanel } from './CategoriesPanel';
 
@@ -37,7 +38,9 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
   onImportFile,
   onCreate,
   onShowArchivedChange,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <>
     <CategoriesPanel
       activeCategory={activeCategory}
@@ -48,7 +51,7 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
 
     <Group gap={8} wrap="nowrap">
       <TextInput
-        placeholder="Поиск услуги"
+        placeholder={t('services.searchPlaceholder')}
         leftSection={<MagnifyingGlassIcon size={16} />}
         value={search}
         onChange={(e) => onSearchChange(e.currentTarget.value)}
@@ -72,7 +75,7 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
                   size="sm"
                   loading={importPending}
                 >
-                  Импорт Excel
+                  {t('services.importExcel')}
                 </Button>
               )}
             </FileButton>
@@ -84,7 +87,7 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
               onClick={onCreate}
               size="sm"
             >
-              Добавить услугу
+              {t('services.add')}
             </Button>
           )}
         </>
@@ -92,4 +95,5 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
       <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />
     </Group>
   </>
-);
+  );
+};

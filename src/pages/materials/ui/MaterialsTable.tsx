@@ -6,6 +6,7 @@ import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import { formatPrice, MEASUREMENT_UNIT_LABELS } from '@/shared/lib/format';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface MaterialsTableProps extends TableSortProps {
   items: Material[];
@@ -24,6 +25,7 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
   onArchive,
   onRestore,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
   const canUpdate = !showArchived && hasPermission(PermissionCode.MATERIAL_UPDATE);
   const canManage = hasPermission(PermissionCode.MATERIAL_MANAGE);
@@ -33,16 +35,16 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="article" sort={sort} onSort={onSort}>
-            Артикул
+            {t('form.sku')}
           </SortableTh>
           <SortableTh column="name" sort={sort} onSort={onSort}>
-            Название
+            {t('common.name')}
           </SortableTh>
           <SortableTh column="quantity" sort={sort} onSort={onSort} w={200}>
-            Кол-во
+            {t('materials.qtyShort')}
           </SortableTh>
           <SortableTh column="price" sort={sort} onSort={onSort} w={200}>
-            Цена продажи
+            {t('materials.sellPrice')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
@@ -52,7 +54,7 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
           <Table.Tr>
             <Table.Td colSpan={5}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Материалы не найдены
+                {t('materials.notFound')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -90,7 +92,7 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
                       variant="subtle"
                       color="gray"
                       size="sm"
-                      aria-label="Восстановить"
+                      aria-label={t('common.restore')}
                       onClick={(e) => onRestore(e, material.id)}
                     >
                       <ArrowCounterClockwiseIcon size={18} />
@@ -100,7 +102,7 @@ export const MaterialsTable: React.FC<MaterialsTableProps> = ({
                       variant="subtle"
                       color="orange"
                       size="sm"
-                      aria-label="Архивировать"
+                      aria-label={t('common.archive')}
                       onClick={(e) => onArchive(e, material.id)}
                     >
                       <ArchiveIcon size={18} />

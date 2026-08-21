@@ -9,11 +9,13 @@ import {
 } from '@/shared/api/hooks/useSpecializations';
 import type { Specialization } from '@/shared/api/types';
 import { ConfirmModal } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { SpecializationFormModal } from './SpecializationFormModal';
 import { SpecializationsTable } from './SpecializationsTable';
 
 export const SpecializationsSection: React.FC = () => {
+  const { t } = useI18n();
   const { data: specializations } = useSpecializations();
   const createSpec = useCreateSpecialization();
   const updateSpec = useUpdateSpecialization();
@@ -53,7 +55,7 @@ export const SpecializationsSection: React.FC = () => {
     <>
       <Group justify="space-between" mb="md">
         <Text fw={600} size="sm" c="#484848">
-          Специализации
+          {t('settings.specializations')}
         </Text>
         <Button
           size="xs"
@@ -62,7 +64,7 @@ export const SpecializationsSection: React.FC = () => {
           rightSection={<PlusIcon size={14} />}
           onClick={openCreate}
         >
-          Добавить
+          {t('common.add')}
         </Button>
       </Group>
 
@@ -82,8 +84,8 @@ export const SpecializationsSection: React.FC = () => {
 
       <ConfirmModal
         opened={Boolean(archiveTarget)}
-        title="Архивировать специализацию"
-        message={`Архивировать «${archiveTarget?.name ?? ''}»?`}
+        title={t('settings.archiveTitle')}
+        message={t('settings.archiveMessage', { name: archiveTarget?.name ?? '' })}
         loading={archiveSpec.isPending}
         onConfirm={() =>
           archiveTarget &&

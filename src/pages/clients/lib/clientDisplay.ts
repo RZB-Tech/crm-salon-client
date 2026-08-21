@@ -1,4 +1,5 @@
 import { parseApiDateTimeParts } from '@/shared/lib/format';
+import { getDateLocale } from '@/shared/lib/i18n';
 
 /** «12.08. • 13:45» — дата записи в карточке клиента */
 export const formatClientAppointmentStamp = (value: string): string => {
@@ -12,7 +13,7 @@ export const formatClientAppointmentStamp = (value: string): string => {
 export const formatFinanceMonth = (key: string): string => {
   const match = key.match(/^(\d{4})-(\d{2})/);
   if (!match) return key;
-  const label = new Date(Number(match[1]), Number(match[2]) - 1, 1).toLocaleDateString('ru-RU', {
+  const label = new Date(Number(match[1]), Number(match[2]) - 1, 1).toLocaleDateString(getDateLocale(), {
     month: 'long',
     year: 'numeric',
   });

@@ -1,3 +1,5 @@
+import { getDateLocale, t } from '@/shared/lib/i18n';
+
 export const formatTime = (time: string): string => time.slice(0, 5);
 
 const API_DATETIME_RE = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}):(\d{2})/;
@@ -39,7 +41,7 @@ export const formatAppointmentDateTime = (value: string): string => {
   const { date, hours, minutes } = parseApiDateTimeParts(value);
   const [year, month, day] = date.split('-').map(Number);
   const local = new Date(year, month - 1, day, hours, minutes);
-  return local.toLocaleString('ru-RU', {
+  return local.toLocaleString(getDateLocale(), {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -48,32 +50,17 @@ export const formatAppointmentDateTime = (value: string): string => {
 };
 
 export const formatDate = (value: string | null): string => {
-  if (!value) return '—';
-  return new Date(value).toLocaleDateString('ru-RU');
+  if (!value) return t('common.dash');
+  return new Date(value).toLocaleDateString(getDateLocale());
 };
 
 export const formatDateTime = (value: string): string =>
-  new Date(value).toLocaleString('ru-RU', {
+  new Date(value).toLocaleString(getDateLocale(), {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
   });
-
-const MONTHS_GENITIVE = [
-  'Января',
-  'Февраля',
-  'Марта',
-  'Апреля',
-  'Мая',
-  'Июня',
-  'Июля',
-  'Августа',
-  'Сентября',
-  'Октября',
-  'Ноября',
-  'Декабря',
-];
 
 const padTime = (hours: number, minutes: number) =>
   `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
@@ -108,7 +95,7 @@ export const formatNotificationAlertStamp = (value: string): string => {
 export const formatNotificationListStamp = (value: string): string => {
   const { date, hours, minutes } = parseNotificationDateTimeParts(value);
   const [, month, day] = date.split('-').map(Number);
-  return `${day} ${MONTHS_GENITIVE[month - 1] ?? ''} ${padTime(hours, minutes)}`;
+  return `${day} ${t(`labels.months.${month}`)} ${padTime(hours, minutes)}`;
 };
 
 export const isSameDay = (a: Date, b: Date): boolean =>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Group, TextInput } from '@mantine/core';
 import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import { ArchiveToggle, ListTabs, listPageStyles } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { GiftCardsFilter } from '../lib/useGiftCardsPage';
 
@@ -24,6 +25,7 @@ export const GiftCardsToolbar: React.FC<GiftCardsToolbarProps> = ({
   onShowArchivedChange,
   onCreate,
 }) => {
+  const { t } = useI18n();
   const { hasPermission } = useAccess();
 
   return (
@@ -33,15 +35,15 @@ export const GiftCardsToolbar: React.FC<GiftCardsToolbarProps> = ({
           value={filter}
           onChange={(value) => onFilterChange(value as GiftCardsFilter)}
           data={[
-            { value: 'all', label: 'Все' },
-            { value: 'active', label: 'Активные' },
-            { value: 'used', label: 'Использованные' },
-            { value: 'expired', label: 'Истёкшие' },
-            { value: 'cancelled', label: 'Отменённые' },
+            { value: 'all', label: t('common.all') },
+            { value: 'active', label: t('common.active') },
+            { value: 'used', label: t('giftCards.used') },
+            { value: 'expired', label: t('giftCards.expired') },
+            { value: 'cancelled', label: t('giftCards.cancelled') },
           ]}
         />
         <TextInput
-          placeholder="Поиск по коду или клиенту..."
+          placeholder={t('giftCards.searchPlaceholder')}
           leftSection={<MagnifyingGlassIcon size={16} />}
           value={search}
           onChange={(event) => onSearchChange(event.currentTarget.value)}
@@ -57,7 +59,7 @@ export const GiftCardsToolbar: React.FC<GiftCardsToolbarProps> = ({
             onClick={onCreate}
             size="sm"
           >
-            Новый купон
+            {t('giftCards.newCard')}
           </Button>
         )}
         <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />

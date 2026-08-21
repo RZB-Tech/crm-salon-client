@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActionIcon } from '@mantine/core';
 import { XIcon } from '@phosphor-icons/react';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './form-modal.module.css';
 
 export type FormModalTone = 'brand' | 'danger' | 'warning';
@@ -25,7 +26,9 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
   tone = 'brand',
   aside,
   onClose,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <header className={styles.header} data-tone={tone}>
     <div className={styles.headerTop}>
       <div className={styles.headerLead}>
@@ -49,7 +52,7 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
           color="gray"
           size={32}
           radius="md"
-          aria-label="Закрыть"
+          aria-label={t('header.close')}
           onClick={onClose}
         >
           <XIcon size={20} />
@@ -57,4 +60,5 @@ export const FormModalHeader: React.FC<FormModalHeaderProps> = ({
       </div>
     </div>
   </header>
-);
+  );
+};

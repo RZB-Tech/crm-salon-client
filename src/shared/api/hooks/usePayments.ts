@@ -3,6 +3,7 @@ import { apiPost } from '@/shared/api/client';
 import { invalidatePaymentFlow } from '@/shared/api/invalidate';
 import { queryKeys } from '@/shared/api/query-keys';
 import type { Appointment, PaymentCreatePayload, Receipt } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const patchAppointmentPaid = (
@@ -52,10 +53,10 @@ export const useCreatePayment = () => {
         patchAppointmentPaid(queryClient, result.appointment_id, result.status === 'paid');
       }
       await invalidatePaymentFlow(queryClient, result.appointment_id);
-      addNotification.success({ message: 'Оплата проведена' });
+      addNotification.success({ message: t('toast.paymentDone') });
     },
     onError: (error: Error) => {
-      addNotification.error({ message: error.message || 'Не удалось провести оплату' });
+      addNotification.error({ message: error.message || t('toast.paymentFailed') });
     },
   });
 };

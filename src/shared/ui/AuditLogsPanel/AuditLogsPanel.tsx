@@ -5,6 +5,7 @@ import { useEmployees } from '@/shared/api/hooks/useEmployees';
 import type { AuditLogTable } from '@/shared/api/types';
 import { DataTable, DataTableRow } from '@/shared/ui';
 import { formatDateTime, getEmployeeFullName } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface AuditLogsPanelProps {
   tableName: AuditLogTable;
@@ -17,10 +18,12 @@ interface AuditLogsPanelProps {
 export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({
   tableName,
   recordId,
-  whoLabel = 'Кто',
+  whoLabel,
   className,
   hideEmptyIcon,
 }) => {
+  const { t } = useI18n();
+  const resolvedWho = whoLabel ?? t('admin.who');
   const { data, isLoading, isError } = useAuditLogs({
     table_name: tableName,
     record_id: recordId,
@@ -43,8 +46,8 @@ export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({
 
   if (isError) {
     return (
-      <Alert color="red" title="Не удалось загрузить историю">
-        Проверьте доступность API
+      <Alert color="red" title={t('admin.historyLoadError')}>
+        {t('common.checkApi')}
       </Alert>
     );
   }
@@ -59,15 +62,15 @@ export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({
       className={className}
       hideEmptyIcon={hideEmptyIcon}
       columns={[
-        { key: 'date', label: 'Дата' },
-        { key: 'who', label: whoLabel },
-        { key: 'action', label: 'Действие' },
-        { key: 'field', label: 'Поле' },
-        { key: 'old', label: 'Было' },
-        { key: 'new', label: 'Стало' },
+        { key: 'date', label: t('common.date') },
+        { key: 'who', label: resolvedWho },
+        { key: 'action', label: t('admin.action') },
+        { key: 'field', label: t('admin.field') },
+        { key: 'old', label: t('admin.was') },
+        { key: 'new', label: t('admin.became') },
       ]}
       isEmpty={items.length === 0}
-      emptyMessage="Изменений пока нет"
+      emptyMessage={t('admin.noChanges')}
     >
       {items.map((log) => (
         <DataTableRow key={log.id}>
@@ -89,11 +92,11 @@ export const AuditLogsPanel: React.FC<AuditLogsPanelProps> = ({
           </Table.Td>
           <Table.Td>
             <Text size="xs" c="dimmed">
-              {log.old_value ?? '—'}
+              {log.old_value ?? t('common.dash')}
             </Text>
           </Table.Td>
           <Table.Td>
-            <Text size="xs">{log.new_value ?? '—'}</Text>
+            <Text size="xs">{log.new_value ?? t('common.dash')}</Text>
           </Table.Td>
         </DataTableRow>
       ))}

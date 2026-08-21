@@ -7,6 +7,7 @@ import type {
   StaffPermissionsUpdatePayload,
   StaffRolesAssignPayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 const QUERY_KEY = ['staff'] as const;
@@ -40,7 +41,7 @@ export const useCreateStaff = () => {
     onSuccess: async (result) => {
       patchStaffInList(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      addNotification.success({ message: 'Пользователь создан' });
+      addNotification.success({ message: t('toast.staffCreated') });
     },
   });
 };
@@ -54,7 +55,7 @@ export const useAssignStaffRoles = () => {
     onSuccess: async (result) => {
       patchStaffInList(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      addNotification.success({ message: 'Роли назначены' });
+      addNotification.success({ message: t('toast.rolesAssigned') });
     },
   });
 };
@@ -68,7 +69,7 @@ export const useUpdateStaffPermissions = () => {
     onSuccess: async (result) => {
       patchStaffInList(queryClient, result);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      addNotification.success({ message: 'Разрешения обновлены' });
+      addNotification.success({ message: t('toast.permissionsUpdated') });
     },
   });
 };

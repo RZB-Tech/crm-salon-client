@@ -3,6 +3,7 @@ import { Select } from '@mantine/core';
 import { Phone } from '@phosphor-icons/react';
 import type { Client } from '@/shared/api/types';
 import type { AppointmentFormValues } from '../../lib/appointmentForm';
+import { useI18n } from '@/shared/lib/i18n';
 import { QuickClientForm } from './QuickClientForm';
 import { VisitAddButton } from './VisitAddButton';
 import styles from './appointment-form-modal.module.css';
@@ -24,6 +25,7 @@ export const AppointmentClientFields: React.FC<AppointmentClientFieldsProps> = (
   fieldsLocked,
   onChange,
 }) => {
+  const { t } = useI18n();
   const [showQuickClient, setShowQuickClient] = React.useState(false);
 
   React.useEffect(() => {
@@ -39,7 +41,7 @@ export const AppointmentClientFields: React.FC<AppointmentClientFieldsProps> = (
     <>
       <div className={styles.clientRow}>
         <Select
-          label="Клиент"
+          label={t('form.client')}
           required
           searchable
           data={clientOptions}
@@ -47,10 +49,10 @@ export const AppointmentClientFields: React.FC<AppointmentClientFieldsProps> = (
           onChange={(value) => onChange({ ...values, clientId: value })}
           className={styles.clientSelect}
           disabled={fieldsLocked}
-          placeholder="Выберите клиента"
+          placeholder={t('form.selectClient')}
         />
         {!fieldsLocked && !showQuickClient && (
-          <VisitAddButton label="Клиент" onClick={() => setShowQuickClient(true)} />
+          <VisitAddButton label={t('form.client')} onClick={() => setShowQuickClient(true)} />
         )}
       </div>
 

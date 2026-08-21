@@ -7,6 +7,7 @@ import type {
   GiftCardCreatePayload,
   GiftCardUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const useGiftCards = (archived = false, enabled = true) =>
@@ -33,7 +34,7 @@ export const useCreateGiftCard = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.receipts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      addNotification.success({ message: 'Купон создан' });
+      addNotification.success({ message: t('toast.giftCardCreated') });
     },
   });
 };
@@ -47,7 +48,7 @@ export const useUpdateGiftCard = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.detail(payload.id) });
-      addNotification.success({ message: 'Купон обновлён' });
+      addNotification.success({ message: t('toast.giftCardUpdated') });
     },
   });
 };
@@ -60,7 +61,7 @@ export const useArchiveGiftCard = () => {
       apiPatch<GiftCard, GiftCardUpdatePayload>('/api/v1/gift-cards', { id, archived: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all });
-      addNotification.success({ message: 'Купон архивирован' });
+      addNotification.success({ message: t('toast.giftCardArchived') });
     },
   });
 };
@@ -73,7 +74,7 @@ export const useRestoreGiftCard = () => {
       apiPatch<GiftCard, GiftCardUpdatePayload>('/api/v1/gift-cards', { id, archived: false }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all });
-      addNotification.success({ message: 'Купон восстановлен' });
+      addNotification.success({ message: t('toast.giftCardRestored') });
     },
   });
 };
@@ -88,7 +89,7 @@ export const useCancelGiftCard = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.giftCards.detail(payload.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-      addNotification.success({ message: 'Купон отменён' });
+      addNotification.success({ message: t('toast.giftCardCancelled') });
     },
   });
 };

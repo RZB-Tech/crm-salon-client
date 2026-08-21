@@ -111,3 +111,29 @@
   background: #efe7e0;
   color: #6e483c;
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions > * {
+  flex: 1;
+}
+
+.cancelBtn[data-variant='subtle'] {
+  height: auto;
+  min-height: 40px;
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid #f1eae3;
+  color: #ad9178;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.cancelBtn[data-variant='subtle']:hover:not(:disabled) {
+  background: #f6f1ee;
+  color: #6e483c;
+}

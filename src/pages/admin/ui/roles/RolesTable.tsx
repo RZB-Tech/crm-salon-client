@@ -9,6 +9,7 @@ import {
   ArrowCounterClockwiseIcon,
 } from '@phosphor-icons/react';
 import { listPageStyles, SortableTh } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
 import type { Role } from '@/shared/api/types';
 
@@ -19,19 +20,20 @@ interface RolesTableProps extends TableSortProps {
 }
 
 export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: RolesTableProps) {
+  const { t } = useI18n();
   return (
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
       <Table.Thead>
         <Table.Tr>
           <SortableTh column="name" sort={sort} onSort={onSort}>
-            Название
+            {t('common.name')}
           </SortableTh>
-          <Table.Th className={listPageStyles.headCell}>Описание</Table.Th>
+          <Table.Th className={listPageStyles.headCell}>{t('form.description')}</Table.Th>
           <SortableTh column="permissions" sort={sort} onSort={onSort}>
-            Разрешений
+            {t('admin.permissionsCount')}
           </SortableTh>
           <SortableTh column="status" sort={sort} onSort={onSort}>
-            Статус
+            {t('common.status')}
           </SortableTh>
           <Table.Th className={listPageStyles.headCell} w={48} />
         </Table.Tr>
@@ -41,7 +43,7 @@ export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: Rol
           <Table.Tr>
             <Table.Td colSpan={5}>
               <Text size="sm" c="dimmed" ta="center" py="xl">
-                Нет ролей
+                {t('admin.emptyRoles')}
               </Text>
             </Table.Td>
           </Table.Tr>
@@ -59,7 +61,7 @@ export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: Rol
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="sm" c="rgba(72,72,72,0.4)">
-                  {r.description || '—'}
+                  {r.description || t('common.dash')}
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
@@ -68,11 +70,11 @@ export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: Rol
               <Table.Td className={listPageStyles.bodyCell}>
                 {r.archived ? (
                   <Badge color="gray" variant="light" size="sm">
-                    Архив
+                    {t('promotions.archived')}
                   </Badge>
                 ) : (
                   <Badge color="green" variant="light" size="sm">
-                    Активна
+                    {t('admin.roleActive')}
                   </Badge>
                 )}
               </Table.Td>
@@ -81,7 +83,7 @@ export function RolesTable({ roles, sort, onSort, onEdit, onToggleArchive }: Rol
                   variant="subtle"
                   color={r.archived ? 'gray' : 'orange'}
                   size="sm"
-                  aria-label={r.archived ? 'Восстановить' : 'Архивировать'}
+                  aria-label={r.archived ? t('common.restore') : t('common.archive')}
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleArchive(r);

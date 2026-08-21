@@ -9,6 +9,7 @@ import {
   RECEIPT_STATUS_LABELS,
   RECEIPT_TYPE_LABELS,
 } from '@/shared/lib/format';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface ReceiptsTableProps extends TableSortProps {
   items: Receipt[];
@@ -24,7 +25,9 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
   onShowHistory,
   onPayReceipt,
   onCancelReceipt,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>
     <Table.Thead>
       <Table.Tr>
@@ -32,19 +35,19 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
           ID
         </SortableTh>
         <SortableTh column="type" sort={sort} onSort={onSort}>
-          Тип
+          {t('form.type')}
         </SortableTh>
         <SortableTh column="amount" sort={sort} onSort={onSort}>
-          Сумма
+          {t('form.amount')}
         </SortableTh>
         <SortableTh column="remaining" sort={sort} onSort={onSort}>
-          Остаток
+          {t('giftCards.remainder')}
         </SortableTh>
         <SortableTh column="status" sort={sort} onSort={onSort}>
-          Статус
+          {t('common.status')}
         </SortableTh>
         <SortableTh column="date" sort={sort} onSort={onSort}>
-          Дата
+          {t('common.date')}
         </SortableTh>
         <Table.Th className={listPageStyles.headCell} w={220} />
       </Table.Tr>
@@ -54,7 +57,7 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
         <Table.Tr>
           <Table.Td colSpan={7}>
             <Text size="sm" c="dimmed" ta="center" py="xl">
-              Чеков нет
+              {t('finance.emptyReceipts')}
             </Text>
           </Table.Td>
         </Table.Tr>
@@ -104,12 +107,12 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
             <Table.Td className={listPageStyles.bodyCell}>
               <Group gap={6}>
                 <Button size="xs" variant="subtle" onClick={() => onShowHistory(receipt.id)}>
-                  История
+                  {t('finance.history')}
                 </Button>
                 {receipt.status === 'pending' && (
                   <>
                     <Button size="xs" variant="light" color="sage" onClick={() => onPayReceipt(receipt.id)}>
-                      Оплатить
+                      {t('finance.pay')}
                     </Button>
                     <Button
                       size="xs"
@@ -117,7 +120,7 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
                       color="red"
                       onClick={() => onCancelReceipt(receipt.id)}
                     >
-                      Отменить
+                      {t('common.cancel')}
                     </Button>
                   </>
                 )}
@@ -128,4 +131,5 @@ export const ReceiptsTable: React.FC<ReceiptsTableProps> = ({
       )}
     </Table.Tbody>
   </Table>
-);
+  );
+};

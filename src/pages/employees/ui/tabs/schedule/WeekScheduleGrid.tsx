@@ -4,6 +4,7 @@ import { PencilSimple, Plus } from '@phosphor-icons/react';
 import type { WorkScheduleDay } from '@/shared/api/types';
 import { DAY_OF_WEEK_LABELS, formatTime } from '@/shared/lib/format';
 import { ALL_DAYS } from '../../../lib/scheduleHelpers';
+import { useI18n } from '@/shared/lib/i18n';
 import profileStyles from '../../employee-profile.module.css';
 import scheduleStyles from '../schedule-tab.module.css';
 
@@ -19,17 +20,19 @@ export const WeekScheduleGrid: React.FC<WeekScheduleGridProps> = ({
   dayScheduleMap,
   onEdit,
   onCreate,
-}) => (
+}) => {
+  const { t } = useI18n();
+  return (
   <Box>
     <Box className={profileStyles.toolbar}>
-      <Text fw={600}>Недельный график</Text>
+      <Text fw={600}>{t('employees.weekSchedule')}</Text>
       {hasSchedule ? (
         <Button size="xs" variant="light" leftSection={<PencilSimple size={14} />} onClick={onEdit}>
-          Редактировать
+          {t('common.edit')}
         </Button>
       ) : (
         <Button size="xs" variant="light" leftSection={<Plus size={14} />} onClick={onCreate}>
-          Добавить
+          {t('common.add')}
         </Button>
       )}
     </Box>
@@ -51,7 +54,7 @@ export const WeekScheduleGrid: React.FC<WeekScheduleGridProps> = ({
                 </Text>
               ) : (
                 <Text size="xs" c="dimmed">
-                  Вых.
+                  {t('employees.dayOff')}
                 </Text>
               )}
             </Box>
@@ -60,8 +63,9 @@ export const WeekScheduleGrid: React.FC<WeekScheduleGridProps> = ({
       </SimpleGrid>
     ) : (
       <Text size="sm" c="dimmed">
-        График не задан
+        {t('employees.noSchedule')}
       </Text>
     )}
   </Box>
-);
+  );
+};

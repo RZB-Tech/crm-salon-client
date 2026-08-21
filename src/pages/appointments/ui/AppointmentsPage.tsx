@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
 import { ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode } from '@/shared/lib/permissions';
 import { AppointmentFormModal } from '@/pages/board/ui/AppointmentForm';
 import { useAppointmentsPage } from '../lib/useAppointmentsPage';
@@ -9,6 +10,7 @@ import { AppointmentsTable } from './AppointmentsTable';
 import { AppointmentsConfirmModals } from './AppointmentsConfirmModals';
 
 export const AppointmentsPage: React.FC = () => {
+  const { t } = useI18n();
   const {
     hasPermission,
     filterForm,
@@ -73,8 +75,8 @@ export const AppointmentsPage: React.FC = () => {
     return (
       <ListPageShell>
         <Box p="xl">
-          <Alert color="red" title="Не удалось загрузить посещения">
-            Проверьте доступность API и авторизацию
+          <Alert color="red" title={t('appointments.loadError')}>
+            {t('common.checkApiAuth')}
           </Alert>
         </Box>
       </ListPageShell>

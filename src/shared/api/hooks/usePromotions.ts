@@ -6,6 +6,7 @@ import type {
   PromotionCreatePayload,
   PromotionUpdatePayload,
 } from '@/shared/api/types';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export const usePromotions = (archived = false, enabled = true) =>
@@ -30,7 +31,7 @@ export const useCreatePromotion = () => {
       apiPost<Promotion, PromotionCreatePayload>('/api/v1/promotions', payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.promotions.all });
-      addNotification.success({ message: 'Акция создана' });
+      addNotification.success({ message: t('toast.promotionCreated') });
     },
   });
 };
@@ -44,7 +45,7 @@ export const useUpdatePromotion = () => {
     onSuccess: (_, payload) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.promotions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.promotions.detail(payload.id) });
-      addNotification.success({ message: 'Акция обновлена' });
+      addNotification.success({ message: t('toast.promotionUpdated') });
     },
   });
 };
@@ -60,7 +61,7 @@ export const useArchivePromotion = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.promotions.all });
-      addNotification.success({ message: 'Акция архивирована' });
+      addNotification.success({ message: t('toast.promotionArchived') });
     },
   });
 };
@@ -76,7 +77,7 @@ export const useRestorePromotion = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.promotions.all });
-      addNotification.success({ message: 'Акция восстановлена' });
+      addNotification.success({ message: t('toast.promotionRestored') });
     },
   });
 };

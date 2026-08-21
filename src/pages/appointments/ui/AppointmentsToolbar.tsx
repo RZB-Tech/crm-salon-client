@@ -6,6 +6,7 @@ import {
   type AppointmentFilterFormState,
 } from '../lib/appointmentFilters';
 import { AppointmentsFilterDrawer } from './AppointmentsFilterDrawer';
+import { useI18n } from '@/shared/lib/i18n';
 import styles from './appointments-toolbar.module.css';
 
 interface AppointmentsToolbarProps {
@@ -27,6 +28,7 @@ export const AppointmentsToolbar: React.FC<AppointmentsToolbarProps> = ({
   canCreate,
   onCreateClick,
 }) => {
+  const { t } = useI18n();
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const filtersActive = isAppointmentDrawerFilterActive(filterForm);
 
@@ -36,13 +38,13 @@ export const AppointmentsToolbar: React.FC<AppointmentsToolbarProps> = ({
         <UnstyledButton
           className={styles.title}
           onClick={() => patchFilter({ archived: false })}
-          aria-label="К посещениям"
+          aria-label={t('appointments.toList')}
         >
           <CaretLeftIcon size={16} />
-          Архив
+          {t('appointments.archiveTab')}
         </UnstyledButton>
       ) : (
-        <h1 className={styles.title}>Посещения</h1>
+        <h1 className={styles.title}>{t('appointments.title')}</h1>
       )}
 
       <Group gap={12} wrap="nowrap">
@@ -51,7 +53,7 @@ export const AppointmentsToolbar: React.FC<AppointmentsToolbarProps> = ({
           variant="default"
           size={32}
           radius="md"
-          aria-label="Фильтры"
+          aria-label={t('common.filters')}
           aria-pressed={filtersActive}
           onClick={() => setFiltersOpen(true)}
         >
@@ -63,7 +65,7 @@ export const AppointmentsToolbar: React.FC<AppointmentsToolbarProps> = ({
             variant="default"
             size={32}
             radius="md"
-            aria-label={filterForm.archived ? 'Показать активные' : 'Показать архив'}
+            aria-label={filterForm.archived ? t('common.showActive') : t('common.showArchive')}
             aria-pressed={filterForm.archived}
             onClick={() => patchFilter({ archived: !filterForm.archived })}
           >
@@ -78,7 +80,7 @@ export const AppointmentsToolbar: React.FC<AppointmentsToolbarProps> = ({
             rightSection={<PlusIcon size={16} />}
             onClick={onCreateClick}
           >
-            Новая запись
+            {t('board.newAppointment')}
           </Button>
         )}
       </Group>

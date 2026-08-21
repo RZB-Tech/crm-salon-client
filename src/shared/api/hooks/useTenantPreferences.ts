@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiPatch, apiRequest } from '@/shared/api/client';
+import { t } from '@/shared/lib/i18n';
 import { addNotification } from '@/shared/lib/notifications';
 
 export interface TenantPreferences {
@@ -37,7 +38,7 @@ export const useUpdateTenantPreferences = () => {
       ),
     onSuccess: (result) => {
       queryClient.setQueryData(QUERY_KEY, result);
-      addNotification.success({ message: 'Настройки сохранены' });
+      addNotification.success({ message: t('toast.settingsSaved') });
     },
   });
 };
