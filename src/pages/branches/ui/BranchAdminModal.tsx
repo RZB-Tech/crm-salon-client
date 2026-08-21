@@ -25,6 +25,13 @@ export const BranchAdminModal: React.FC<BranchAdminModalProps> = ({
 
   useResetOnOpen(branch, () => setForm(emptyAdminForm()));
 
+  const setField = <K extends keyof BranchAdminFormState>(
+    key: K,
+    value: BranchAdminFormState[K],
+  ) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
   const handleSubmit = () => {
     if (!branch || !isAdminFormValid(form)) return;
     createAdmin.mutate(
@@ -66,23 +73,19 @@ export const BranchAdminModal: React.FC<BranchAdminModalProps> = ({
             label={t('common.login')}
             required
             value={form.admin_login}
-            onChange={(event) => setForm((prev) => ({ ...prev, admin_login: event.currentTarget.value }))}
+            onChange={(event) => setField('admin_login', event.currentTarget.value)}
           />
           <TextInput
             label={t('common.firstName')}
             required
             value={form.admin_firstname}
-            onChange={(event) =>
-              setForm((prev) => ({ ...prev, admin_firstname: event.currentTarget.value }))
-            }
+            onChange={(event) => setField('admin_firstname', event.currentTarget.value)}
           />
         </FormFieldGrid>
         <PasswordInput
           label={t('common.password')}
           value={form.admin_password}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, admin_password: event.currentTarget.value }))
-          }
+          onChange={(event) => setField('admin_password', event.currentTarget.value)}
         />
       </FormSection>
     </FormModal>

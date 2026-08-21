@@ -1,106 +1,24 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Alert, Box, Button, Group, Skeleton, Stack } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
-import {
-  useCreateEmployee,
-  useArchiveEmployee,
-  useEmployees,
-  useRestoreEmployee,
-} from '@/shared/api/hooks/useEmployees';
-import { useSpecializations } from '@/shared/api/hooks/useSpecializations';
-import type { EmployeeCreatePayload, Employee, EmployeeUpdatePayload } from '@/shared/api/types';
 import {
   ArchiveToggle,
   ConfirmModal,
   ListPageShell,
   ListPaginationFooter,
   ViewModeToggle,
-  type ListViewMode,
 } from '@/shared/ui';
-import { usePagination } from '@/shared/lib/hooks/usePagination';
-import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
-import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getEmployeeFullName } from '@/shared/lib/format';
 import { useI18n } from '@/shared/lib/i18n';
-import { PermissionCode, useAccess } from '@/shared/lib/permissions';
-import { readStoredView, VIEW_STORAGE_KEY } from '../lib/viewMode';
+import { useEmployeesPage } from '../lib/useEmployeesPage';
 import { EmployeesListBody } from './EmployeesListBody';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 
 export const EmployeesPage: React.FC = () => {
   const { t } = useI18n();
-  const { hasPermission } = useAccess();
-  const navigate = useNavigate();
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [archiveTargetId, setArchiveTargetId] = React.useState<number | null>(null);
-  const [showArchived, setShowArchived] = React.useState(false);
-  const [view, setView] = React.useState<ListViewMode>(readStoredView);
+  const page = useEmployeesPage();
 
-  const { data: employees, isLoading, isError } = useEmployees(showArchived);
-  const { data: specializations } = useSpecializations();
-  const createEmployee = useCreateEmployee();
-  const archiveEmployee = useArchiveEmployee();
-  const restoreEmployee = useRestoreEmployee();
-  const archiveTarget = useResolvedById(employees, archiveTargetId);
-
-  const specializationMap = React.useMemo(() => {
-    const map = new Map<number, string>();
-    for (const s of specializations ?? []) map.set(s.id, s.name);
-    return map;
-  }, [specializations]);
-
-  const getters = React.useMemo(
-    () => ({
-      name: (employee: Employee) => getEmployeeFullName(employee),
-      spec: (employee: Employee) =>
-        employee.specialization_id != null
-          ? (specializationMap.get(employee.specialization_id) ?? '')
-          : '',
-      salary: (employee: Employee) => employee.salary_fixed,
-      status: (employee: Employee) => Number(employee.active),
-    }),
-    [specializationMap],
-  );
-
-  const { sort, sortedItems, toggleSort } = useTableSort(employees ?? [], getters, {
-    key: 'name',
-    dir: 'asc',
-  });
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize, resetPage } = usePagination(
-    sortedItems,
-    { defaultPageSize: 20 },
-  );
-
-  React.useEffect(() => resetPage(), [showArchived, sort.key, sort.dir, resetPage]);
-  React.useEffect(() => {
-    try {
-      localStorage.setItem(VIEW_STORAGE_KEY, view);
-    } catch {
-      /* ignore */
-    }
-  }, [view]);
-
-  const openProfile = React.useCallback(
-    (employee: Employee) => navigate(`/employees/${employee.id}`),
-    [navigate],
-  );
-
-  const handleCreate = React.useCallback(
-    (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
-      createEmployee.mutate(payload as EmployeeCreatePayload, { onSuccess: () => setFormOpen(false) });
-    },
-    [createEmployee],
-  );
-
-  const handleArchive = React.useCallback(() => {
-    if (!archiveTarget) return;
-    archiveEmployee.mutate(archiveTarget.id, { onSuccess: () => setArchiveTargetId(null) });
-  }, [archiveTarget, archiveEmployee]);
-
-  const canManage = hasPermission(PermissionCode.EMPLOYEE_MANAGE);
-
-  if (isLoading) {
+  if (page.isLoading) {
     return (
       <ListPageShell
         toolbar={
@@ -119,7 +37,7 @@ export const EmployeesPage: React.FC = () => {
     );
   }
 
-  if (isError) {
+  if (page.isError) {
     return (
       <ListPageShell>
         <Box p="xl">
@@ -135,62 +53,62 @@ export const EmployeesPage: React.FC = () => {
     <ListPageShell
       toolbar={
         <>
-          <ViewModeToggle value={view} onChange={setView} />
+          <ViewModeToggle value={page.view} onChange={page.setView} />
           <Group gap={8} wrap="nowrap">
-            {!showArchived && hasPermission(PermissionCode.EMPLOYEE_CREATE) && (
+            {!page.showArchived && page.canCreate && (
               <Button
                 color="sage.7"
                 rightSection={<PlusIcon size={16} />}
                 size="sm"
-                onClick={() => setFormOpen(true)}
+                onClick={() => page.setFormOpen(true)}
               >
                 {t('employees.add')}
               </Button>
             )}
-            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
+            <ArchiveToggle active={page.showArchived} onChange={page.setShowArchived} />
           </Group>
         </>
       }
       footer={
         <ListPaginationFooter
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
+          page={page.pagination.page}
+          pageSize={page.pagination.pageSize}
+          total={page.pagination.total}
+          onPageChange={page.pagination.setPage}
+          onPageSizeChange={page.pagination.setPageSize}
         />
       }
     >
       <EmployeesListBody
-        view={view}
-        employees={paginatedItems}
-        specializationMap={specializationMap}
-        sort={sort}
-        onSort={toggleSort}
-        showArchived={showArchived}
-        canManage={canManage}
-        onOpen={openProfile}
-        onArchive={setArchiveTargetId}
-        onRestore={(id) => restoreEmployee.mutate(id)}
+        view={page.view}
+        employees={page.paginatedItems}
+        specializationMap={page.specializationMap}
+        sort={page.sort}
+        onSort={page.toggleSort}
+        showArchived={page.showArchived}
+        canManage={page.canManage}
+        onOpen={page.openProfile}
+        onArchive={page.setArchiveTargetId}
+        onRestore={(id) => page.restoreEmployee.mutate(id)}
       />
 
       <EmployeeFormModal
-        opened={formOpen}
+        opened={page.formOpen}
         employee={null}
-        loading={createEmployee.isPending}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleCreate}
+        loading={page.createEmployee.isPending}
+        onClose={() => page.setFormOpen(false)}
+        onSubmit={page.handleCreate}
       />
 
       <ConfirmModal
-        opened={Boolean(archiveTarget)}
+        opened={Boolean(page.archiveTarget)}
         title={t('employees.archiveTitle')}
         message={t('employees.archiveMessage', {
-          name: archiveTarget ? getEmployeeFullName(archiveTarget) : '',
+          name: page.archiveTarget ? getEmployeeFullName(page.archiveTarget) : '',
         })}
-        loading={archiveEmployee.isPending}
-        onConfirm={handleArchive}
-        onClose={() => setArchiveTargetId(null)}
+        loading={page.archiveEmployee.isPending}
+        onConfirm={page.handleArchive}
+        onClose={() => page.setArchiveTargetId(null)}
       />
     </ListPageShell>
   );

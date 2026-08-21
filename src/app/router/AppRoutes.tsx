@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/shared/ui/AppLayout';
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
@@ -23,14 +23,11 @@ import {
   ServicesPage,
   SettingsPage,
 } from './lazyPages';
-import { PageLoader } from './PageLoader';
+import { guardedPage } from './guardedPage';
 
 export const AppRouter: React.FC = () => (
   <Routes>
-    <Route
-      path="/login"
-      element={AUTH_ENABLED ? <LoginPage /> : <Navigate to="/board" replace />}
-    />
+    <Route path="/login" element={AUTH_ENABLED ? <LoginPage /> : <Navigate to="/board" replace />} />
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
         <Route index element={<SmartRedirect />} />
@@ -44,149 +41,88 @@ export const AppRouter: React.FC = () => (
         />
         <Route
           path="/appointments"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.APPOINTMENT_READ, PermissionCode.APPOINTMENT_MANAGE]}>
-                <AppointmentsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<AppointmentsPage />, [
+            PermissionCode.APPOINTMENT_READ,
+            PermissionCode.APPOINTMENT_MANAGE,
+          ])}
         />
         <Route
           path="/clients"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE]}>
-                <ClientsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<ClientsPage />, [PermissionCode.CLIENT_READ, PermissionCode.CLIENT_MANAGE])}
         />
         <Route
           path="/services"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE]}>
-                <ServicesPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<ServicesPage />, [PermissionCode.SERVICE_READ, PermissionCode.SERVICE_MANAGE])}
         />
         <Route
           path="/promotions"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.PROMOTION_GET, PermissionCode.PROMOTION_MANAGE]}>
-                <PromotionsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<PromotionsPage />, [
+            PermissionCode.PROMOTION_GET,
+            PermissionCode.PROMOTION_MANAGE,
+          ])}
         />
         <Route
           path="/gift-cards"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.GIFT_CARD_GET, PermissionCode.GIFT_CARD_MANAGE]}>
-                <GiftCardsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<GiftCardsPage />, [
+            PermissionCode.GIFT_CARD_GET,
+            PermissionCode.GIFT_CARD_MANAGE,
+          ])}
         />
         <Route
           path="/employees"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE]}>
-                <EmployeesPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<EmployeesPage />, [
+            PermissionCode.EMPLOYEE_READ,
+            PermissionCode.EMPLOYEE_MANAGE,
+          ])}
         />
         <Route
           path="/employees/:id"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.EMPLOYEE_READ, PermissionCode.EMPLOYEE_MANAGE]}>
-                <EmployeeProfilePage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<EmployeeProfilePage />, [
+            PermissionCode.EMPLOYEE_READ,
+            PermissionCode.EMPLOYEE_MANAGE,
+          ])}
         />
         <Route
           path="/materials"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.MATERIAL_READ, PermissionCode.MATERIAL_MANAGE]}>
-                <MaterialsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<MaterialsPage />, [
+            PermissionCode.MATERIAL_READ,
+            PermissionCode.MATERIAL_MANAGE,
+          ])}
         />
         <Route
           path="/finance"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard
-                permissions={[
-                  PermissionCode.RECEIPT_READ,
-                  PermissionCode.RECEIPT_MANAGE,
-                  PermissionCode.PAYROLL_READ,
-                  PermissionCode.PAYROLL_MANAGE,
-                  PermissionCode.TRANSACTION_READ,
-                  PermissionCode.TRANSACTION_MANAGE,
-                ]}
-              >
-                <FinancePage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<FinancePage />, [
+            PermissionCode.RECEIPT_READ,
+            PermissionCode.RECEIPT_MANAGE,
+            PermissionCode.PAYROLL_READ,
+            PermissionCode.PAYROLL_MANAGE,
+            PermissionCode.TRANSACTION_READ,
+            PermissionCode.TRANSACTION_MANAGE,
+          ])}
         />
         <Route
           path="/notifications"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.NOTIFICATION_READ, PermissionCode.NOTIFICATION_MANAGE]}>
-                <NotificationsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<NotificationsPage />, [
+            PermissionCode.NOTIFICATION_READ,
+            PermissionCode.NOTIFICATION_MANAGE,
+          ])}
         />
         <Route
           path="/settings"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard permissions={[PermissionCode.TENANT_PREFERENCES_READ, PermissionCode.TENANT_MANAGE]}>
-                <SettingsPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<SettingsPage />, [
+            PermissionCode.TENANT_PREFERENCES_READ,
+            PermissionCode.TENANT_MANAGE,
+          ])}
         />
         <Route
           path="/branches"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard
-                permissions={[
-                  PermissionCode.TENANT_BRANCH_READ,
-                  PermissionCode.TENANT_BRANCH_MANAGE,
-                  PermissionCode.TENANT_MANAGE,
-                ]}
-              >
-                <BranchesPage />
-              </PermissionGuard>
-            </Suspense>
-          }
+          element={guardedPage(<BranchesPage />, [
+            PermissionCode.TENANT_BRANCH_READ,
+            PermissionCode.TENANT_BRANCH_MANAGE,
+            PermissionCode.TENANT_MANAGE,
+          ])}
         />
-        <Route
-          path="/admin"
-          element={
-            <Suspense fallback={<PageLoader />}>
-              <PermissionGuard adminOnly>
-                <AdminPage />
-              </PermissionGuard>
-            </Suspense>
-          }
-        />
+        <Route path="/admin" element={guardedPage(<AdminPage />, undefined, true)} />
         <Route path="*" element={<SmartRedirect />} />
       </Route>
     </Route>

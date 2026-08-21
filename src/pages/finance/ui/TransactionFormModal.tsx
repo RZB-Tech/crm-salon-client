@@ -110,7 +110,10 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({ open
         minRows={2}
         autosize
         value={form.notes}
-        onChange={(event) => setForm((prev) => ({ ...prev, notes: event.currentTarget.value }))}
+        onChange={(event) => {
+          const value = event.currentTarget.value;
+          setForm((prev) => ({ ...prev, notes: value }));
+        }}
       />
     </FormModal>
   );

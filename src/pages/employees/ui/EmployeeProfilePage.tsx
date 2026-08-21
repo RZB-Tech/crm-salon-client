@@ -1,19 +1,12 @@
 import React from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, Box, Button, ScrollArea, Skeleton, Tabs } from '@mantine/core';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
-import {
-  useEmployee,
-  useUpdateEmployee,
-  useArchiveEmployee,
-} from '@/shared/api/hooks/useEmployees';
-import { useResetPassword } from '@/shared/api/hooks/useAuth';
-import type { EmployeeCreatePayload, EmployeeUpdatePayload } from '@/shared/api/types';
 import { AuditLogsPanel } from '@/shared/ui/AuditLogsPanel';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { getEmployeeFullName } from '@/shared/lib/format';
-import { isTabValue, type TabValue } from '../lib/profileTabs';
 import { useI18n } from '@/shared/lib/i18n';
+import { useEmployeeProfile } from '../lib/useEmployeeProfile';
+import { EmployeePasswordAlert } from './EmployeePasswordAlert';
 import { EmployeeProfileHeader } from './EmployeeProfileHeader';
 import { EmployeeFormModal } from './modals/EmployeeFormModal';
 import { OverviewTab } from './tabs/OverviewTab';
@@ -25,59 +18,12 @@ import styles from './employee-profile.module.css';
 
 export const EmployeeProfilePage: React.FC = () => {
   const { t } = useI18n();
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [editOpen, setEditOpen] = React.useState(false);
-  const [archiveOpen, setArchiveOpen] = React.useState(false);
-  const [resetPasswordResult, setResetPasswordResult] = React.useState<string | null>(null);
+  const page = useEmployeeProfile();
 
-  const employeeId = Number(id);
-  const { data: employee, isLoading, isFetching, isError } = useEmployee(employeeId);
-  const updateEmployee = useUpdateEmployee();
-  const archiveEmployee = useArchiveEmployee();
-  const resetPassword = useResetPassword();
-
-  React.useEffect(() => {
-    return () => setResetPasswordResult(null);
-  }, [employeeId]);
-
-  const tabParam = searchParams.get('tab');
-  const activeTab: TabValue = isTabValue(tabParam) ? tabParam : 'overview';
-
-  const handleTabChange = React.useCallback(
-    (value: string | null) => {
-      setSearchParams({ tab: value ?? 'overview' }, { replace: true });
-    },
-    [setSearchParams],
-  );
-
-  const handleSubmit = React.useCallback(
-    (payload: EmployeeCreatePayload | EmployeeUpdatePayload) => {
-      updateEmployee.mutate(payload as EmployeeUpdatePayload, { onSuccess: () => setEditOpen(false) });
-    },
-    [updateEmployee],
-  );
-
-  const handleArchive = React.useCallback(() => {
-    archiveEmployee.mutate(employeeId, { onSuccess: () => navigate('/employees') });
-  }, [archiveEmployee, employeeId, navigate]);
-
-  const handleResetPassword = React.useCallback(() => {
-    resetPassword.mutate(employeeId, {
-      onSuccess: (result) => setResetPasswordResult(result.new_password),
-    });
-  }, [resetPassword, employeeId]);
-
-  if (!id || isNaN(employeeId) || employeeId <= 0) {
+  if (!page.id || Number.isNaN(page.employeeId) || page.employeeId <= 0) {
     return (
       <Box className={styles.page}>
-        <Button
-          variant="subtle"
-          leftSection={<ArrowLeftIcon size={16} />}
-          onClick={() => navigate('/employees')}
-          w="fit-content"
-        >
+        <Button variant="subtle" leftSection={<ArrowLeftIcon size={16} />} onClick={page.goBack} w="fit-content">
           {t('employees.backToList')}
         </Button>
         <Alert color="red" title={t('employees.invalidId')}>
@@ -87,7 +33,7 @@ export const EmployeeProfilePage: React.FC = () => {
     );
   }
 
-  if (isLoading || (isFetching && !employee)) {
+  if (page.isLoading) {
     return (
       <Box className={styles.page}>
         <Skeleton height={120} radius="lg" />
@@ -96,15 +42,10 @@ export const EmployeeProfilePage: React.FC = () => {
     );
   }
 
-  if (isError || !employee) {
+  if (page.isError || !page.employee) {
     return (
       <Box className={styles.page}>
-        <Button
-          variant="subtle"
-          leftSection={<ArrowLeftIcon size={16} />}
-          onClick={() => navigate('/employees')}
-          w="fit-content"
-        >
+        <Button variant="subtle" leftSection={<ArrowLeftIcon size={16} />} onClick={page.goBack} w="fit-content">
           {t('employees.backToList')}
         </Button>
         <Alert color="red" title={t('employees.notFoundTitle')}>
@@ -114,21 +55,27 @@ export const EmployeeProfilePage: React.FC = () => {
     );
   }
 
+  const employee = page.employee;
+
   return (
     <Box className={styles.page}>
       <EmployeeProfileHeader
         employee={employee}
-        resetPasswordResult={resetPasswordResult}
-        resetPasswordPending={resetPassword.isPending}
-        onBack={() => navigate('/employees')}
-        onEdit={() => setEditOpen(true)}
-        onResetPassword={handleResetPassword}
-        onArchive={() => setArchiveOpen(true)}
-        onDismissPasswordResult={() => setResetPasswordResult(null)}
+        resetPasswordPending={page.resetPassword.isPending}
+        onBack={page.goBack}
+        onEdit={() => page.setEditOpen(true)}
+        onResetPassword={page.handleResetPassword}
+        onArchive={() => page.setArchiveOpen(true)}
       />
+      {page.resetPasswordResult && (
+        <EmployeePasswordAlert
+          password={page.resetPasswordResult}
+          onClose={() => page.setResetPasswordResult(null)}
+        />
+      )}
 
       <ScrollArea className={styles.pageBody} offsetScrollbars>
-        <Tabs value={activeTab} onChange={handleTabChange} radius="md" keepMounted={false}>
+        <Tabs value={page.activeTab} onChange={page.handleTabChange} radius="md" keepMounted={false}>
           <Tabs.List>
             <Tabs.Tab value="overview">{t('employees.overview')}</Tabs.Tab>
             <Tabs.Tab value="schedule">{t('employees.schedule')}</Tabs.Tab>
@@ -137,7 +84,6 @@ export const EmployeeProfilePage: React.FC = () => {
             <Tabs.Tab value="services">{t('employees.services')}</Tabs.Tab>
             <Tabs.Tab value="audit">{t('finance.history')}</Tabs.Tab>
           </Tabs.List>
-
           <Tabs.Panel value="overview" className={styles.tabPanel}>
             <OverviewTab employee={employee} />
           </Tabs.Panel>
@@ -160,20 +106,19 @@ export const EmployeeProfilePage: React.FC = () => {
       </ScrollArea>
 
       <EmployeeFormModal
-        opened={editOpen}
+        opened={page.editOpen}
         employee={employee}
-        loading={updateEmployee.isPending}
-        onClose={() => setEditOpen(false)}
-        onSubmit={handleSubmit}
+        loading={page.updateEmployee.isPending}
+        onClose={() => page.setEditOpen(false)}
+        onSubmit={page.handleSubmit}
       />
-
       <ConfirmModal
-        opened={archiveOpen}
+        opened={page.archiveOpen}
         title={t('employees.archiveTitle')}
         message={t('employees.archiveMessage', { name: getEmployeeFullName(employee) })}
-        loading={archiveEmployee.isPending}
-        onConfirm={handleArchive}
-        onClose={() => setArchiveOpen(false)}
+        loading={page.archiveEmployee.isPending}
+        onConfirm={page.handleArchive}
+        onClose={() => page.setArchiveOpen(false)}
       />
     </Box>
   );

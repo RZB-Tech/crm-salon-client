@@ -1,7 +1,6 @@
-import { Menu, UnstyledButton } from '@mantine/core';
+import { Button, Menu } from '@mantine/core';
 import { CaretDownIcon, CheckIcon, GlobeIcon } from '@phosphor-icons/react';
 import { LOCALES, LOCALE_LABELS, useI18n } from '@/shared/lib/i18n';
-import styles from './language-switch.module.css';
 
 export function LanguageSwitch() {
   const { locale, setLocale, t } = useI18n();
@@ -9,13 +8,18 @@ export function LanguageSwitch() {
   return (
     <Menu shadow="md" width={180} position="bottom-end" radius="md" offset={8} withinPortal>
       <Menu.Target>
-        <UnstyledButton className={styles.trigger} aria-label={t('lang.switch')}>
-          <GlobeIcon size={16} weight="regular" />
-          <span className={styles.code}>{LOCALE_LABELS[locale]}</span>
-          <CaretDownIcon size={12} className={styles.caret} />
-        </UnstyledButton>
+        <Button
+          variant="default"
+          size="compact-sm"
+          radius="md"
+          leftSection={<GlobeIcon size={16} />}
+          rightSection={<CaretDownIcon size={12} />}
+          aria-label={t('lang.switch')}
+        >
+          {LOCALE_LABELS[locale]}
+        </Button>
       </Menu.Target>
-      <Menu.Dropdown className={styles.dropdown}>
+      <Menu.Dropdown>
         <Menu.Label>{t('lang.switch')}</Menu.Label>
         {LOCALES.map((item) => (
           <Menu.Item

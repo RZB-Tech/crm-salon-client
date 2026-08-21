@@ -1,23 +1,9 @@
 import React from 'react';
-import {
-  ActionIcon,
-  Alert,
-  Avatar,
-  Badge,
-  Box,
-  Button,
-  Card,
-  CopyButton,
-  Group,
-  Text,
-  Tooltip,
-} from '@mantine/core';
+import { ActionIcon, Avatar, Badge, Box, Button, Card, Group, Text } from '@mantine/core';
 import {
   ArchiveIcon,
   ArrowLeftIcon,
   CakeIcon,
-  CheckIcon,
-  CopyIcon,
   LockKeyIcon,
   PencilSimpleIcon,
   PhoneIcon,
@@ -30,24 +16,20 @@ import styles from './employee-profile.module.css';
 
 export interface EmployeeProfileHeaderProps {
   employee: Employee;
-  resetPasswordResult: string | null;
   resetPasswordPending: boolean;
   onBack: () => void;
   onEdit: () => void;
   onResetPassword: () => void;
   onArchive: () => void;
-  onDismissPasswordResult: () => void;
 }
 
 export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
   employee,
-  resetPasswordResult,
   resetPasswordPending,
   onBack,
   onEdit,
   onResetPassword,
   onArchive,
-  onDismissPasswordResult,
 }) => {
   const { hasPermission } = useAccess();
   const { t } = useI18n();
@@ -126,39 +108,6 @@ export const EmployeeProfileHeader: React.FC<EmployeeProfileHeaderProps> = ({
           )}
         </Group>
       </Card>
-
-      {resetPasswordResult && (
-        <Alert color="sage" title={t('form.passwordResetTitle')} onClose={onDismissPasswordResult} withCloseButton>
-          <Group gap="sm">
-            <Text size="sm" fw={600} component="div">
-              {t('form.newPasswordLabel')}{' '}
-              <Box
-                component="code"
-                style={{
-                  fontFamily: 'monospace',
-                  background: 'var(--mantine-color-gray-1)',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                }}
-              >
-                {resetPasswordResult}
-              </Box>
-            </Text>
-            <CopyButton value={resetPasswordResult}>
-              {({ copied, copy }) => (
-                <Tooltip label={copied ? t('employees.copiedExclaim') : t('employees.copyAction')} withArrow>
-                  <ActionIcon color={copied ? 'teal' : 'sage'} variant="light" onClick={copy} size="sm">
-                    {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
-                  </ActionIcon>
-                </Tooltip>
-              )}
-            </CopyButton>
-          </Group>
-          <Text size="xs" c="dimmed" mt="xs">
-            {t('employees.passToEmployee')}
-          </Text>
-        </Alert>
-      )}
     </Box>
   );
 };
