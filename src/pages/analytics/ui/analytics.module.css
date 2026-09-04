@@ -1,0 +1,295 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--mantine-color-sage-0);
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px 24px 12px;
+  flex-shrink: 0;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mantine-color-gray-6);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 24px 24px;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-2);
+  border-radius: 16px;
+  min-height: 108px;
+}
+
+.kpiHero {
+  background: linear-gradient(180deg, #fff 0%, var(--mantine-color-sage-0) 140%);
+}
+
+.kpiLabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mantine-color-gray-6);
+}
+
+.kpiValue {
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+}
+
+.kpiHero .kpiValue {
+  font-size: 32px;
+  line-height: 38px;
+}
+
+.kpiMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.deltaUp {
+  color: var(--mantine-color-green-7);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.deltaDown {
+  color: var(--mantine-color-red-6);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.deltaFlat {
+  color: var(--mantine-color-gray-5);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card {
+  background: var(--mantine-color-white);
+  border: 1px solid var(--mantine-color-gray-2);
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mantine-color-gray-8);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.split > :only-child {
+  grid-column: 1 / -1;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-height: 220px;
+  padding-top: 8px;
+}
+
+.chartCol {
+  flex: 1;
+  min-width: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.chartValue {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mantine-color-gray-6);
+  white-space: nowrap;
+}
+
+.chartTrack {
+  width: 100%;
+  max-width: 40px;
+  height: 168px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--mantine-color-sage-0);
+  border-radius: 8px 8px 4px 4px;
+  overflow: hidden;
+}
+
+.chartBar {
+  width: 100%;
+  background: var(--mantine-color-sage-5);
+  border-radius: 8px 8px 0 0;
+  min-height: 2px;
+  transition: height 220ms ease;
+}
+
+.chartCol:hover .chartBar {
+  background: var(--mantine-color-sage-7);
+}
+
+.mixList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mixRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mixHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.mixTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--mantine-color-gray-1);
+  overflow: hidden;
+}
+
+.mixBar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--mantine-color-sage-5);
+}
+
+.funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.funnelItem {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.shareTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--mantine-color-gray-1);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.shareBar {
+  height: 100%;
+  background: var(--mantine-color-sage-5);
+  border-radius: 999px;
+}
+
+.tableWrap {
+  margin: -4px -6px 0;
+}
+
+@media (max-width: 1100px) {
+  .heroGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar,
+  .grid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .heroGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpiHero .kpiValue,
+  .kpiValue {
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .chart {
+    overflow-x: auto;
+  }
+
+  .chartCol {
+    min-width: 32px;
+  }
+}

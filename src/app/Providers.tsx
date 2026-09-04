@@ -21,8 +21,9 @@ const getErrorMessage = (error: Error): string => {
     if (mapped) return mapped;
     if (error.status === 403) return t('common.noAccess');
     if (error.status === 404) return t('common.resourceMissing');
+    if (error.status === 422) return t('common.validationError');
     if (error.status >= 500) return t('common.serverError');
-    return error.message;
+    return t('common.unknownError');
   }
   if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
     return t('common.networkError');

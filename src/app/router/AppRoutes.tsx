@@ -22,6 +22,7 @@ import {
   BranchesPage,
   ServicesPage,
   SettingsPage,
+  AnalyticsPage,
 } from './lazyPages';
 import { guardedPage } from './guardedPage';
 
@@ -98,6 +99,17 @@ export const AppRouter: React.FC = () => (
             PermissionCode.PAYROLL_MANAGE,
             PermissionCode.TRANSACTION_READ,
             PermissionCode.TRANSACTION_MANAGE,
+          ])}
+        />
+        <Route
+          path="/analytics"
+          element={guardedPage(<AnalyticsPage />, [
+            PermissionCode.ANALYTICS_RECEIPT,
+            PermissionCode.ANALYTICS_APPOINTMENT,
+            PermissionCode.ANALYTICS_TRANSACTION,
+            PermissionCode.ANALYTICS_EMPLOYEE,
+            PermissionCode.ANALYTICS_SERVICE,
+            PermissionCode.ANALYTICS_MANAGE,
           ])}
         />
         <Route

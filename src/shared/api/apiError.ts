@@ -41,12 +41,12 @@ export const parseApiError = async (
     if (mapped) {
       return { message: mapped, errorCode };
     }
-
-    if (typeof data.detail === 'string') return { message: data.detail, errorCode };
-    if (Array.isArray(data.detail) && data.detail[0]?.msg) {
-      return { message: data.detail[0].msg, errorCode };
+    if (response.status === 422) {
+      return { message: t('common.validationError'), errorCode };
     }
-    if (data.metadata?.message) return { message: data.metadata.message, errorCode };
+    if (errorCode) {
+      return { message: t('common.unknownError'), errorCode };
+    }
   } catch {
     return {
       message: t('common.serverStatusError', {

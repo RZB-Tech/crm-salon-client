@@ -121,6 +121,14 @@ export const PermissionCode = {
   TENANT_BRANCH_CREATE: 12011,
   TENANT_BRANCH_READ: 12012,
   TENANT_BRANCH_MANAGE: 12013,
+
+  // Аналитика
+  ANALYTICS_EMPLOYEE: 20000,
+  ANALYTICS_SERVICE: 20100,
+  ANALYTICS_RECEIPT: 20200,
+  ANALYTICS_APPOINTMENT: 20300,
+  ANALYTICS_TRANSACTION: 20400,
+  ANALYTICS_MANAGE: 29999,
 } as const;
 
 export type PermissionCodeValue = (typeof PermissionCode)[keyof typeof PermissionCode];

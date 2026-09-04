@@ -4,7 +4,7 @@ import { CheckIcon, XIcon } from '@phosphor-icons/react';
 import type { SalonNotification } from '@/shared/api/types';
 import { listPageStyles, SortableTh } from '@/shared/ui';
 import type { TableSortProps } from '@/shared/lib/hooks/useTableSort';
-import { getEffectiveStatus } from '@/shared/lib/notifications/notificationDelivery';
+import { getEffectiveStatus, getSalonNotificationCopy } from '@/shared/lib/notifications/notificationDelivery';
 import { formatDateTime, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
 import { useI18n } from '@/shared/lib/i18n';
 
@@ -61,6 +61,7 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
       ) : (
         items.map((item) => {
           const status = getEffectiveStatus(item);
+          const copy = getSalonNotificationCopy(item);
           return (
             <Table.Tr key={item.id} className={listPageStyles.row}>
               <Table.Td className={listPageStyles.bodyCell}>
@@ -70,12 +71,12 @@ export const NotificationsTable: React.FC<NotificationsTableProps> = ({
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="sm" fw={500} c="#484848">
-                  {item.title ?? t('common.dash')}
+                  {copy.title}
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>
                 <Text size="sm" c="rgba(72,72,72,0.4)" lineClamp={2}>
-                  {item.body}
+                  {copy.body || t('common.dash')}
                 </Text>
               </Table.Td>
               <Table.Td className={listPageStyles.bodyCell}>

@@ -12,3 +12,4 @@ export * from './notification';
 export * from './audit';
 export * from './filters';
 export * from './branch';
+export * from './analytics';

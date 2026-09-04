@@ -4,6 +4,7 @@ import { XIcon } from '@phosphor-icons/react';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import illustrationSrc from '@/shared/assets/notification-alert-illustration.png';
 import { formatNotificationAlertStamp, NOTIFICATION_TYPE_LABELS } from '@/shared/lib/format';
+import { getSalonNotificationCopy } from '@/shared/lib/notifications/notificationDelivery';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -34,6 +35,8 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
   const canSubmit = notes.trim().length > 0 && !busy;
 
   useResetOnOpen(notification?.id ?? null, () => setNotes(''));
+
+  const copy = notification ? getSalonNotificationCopy(notification) : null;
 
   return (
     <Modal
@@ -81,8 +84,8 @@ export const SalonNotificationAlertModal: React.FC<SalonNotificationAlertModalPr
 
             <div className={styles.copy}>
               <div className={styles.titles}>
-                <h2 className={styles.title}>{notification.title ?? t('notifications.reminderFallback')}</h2>
-                {notification.body ? <p className={styles.description}>{notification.body}</p> : null}
+                <h2 className={styles.title}>{copy?.title}</h2>
+                {copy?.body ? <p className={styles.description}>{copy.body}</p> : null}
               </div>
               <p className={styles.stamp}>{formatNotificationAlertStamp(notification.scheduled_at)}</p>
             </div>

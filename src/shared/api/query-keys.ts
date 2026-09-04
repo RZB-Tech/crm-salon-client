@@ -79,4 +79,12 @@ export const queryKeys = {
     report: ['tenant-branches', 'report'] as const,
     reportDetail: (id: number) => ['tenant-branches', 'report', id] as const,
   },
+  analytics: {
+    receipts: (params: object) => ['analytics', 'receipts', params] as const,
+    appointments: (params: object) => ['analytics', 'appointments', params] as const,
+    transactions: (params: object) => ['analytics', 'transactions', params] as const,
+    transactionsByPeriod: (params: object) => ['analytics', 'transactions-period', params] as const,
+    employees: (params: object) => ['analytics', 'employees', params] as const,
+    services: (params: object) => ['analytics', 'services', params] as const,
+  },
 };

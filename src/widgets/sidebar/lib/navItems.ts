@@ -2,6 +2,7 @@ import type { ElementType } from 'react';
 import {
   BuildingsIcon,
   CalendarCheckIcon,
+  ChartLineUpIcon,
   CurrencyCircleDollarIcon,
   GearSixIcon,
   PackageIcon,
@@ -85,6 +86,19 @@ export const NAV_ITEMS: NavItem[] = [
       PermissionCode.PAYROLL_MANAGE,
       PermissionCode.TRANSACTION_READ,
       PermissionCode.TRANSACTION_MANAGE,
+    ],
+  },
+  {
+    path: '/analytics',
+    labelKey: 'nav.analytics',
+    Icon: ChartLineUpIcon,
+    permissions: [
+      PermissionCode.ANALYTICS_RECEIPT,
+      PermissionCode.ANALYTICS_APPOINTMENT,
+      PermissionCode.ANALYTICS_TRANSACTION,
+      PermissionCode.ANALYTICS_EMPLOYEE,
+      PermissionCode.ANALYTICS_SERVICE,
+      PermissionCode.ANALYTICS_MANAGE,
     ],
   },
   {

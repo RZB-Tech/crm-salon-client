@@ -39,3 +39,6 @@ export const BranchesPage = lazy(() =>
 export const AdminPage = lazy(() =>
   import('@/pages/admin').then((m) => ({ default: m.AdminPage })),
 );
+export const AnalyticsPage = lazy(() =>
+  import('@/pages/analytics').then((m) => ({ default: m.AnalyticsPage })),
+);
