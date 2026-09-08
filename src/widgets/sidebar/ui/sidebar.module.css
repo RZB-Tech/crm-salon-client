@@ -116,3 +116,33 @@
 .navItem.collapsed .bar {
   display: none;
 }
+
+@media (max-width: 47.99em) {
+  .sidebar {
+    padding: 16px 12px;
+    background: #fff;
+  }
+
+  .navItem {
+    gap: 12px;
+    padding: 10px 12px 10px 0;
+    font-size: 16px;
+    line-height: 24px;
+    border-radius: 8px;
+  }
+
+  .bar {
+    margin-block: -10px;
+    width: 4px;
+  }
+
+  .icon {
+    font-size: 20px;
+  }
+
+  .navItem.active {
+    background: #f6f1ee;
+    color: #ad9178;
+    font-weight: 500;
+  }
+}

@@ -48,11 +48,11 @@ export const AppointmentMainFields: React.FC<AppointmentMainFieldsProps> = ({
       {structureLocked && (
         <Alert
           className={styles.lockAlert}
-          color="yellow"
+          color="red"
           variant="light"
           title={t('board.linesLocked')}
         >
-          {t('board.linesLockedHint', { id: activeReceipt ? ` #${activeReceipt.id}` : '' })}
+          {t('board.linesLockedHint', { id: activeReceipt ? ` №${activeReceipt.id}` : '' })}
         </Alert>
       )}
 

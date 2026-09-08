@@ -1,17 +1,21 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
-import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { ConfirmModal, ListCreateFab, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useI18n } from '@/shared/lib/i18n';
 import { useCancelGiftCard } from '@/shared/api/hooks/useGiftCards';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { useGiftCardsPage } from '../lib/useGiftCardsPage';
 import { GiftCardCancelModal } from './GiftCardCancelModal';
 import { GiftCardFormModal } from './GiftCardFormModal';
-import { GiftCardsTable } from './GiftCardsTable';
+import { GiftCardsListBody } from './GiftCardsListBody';
 import { GiftCardsToolbar } from './GiftCardsToolbar';
 
 export const GiftCardsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
+  const { hasPermission } = useAccess();
   const [cancelReason, setCancelReason] = React.useState('');
   const cancelGiftCard = useCancelGiftCard();
   const {
@@ -75,6 +79,7 @@ export const GiftCardsPage: React.FC = () => {
   }
 
   const { page, pageSize, paginatedItems, total, setPage, setPageSize } = pagination;
+  const canCreate = !showArchived && hasPermission(PermissionCode.GIFT_CARD_CREATE);
 
   return (
     <ListPageShell
@@ -98,10 +103,16 @@ export const GiftCardsPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && canCreate ? (
+          <ListCreateFab label={t('giftCards.newCard')} onClick={openCreate} />
+        ) : undefined
+      }
     >
-      <GiftCardsTable
+      <GiftCardsListBody
         items={paginatedItems}
         showArchived={showArchived}
+        restorePending={restoreGiftCard.isPending}
         sort={sort}
         onSort={toggleSort}
         clientNameMap={clientNameMap}

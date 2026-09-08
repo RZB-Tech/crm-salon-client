@@ -8,7 +8,7 @@ import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { getEmployeeFullName } from '@/shared/lib/format';
 import type { Payout } from '@/shared/api/types';
 import { PayoutFormModal } from '../PayoutFormModal';
-import { PayoutsTable } from './PayoutsTable';
+import { PayoutsListBody } from './PayoutsListBody';
 
 export type PayoutsTabHandle = {
   openCreate: () => void;
@@ -68,7 +68,7 @@ export const PayoutsTab = React.forwardRef<PayoutsTabHandle, PayoutsTabProps>(fu
   return (
     <Box className={listPageStyles.panel}>
       <ListPanelBody>
-        <PayoutsTable
+        <PayoutsListBody
           items={paginatedItems}
           employeeMap={employeeMap}
           sort={sort}

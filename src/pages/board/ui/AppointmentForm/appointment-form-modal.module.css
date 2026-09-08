@@ -26,6 +26,21 @@
   margin-bottom: 0;
 }
 
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+
+.badgeDotUnpaid {
+  background: #fa5252;
+}
+
+.badgeDotPaid {
+  background: #12b886;
+}
+
 .tab {
   padding: 8px 12px;
   font-size: 12px;
@@ -61,16 +76,18 @@
   --button-hover: #efe8e2;
   --button-color: #6e483c;
   --button-bd: transparent;
-  padding: 6px 16px;
+  padding: 8px 20px;
   font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 16px;
+  line-height: 24px;
 }
 
 .ghostAddBtn:disabled,
 .ghostAddBtn[data-disabled] {
   --button-bg: #f6f1ee;
   --button-color: #6e483c;
+  background: #f6f1ee;
+  color: #6e483c;
   opacity: 1;
 }
 
@@ -85,6 +102,17 @@
 .clientSelect {
   flex: 1;
   min-width: 0;
+}
+
+.clientAddBtn {
+  flex-shrink: 0;
+  background: #f6f1ee;
+  color: #6e483c;
+  border: none;
+}
+
+.clientAddBtn:hover {
+  background: #efe8e2;
 }
 
 .clientMeta {
@@ -110,14 +138,68 @@
   align-items: center;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 47.99em) {
   .scheduleGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .scheduleGrid > :first-child {
+    grid-column: 1 / -1;
   }
 }
 
 .statusBlock {
   margin: 0;
+}
+
+.statusControl {
+  background: #f6f1ee;
+}
+
+.statusIndicator {
+  background: #ad9178;
+}
+
+.statusLabel {
+  color: #484848;
+}
+
+.statusLabel[data-active] {
+  color: #fff;
+}
+
+.historySection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #1f2937;
+}
+
+.historyGroupLabel {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #1f2937;
+}
+
+.historyTable {
+  composes: historyTable from '../../../../shared/ui/FormModal/form-modal.module.css';
+}
+
+.historyTable :global(table) {
+  min-width: 560px;
+}
+
+.historyTable :global(table:has(td[colspan])) {
+  min-width: 0;
 }
 
 /* ——— Visit details ——— */
@@ -190,7 +272,7 @@
   padding: 16px;
   border-radius: 12px;
   background: var(--mantine-color-white);
-  border: 1px solid #f1eae3;
+  border: 1px solid #dee2e6;
 }
 
 .lineCardChanged {
@@ -249,22 +331,17 @@
   opacity: 0.4;
 }
 
+.lineTrashFilled {
+  border-color: transparent;
+  background: rgba(250, 82, 82, 0.1);
+  color: #fa5252;
+}
+
 .lineMetrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   align-items: flex-end;
-}
-
-@media (max-width: 640px) {
-  .visitHeader {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .lineMetrics {
-    grid-template-columns: 1fr;
-  }
 }
 
 .lineSubtotal {
@@ -316,9 +393,52 @@
   border-radius: 12px;
 }
 
+.lockAlert :global(.mantine-Alert-title) {
+  color: #fa5252;
+}
+
+.lockAlert :global(.mantine-Alert-message) {
+  color: #fa5252;
+}
+
 .quickClientPanel {
   padding: 14px;
   border-radius: 12px;
   background: var(--mantine-color-sage-0);
   border: 1px dashed var(--mantine-color-sage-4);
+}
+
+@media (max-width: 47.99em) {
+  .tabsList {
+    margin-bottom: 16px;
+  }
+
+  .lockAlert {
+    background: rgba(250, 82, 82, 0.1);
+    border: none;
+    color: #fa5252;
+  }
+
+  .visitHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .visitActions {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .visitActions .ghostAddBtn {
+    flex: 1;
+    height: 40px;
+  }
+
+  .historyTable :global(table) {
+    min-width: 640px;
+  }
+
+  .historyTable :global(table:has(td[colspan])) {
+    min-width: 0;
+  }
 }

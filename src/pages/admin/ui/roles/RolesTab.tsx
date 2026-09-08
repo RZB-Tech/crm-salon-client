@@ -9,7 +9,7 @@ import { useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import type { Role, RoleCreatePayload } from '@/shared/api/types';
 import { RoleFormModal } from './RoleFormModal';
-import { RolesTable } from './RolesTable';
+import { RolesListBody } from './RolesListBody';
 import { INITIAL_FORM } from './types';
 import type { RoleForm } from './types';
 
@@ -104,7 +104,7 @@ export const RolesTab = React.forwardRef<RolesTabHandle, RolesTabProps>(function
   return (
     <Box className={listPageStyles.panel}>
       <ListPanelBody>
-        <RolesTable
+        <RolesListBody
           roles={paginatedItems}
           sort={sort}
           onSort={toggleSort}

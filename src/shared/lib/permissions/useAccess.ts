@@ -2,10 +2,7 @@ import React from 'react';
 import { useMe } from '@/shared/api/hooks/useMe';
 import type { MeResponse } from '@/shared/api/types';
 import type { PermissionCodeValue } from './codes';
-
-interface MeWithPermissions extends MeResponse {
-  permissions?: number[];
-}
+import { hasEffectivePermission } from './domainManage';
 
 interface AccessResult {
   /** Данные загружены и можно проверять */
@@ -25,22 +22,21 @@ interface AccessResult {
 /**
  * Хук проверки доступа текущего пользователя.
  *
- * Логика:
- * - `staff_type === 'administrator'` → полный доступ (как на бэке).
- * - Для employee → проверка по `me.permissions` (effective permissions из бэкенда).
+ * Логика как на бэке `require_permission`:
+ * - `staff_type === 'administrator'` → полный доступ;
+ * - employee → код из `me.permissions` или парный `*_MANAGE` домена.
  */
 export const useAccess = (): AccessResult => {
   const { data: me, isSuccess } = useMe();
 
   const isAdmin = me?.staff_type === 'administrator';
-
-  const effectivePermissions: number[] = (me as MeWithPermissions)?.permissions ?? [];
+  const effectivePermissions: number[] = me?.permissions ?? [];
 
   const hasPermission = React.useCallback(
     (code: PermissionCodeValue): boolean => {
       if (!isSuccess) return false;
       if (isAdmin) return true;
-      return effectivePermissions.includes(code);
+      return hasEffectivePermission(effectivePermissions, code);
     },
     [isSuccess, isAdmin, effectivePermissions],
   );
@@ -49,7 +45,7 @@ export const useAccess = (): AccessResult => {
     (codes: PermissionCodeValue[]): boolean => {
       if (!isSuccess) return false;
       if (isAdmin) return true;
-      return codes.some((c) => effectivePermissions.includes(c));
+      return codes.some((code) => hasEffectivePermission(effectivePermissions, code));
     },
     [isSuccess, isAdmin, effectivePermissions],
   );
@@ -58,7 +54,7 @@ export const useAccess = (): AccessResult => {
     (codes: PermissionCodeValue[]): boolean => {
       if (!isSuccess) return false;
       if (isAdmin) return true;
-      return codes.every((c) => effectivePermissions.includes(c));
+      return codes.every((code) => hasEffectivePermission(effectivePermissions, code));
     },
     [isSuccess, isAdmin, effectivePermissions],
   );

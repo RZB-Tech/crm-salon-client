@@ -1,12 +1,13 @@
 import React from 'react';
 import { Box, Skeleton, Text } from '@mantine/core';
 import { ConfirmModal, ListPaginationFooter, listPageStyles } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { TransactionFormModal } from '../TransactionFormModal';
 import { useTransactionsTab } from '../../lib/useTransactionsTab';
 import { useI18n } from '@/shared/lib/i18n';
 import { TransactionsSummary } from './TransactionsSummary';
 import { TransactionsFilters } from './TransactionsFilters';
-import { TransactionsTable } from './TransactionsTable';
+import { TransactionsListBody } from './TransactionsListBody';
 
 export type TransactionsTabHandle = {
   openCreate: () => void;
@@ -19,6 +20,7 @@ interface TransactionsTabProps {
 export const TransactionsTab = React.forwardRef<TransactionsTabHandle, TransactionsTabProps>(
   function TransactionsTab({ enabled }, ref) {
     const { t } = useI18n();
+    const isMobile = useIsMobile();
     const {
       formOpen,
       openForm,
@@ -62,24 +64,39 @@ export const TransactionsTab = React.forwardRef<TransactionsTabHandle, Transacti
 
     const { page, pageSize, paginatedItems, total, setPage, setPageSize } = pagination;
 
+    const filters = (
+      <TransactionsFilters
+        typeFilter={typeFilter}
+        categoryFilter={categoryFilter}
+        sourceFilter={sourceFilter}
+        onTypeChange={setTypeFilter}
+        onCategoryChange={setCategoryFilter}
+        onSourceChange={setSourceFilter}
+      />
+    );
+    const summaryBlock = (
+      <TransactionsSummary
+        income={summary.income}
+        expense={summary.expense}
+        balance={summary.balance}
+      />
+    );
+
     return (
       <Box className={listPageStyles.panel}>
-        <TransactionsSummary
-          income={summary.income}
-          expense={summary.expense}
-          balance={summary.balance}
-        />
+        {isMobile ? (
+          <>
+            {filters}
+            {summaryBlock}
+          </>
+        ) : (
+          <>
+            {summaryBlock}
+            {filters}
+          </>
+        )}
 
-        <TransactionsFilters
-          typeFilter={typeFilter}
-          categoryFilter={categoryFilter}
-          sourceFilter={sourceFilter}
-          onTypeChange={setTypeFilter}
-          onCategoryChange={setCategoryFilter}
-          onSourceChange={setSourceFilter}
-        />
-
-        <TransactionsTable
+        <TransactionsListBody
           items={paginatedItems}
           sort={sort}
           onSort={toggleSort}

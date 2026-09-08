@@ -4,10 +4,14 @@ import { PlusIcon } from '@phosphor-icons/react';
 import {
   ArchiveToggle,
   ConfirmModal,
+  ListCreateFab,
   ListPageShell,
+  ListPageTitle,
   ListPaginationFooter,
   ViewModeToggle,
+  listPageStyles,
 } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { getEmployeeFullName } from '@/shared/lib/format';
 import { useI18n } from '@/shared/lib/i18n';
 import { useEmployeesPage } from '../lib/useEmployeesPage';
@@ -16,7 +20,9 @@ import { EmployeeFormModal } from './modals/EmployeeFormModal';
 
 export const EmployeesPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const page = useEmployeesPage();
+  const view = isMobile ? 'cards' : page.view;
 
   if (page.isLoading) {
     return (
@@ -53,20 +59,33 @@ export const EmployeesPage: React.FC = () => {
     <ListPageShell
       toolbar={
         <>
-          <ViewModeToggle value={page.view} onChange={page.setView} />
-          <Group gap={8} wrap="nowrap">
-            {!page.showArchived && page.canCreate && (
-              <Button
-                color="sage.7"
-                rightSection={<PlusIcon size={16} />}
-                size="sm"
-                onClick={() => page.setFormOpen(true)}
-              >
-                {t('employees.add')}
-              </Button>
-            )}
-            <ArchiveToggle active={page.showArchived} onChange={page.setShowArchived} />
-          </Group>
+          {isMobile && (
+            <ListPageTitle
+              onBack={page.showArchived ? () => page.setShowArchived(false) : undefined}
+            >
+              {page.showArchived ? t('appointments.archiveTab') : t('employees.title')}
+            </ListPageTitle>
+          )}
+          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+            {!isMobile && <ViewModeToggle value={page.view} onChange={page.setView} />}
+            <Group gap={8} wrap="nowrap" ml={isMobile ? 'auto' : undefined}>
+              {!isMobile && !page.showArchived && page.canCreate && (
+                <Button
+                  color="sage.7"
+                  rightSection={<PlusIcon size={16} />}
+                  size="sm"
+                  onClick={() => page.setFormOpen(true)}
+                >
+                  {t('employees.add')}
+                </Button>
+              )}
+              <ArchiveToggle
+                className={isMobile ? listPageStyles.archiveBtn : undefined}
+                active={page.showArchived}
+                onChange={page.setShowArchived}
+              />
+            </Group>
+          </div>
         </>
       }
       footer={
@@ -78,9 +97,14 @@ export const EmployeesPage: React.FC = () => {
           onPageSizeChange={page.pagination.setPageSize}
         />
       }
+      fab={
+        isMobile && !page.showArchived && page.canCreate ? (
+          <ListCreateFab label={t('employees.add')} onClick={() => page.setFormOpen(true)} />
+        ) : undefined
+      }
     >
       <EmployeesListBody
-        view={page.view}
+        view={view}
         employees={page.paginatedItems}
         specializationMap={page.specializationMap}
         sort={page.sort}

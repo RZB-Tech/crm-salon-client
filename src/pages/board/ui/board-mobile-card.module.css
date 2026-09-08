@@ -1,0 +1,113 @@
+.card {
+  position: absolute;
+  box-sizing: border-box;
+  border: none;
+  text-align: left;
+  font: inherit;
+  border-radius: 8px;
+  padding: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  z-index: 2;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.client {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  min-width: 0;
+}
+
+.service {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.time {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 12px;
+}
+
+.duration {
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.master {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  min-width: 0;
+}
+
+.masterIcon {
+  flex-shrink: 0;
+}
+
+.masterName {
+  font-size: 12px;
+  line-height: 16px;
+  min-width: 0;
+}
+
+.tone0 {
+  background: #f6f1fd;
+  color: #764dc7;
+}
+
+.tone1 {
+  background: #edf4fd;
+  color: #127ede;
+}
+
+.tone2 {
+  background: #fef0f2;
+  color: #e64d67;
+}
+
+.tone3 {
+  background: #fef1e9;
+  color: #f67600;
+}
+
+.tone4 {
+  background: #f5fdde;
+  color: #7a9c06;
+}
+
+.tone5 {
+  background: #eef9fa;
+  color: #199da2;
+}
+
+.tone6 {
+  background: #fef8e6;
+  color: #eba525;
+}
+
+.tone7 {
+  background: #f0f2fd;
+  color: #3667e9;
+}

@@ -1,36 +1,27 @@
 import React from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Group,
-  NumberInput,
-  Select,
-  Skeleton,
-  Stack,
-  Switch,
-  Text,
-  TextInput,
-} from '@mantine/core';
+import { Alert, Box, Button, Skeleton, Text } from '@mantine/core';
 import {
   useTenantPreferences,
   useUpdateTenantPreferences,
   type TenantPreferences,
 } from '@/shared/api/hooks/useTenantPreferences';
-import { ListPageShell } from '@/shared/ui';
+import { ListPageShell, ListPageTitle, listPageStyles } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { SettingsGeneralForm } from './SettingsGeneralForm';
 import { SpecializationsSection } from './SpecializationsSection';
 import styles from './settings-page.module.css';
 
 export const SettingsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
   const { data: prefs, isLoading, isError } = useTenantPreferences();
   const updatePrefs = useUpdateTenantPreferences();
-
   const [form, setForm] = React.useState<TenantPreferences | null>(null);
+  const canSave = hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE);
 
   useResetOnOpen(prefs, () => setForm((current) => current ?? prefs ?? null));
 
@@ -41,13 +32,7 @@ export const SettingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <ListPageShell
-        toolbar={
-          <Text size="sm" fw={700} c="#484848">
-            {t('settings.title')}
-          </Text>
-        }
-      >
+      <ListPageShell toolbar={<ListPageTitle>{t('settings.title')}</ListPageTitle>}>
         <Box p="md">
           <Skeleton height={300} radius="md" />
         </Box>
@@ -73,61 +58,36 @@ export const SettingsPage: React.FC = () => {
     <ListPageShell
       toolbar={
         <>
-          <Text size="sm" fw={700} c="#484848">
-            {t('settings.title')}
-          </Text>
-          {hasPermission(PermissionCode.TENANT_PREFERENCES_UPDATE) && (
+          {isMobile ? (
+            <ListPageTitle>{t('settings.title')}</ListPageTitle>
+          ) : (
+            <Text size="sm" fw={700} c="#484848">
+              {t('settings.title')}
+            </Text>
+          )}
+          {!isMobile && canSave && (
             <Button color="sage.7" size="sm" onClick={handleSave} loading={updatePrefs.isPending}>
               {t('common.save')}
             </Button>
           )}
         </>
       }
+      footer={
+        isMobile && canSave ? (
+          <Box className={listPageStyles.stickyBar}>
+            <Button color="sage.7" size="md" fullWidth onClick={handleSave} loading={updatePrefs.isPending}>
+              {t('common.save')}
+            </Button>
+          </Box>
+        ) : undefined
+      }
     >
       <Box className={styles.formSection}>
-        <Text fw={600} size="sm" c="#484848" className={styles.sectionTitle}>
+        <Text fw={600} size="lg" c="#484848" className={styles.sectionTitle}>
           {t('settings.general')}
         </Text>
-        <Stack gap="md">
-          <Group grow>
-            <Select
-              label={t('settings.theme')}
-              data={[
-                { value: 'light', label: t('settings.light') },
-                { value: 'dark', label: t('settings.dark') },
-              ]}
-              value={form.theme}
-              onChange={(v) => setForm({ ...form, theme: (v as 'light' | 'dark') ?? 'light' })}
-            />
-            <TextInput
-              label={t('settings.timezone')}
-              value={form.timezone}
-              onChange={(e) => setForm({ ...form, timezone: e.currentTarget.value })}
-            />
-          </Group>
-          <Group grow>
-            <TextInput
-              label={t('settings.currency')}
-              value={form.currency}
-              onChange={(e) => setForm({ ...form, currency: e.currentTarget.value })}
-            />
-            <NumberInput
-              label={t('settings.cancelDue')}
-              min={0}
-              value={form.cancel_payment_due}
-              onChange={(v) => setForm({ ...form, cancel_payment_due: Number(v) || 0 })}
-            />
-          </Group>
-          <Switch
-            label={t('settings.telegram')}
-            checked={form.enable_telegram_booking}
-            onChange={(e) =>
-              setForm({ ...form, enable_telegram_booking: e.currentTarget.checked })
-            }
-          />
-        </Stack>
+        <SettingsGeneralForm form={form} onChange={setForm} />
       </Box>
-
       <Box className={styles.specSection}>
         <SpecializationsSection />
       </Box>

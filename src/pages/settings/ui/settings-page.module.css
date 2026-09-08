@@ -10,3 +10,31 @@
 .specSection {
   padding: 16px;
 }
+
+.specList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addBtn {
+  width: 100%;
+}
+
+@media (max-width: 47.99em) {
+  .formSection {
+    border-bottom: none;
+    padding-bottom: 8px;
+  }
+
+  .specSection {
+    padding-top: 8px;
+    padding-bottom: 24px;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 32px;
+  }
+}

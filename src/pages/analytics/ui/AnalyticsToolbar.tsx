@@ -2,6 +2,7 @@ import React from 'react';
 import { Group, Select } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { ListTabs } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import type { DatePreset } from '../lib/analyticsHelpers';
 
@@ -29,9 +30,10 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
   onBranchChange,
 }) => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
 
-  return (
-    <Group gap={8} wrap="wrap" justify="flex-end">
+  const controls = (
+    <>
       <ListTabs
         value={preset}
         onChange={(value) => onPresetChange(value as DatePreset)}
@@ -50,7 +52,7 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
           if (value) onRangeChange(value, endDate);
         }}
         size="sm"
-        w={140}
+        w={isMobile ? '100%' : 140}
       />
       <DateInput
         placeholder={t('form.periodTo')}
@@ -60,7 +62,7 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
           if (value) onRangeChange(startDate, value);
         }}
         size="sm"
-        w={140}
+        w={isMobile ? '100%' : 140}
       />
       {showBranchSelect ? (
         <Select
@@ -69,9 +71,23 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
           value={branchId == null ? '' : String(branchId)}
           onChange={(value) => onBranchChange(value ? Number(value) : null)}
           size="sm"
-          w={200}
+          w={isMobile ? '100%' : 200}
         />
       ) : null}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Group gap={12} wrap="wrap" align="stretch">
+        {controls}
+      </Group>
+    );
+  }
+
+  return (
+    <Group gap={8} wrap="wrap" justify="flex-end">
+      {controls}
     </Group>
   );
 };

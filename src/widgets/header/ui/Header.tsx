@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionIcon, Box, Group, Image, Text } from '@mantine/core';
-import { SidebarSimpleIcon } from '@phosphor-icons/react';
+import { ListIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 import { authStorage } from '@/shared/api/client';
 import LogoSvg from '@/shared/assets/logo.svg?url';
@@ -14,9 +14,16 @@ import styles from './header.module.css';
 interface HeaderProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpened: boolean;
+  onMobileToggle: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
+export const Header: React.FC<HeaderProps> = ({
+  collapsed,
+  onToggle,
+  mobileOpened,
+  onMobileToggle,
+}) => {
   const tenantName = authStorage.getTenantName() ?? 'Salon CRM';
   const { t } = useI18n();
 
@@ -36,7 +43,20 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
 
   return (
     <header className={styles.header}>
-      <Box className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`}>
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size="lg"
+        hiddenFrom="sm"
+        onClick={onMobileToggle}
+        aria-label={mobileOpened ? t('header.collapseMenu') : t('header.expandMenu')}
+        aria-expanded={mobileOpened}
+        className={styles.mobileMenu}
+      >
+        <ListIcon size={24} />
+      </ActionIcon>
+
+      <Box className={`${styles.left} ${collapsed ? styles.leftCollapsed : ''}`} visibleFrom="sm">
         <Link to="/board" className={styles.logoLink} aria-label={t('header.toBoard')}>
           <Image
             src={collapsed ? MiniLogoSvg : LogoSvg}
@@ -50,13 +70,22 @@ export const Header: React.FC<HeaderProps> = ({ collapsed, onToggle }) => {
       </Box>
 
       <Box className={styles.main}>
-        {collapsed && toggleButton}
-        <Text fw={700} size="sm" className={styles.tenantName}>
+        {collapsed && (
+          <Box visibleFrom="sm">{toggleButton}</Box>
+        )}
+        <Box hiddenFrom="sm">
+          <Link to="/board" className={styles.mobileLogo} aria-label={t('header.toBoard')}>
+            <Image src={LogoSvg} alt="Logo" className={styles.mobileLogoImage} w="auto" fit="contain" />
+          </Link>
+        </Box>
+        <Text fw={700} size="sm" className={styles.tenantName} visibleFrom="sm">
           {tenantName}
         </Text>
 
         <Group gap="sm" className={styles.right}>
-          <LanguageSwitch />
+          <Box visibleFrom="sm">
+            <LanguageSwitch />
+          </Box>
           <HeaderNotifications />
           <HeaderUserMenu />
         </Group>

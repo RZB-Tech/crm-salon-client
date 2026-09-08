@@ -12,6 +12,7 @@ interface EmployeeFilterPopoverProps {
   selectedIds: Set<number>;
   onChange: (ids: Set<number>) => void;
   embedded?: boolean;
+  iconOnly?: boolean;
 }
 
 export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
@@ -19,6 +20,7 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
   selectedIds,
   onChange,
   embedded = false,
+  iconOnly = false,
 }) => {
   const { t } = useI18n();
   const [opened, setOpened] = React.useState(false);
@@ -52,14 +54,16 @@ export const EmployeeFilterPopover: React.FC<EmployeeFilterPopoverProps> = ({
     <Popover
       opened={opened}
       onChange={setOpened}
-      position="bottom-end"
-      width={320}
+      position={iconOnly ? 'bottom' : 'bottom-end'}
+      width={iconOnly ? 280 : 320}
       shadow="md"
       radius="md"
+      withinPortal
     >
       <Popover.Target>
         <EmployeeFilterTrigger
           embedded={embedded}
+          iconOnly={iconOnly}
           selectedCount={selectedIds.size}
           label={buttonLabel}
           onClick={() => setOpened((value) => !value)}

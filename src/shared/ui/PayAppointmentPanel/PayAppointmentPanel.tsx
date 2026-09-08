@@ -6,10 +6,43 @@ import { PaymentForm } from './PaymentForm';
 
 interface PayAppointmentPanelProps {
   appointment: Appointment;
+  onPaymentFooterChange?: (actions: PaymentFooterActions | null) => void;
 }
 
-export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({ appointment }) => {
+export interface PaymentFooterActions {
+  canPay: boolean;
+  onPay: () => void;
+  loading: boolean;
+}
+
+export const PayAppointmentPanel: React.FC<PayAppointmentPanelProps> = ({
+  appointment,
+  onPaymentFooterChange,
+}) => {
   const pay = usePayAppointment(appointment);
+
+  React.useEffect(() => {
+    if (!onPaymentFooterChange) return;
+    const canShow =
+      !pay.isPaid && pay.receipt != null && pay.receipt.remaining_amount > 0;
+    if (!canShow) {
+      onPaymentFooterChange(null);
+      return;
+    }
+    onPaymentFooterChange({
+      canPay: pay.canPay,
+      onPay: pay.handlePay,
+      loading: pay.isLoading,
+    });
+    return () => onPaymentFooterChange(null);
+  }, [
+    onPaymentFooterChange,
+    pay.isPaid,
+    pay.receipt,
+    pay.canPay,
+    pay.handlePay,
+    pay.isLoading,
+  ]);
 
   if (pay.isPaid) {
     return (

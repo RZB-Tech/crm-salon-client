@@ -3,25 +3,29 @@ import { Badge } from '@mantine/core';
 import type { Appointment } from '@/shared/api/types';
 import { APPOINTMENT_CANCELLED_REASON_LABELS } from '@/shared/lib/format';
 import { useI18n } from '@/shared/lib/i18n';
+import styles from './appointment-form-modal.module.css';
 
 export const AppointmentPaidBadge: React.FC<{ paid: boolean }> = ({ paid }) => {
   const { t } = useI18n();
   return (
-  <Badge
-    size="sm"
-    variant="light"
-    color={paid ? 'teal' : 'red'}
-    tt="uppercase"
-    radius="xl"
-    styles={{
-      root: paid
-        ? undefined
-        : { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252', textTransform: 'uppercase' },
-    }}
-  >
-    {paid ? t('board.paidLower') : t('board.unpaidLower')}
-  </Badge>
-);
+    <Badge
+      size="sm"
+      variant="light"
+      color={paid ? 'teal' : 'red'}
+      tt="uppercase"
+      radius="xl"
+      leftSection={
+        <span className={`${styles.badgeDot} ${paid ? styles.badgeDotPaid : styles.badgeDotUnpaid}`} />
+      }
+      styles={{
+        root: paid
+          ? undefined
+          : { background: 'rgba(250, 82, 82, 0.1)', color: '#fa5252', textTransform: 'uppercase' },
+      }}
+    >
+      {paid ? t('board.paidLower') : t('board.unpaidLower')}
+    </Badge>
+  );
 };
 
 interface AppointmentStateBadgesProps {
@@ -57,7 +61,7 @@ export const AppointmentStateBadges: React.FC<AppointmentStateBadgesProps> = ({
       </Badge>
     )}
     {structureLocked && (
-      <Badge color="yellow" variant="light">
+      <Badge color="teal" variant="light" tt="uppercase" radius="xl">
         {t('board.hasReceipt')}
       </Badge>
     )}

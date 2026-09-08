@@ -1,12 +1,15 @@
 import React from 'react';
 import { Alert, Skeleton, Stack, Table, Text } from '@mantine/core';
+import { ListCards, listPageStyles } from '@/shared/ui';
 import { useTenantBranchesReport } from '@/shared/api/hooks/useTenantBranches';
 import { formatPrice } from '@/shared/lib/format';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
-import { listPageStyles } from '@/shared/ui';
+import { BranchReportMobileCard } from './BranchReportMobileCard';
 
 export const BranchesReportTab: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { data, isLoading, isError } = useTenantBranchesReport();
 
   if (isLoading) {
@@ -29,6 +32,19 @@ export const BranchesReportTab: React.FC = () => {
 
   const rows = data?.branches ?? [];
   const total = data?.total;
+
+  if (isMobile) {
+    return (
+      <ListCards isEmpty={rows.length === 0} emptyMessage={t('branches.reportEmpty')}>
+        {rows.map((row) => (
+          <BranchReportMobileCard key={row.tenant_id} title={row.tenant_name} item={row} />
+        ))}
+        {total && rows.length > 0 ? (
+          <BranchReportMobileCard title={t('common.total')} item={total} />
+        ) : null}
+      </ListCards>
+    );
+  }
 
   return (
     <Table verticalSpacing="sm" horizontalSpacing="md" className={listPageStyles.table}>

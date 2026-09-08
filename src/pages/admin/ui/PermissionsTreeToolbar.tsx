@@ -20,7 +20,7 @@ export function PermissionsTreeToolbar({
 }: PermissionsTreeToolbarProps) {
   const { t } = useI18n();
   return (
-    <Group justify="space-between" wrap="nowrap" mb="xs">
+    <Group justify="space-between" wrap="wrap" mb="xs">
       <Group gap={8}>
         <Button
           variant="light"

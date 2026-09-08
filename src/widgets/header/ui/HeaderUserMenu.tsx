@@ -31,7 +31,7 @@ export const HeaderUserMenu: React.FC = () => {
 
   if (!AUTH_ENABLED) {
     return (
-      <Avatar size="sm" radius="md" color="sage">
+      <Avatar size="sm" radius="md" className={styles.avatarFace}>
         CRM
       </Avatar>
     );
@@ -42,7 +42,7 @@ export const HeaderUserMenu: React.FC = () => {
       <Menu shadow="md" width={200} position="bottom-end" radius="md">
         <Menu.Target>
           <UnstyledButton className={styles.avatarTarget} aria-label={t('header.account')}>
-            <Avatar radius="md" size="md" color="sage">{meInitials}</Avatar>
+            <Avatar radius="md" size="md" className={styles.avatarFace}>{meInitials}</Avatar>
           </UnstyledButton>
         </Menu.Target>
         <Menu.Dropdown>

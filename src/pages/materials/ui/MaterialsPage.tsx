@@ -4,19 +4,23 @@ import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import {
   ArchiveToggle,
   ConfirmModal,
+  ListCreateFab,
   ListPageShell,
+  ListPageTitle,
   ListPaginationFooter,
   listPageStyles,
 } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useI18n } from '@/shared/lib/i18n';
 import { useMaterialsPage } from '../lib/useMaterialsPage';
 import { MaterialFormModal } from './MaterialFormModal';
 import { QuantityModal } from './QuantityModal';
-import { MaterialsTable } from './MaterialsTable';
+import { MaterialsListBody } from './MaterialsListBody';
 
 export const MaterialsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
   const {
     search,
@@ -75,32 +79,44 @@ export const MaterialsPage: React.FC = () => {
   }
 
   const { page, pageSize, paginatedItems, total, setPage, setPageSize } = pagination;
+  const canCreate = hasPermission(PermissionCode.MATERIAL_CREATE);
 
   return (
     <ListPageShell
       toolbar={
         <>
-          <TextInput
-            placeholder={t('materials.searchPlaceholder')}
-            leftSection={<MagnifyingGlassIcon size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            size="sm"
-            className={listPageStyles.searchInput}
-          />
-          <Group gap={8} wrap="nowrap">
-            {!showArchived && hasPermission(PermissionCode.MATERIAL_CREATE) && (
-              <Button
-                color="sage.7"
-                rightSection={<PlusIcon size={16} />}
-                onClick={openCreate}
-                size="sm"
-              >
-                {t('materials.add')}
-              </Button>
-            )}
-            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
-          </Group>
+          {isMobile && (
+            <ListPageTitle onBack={showArchived ? () => setShowArchived(false) : undefined}>
+              {showArchived ? t('appointments.archiveTab') : t('materials.title')}
+            </ListPageTitle>
+          )}
+          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+            <TextInput
+              placeholder={t('materials.searchPlaceholder')}
+              leftSection={<MagnifyingGlassIcon size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              size="sm"
+              className={listPageStyles.searchInput}
+            />
+            <Group gap={8} wrap="nowrap">
+              {!isMobile && !showArchived && canCreate && (
+                <Button
+                  color="sage.7"
+                  rightSection={<PlusIcon size={16} />}
+                  onClick={openCreate}
+                  size="sm"
+                >
+                  {t('materials.add')}
+                </Button>
+              )}
+              <ArchiveToggle
+                className={isMobile ? listPageStyles.archiveBtn : undefined}
+                active={showArchived}
+                onChange={setShowArchived}
+              />
+            </Group>
+          </div>
         </>
       }
       footer={
@@ -112,10 +128,16 @@ export const MaterialsPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && !showArchived && canCreate ? (
+          <ListCreateFab label={t('materials.add')} onClick={openCreate} />
+        ) : undefined
+      }
     >
-      <MaterialsTable
+      <MaterialsListBody
         items={paginatedItems}
         showArchived={showArchived}
+        restorePending={restoreMaterial.isPending}
         sort={sort}
         onSort={toggleSort}
         onEdit={openEdit}

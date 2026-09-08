@@ -1,16 +1,18 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
-import { ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { AppointmentFormModal } from '@/pages/board/ui/AppointmentForm';
+import { ListCreateFab, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode } from '@/shared/lib/permissions';
-import { AppointmentFormModal } from '@/pages/board/ui/AppointmentForm';
 import { useAppointmentsPage } from '../lib/useAppointmentsPage';
 import { AppointmentsToolbar } from './AppointmentsToolbar';
-import { AppointmentsTable } from './AppointmentsTable';
+import { AppointmentsListBody } from './AppointmentsListBody';
 import { AppointmentsConfirmModals } from './AppointmentsConfirmModals';
 
 export const AppointmentsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const {
     hasPermission,
     filterForm,
@@ -97,8 +99,17 @@ export const AppointmentsPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && hasPermission(PermissionCode.APPOINTMENT_CREATE) && !filterForm.archived ? (
+          <ListCreateFab
+            label={t('board.newAppointment')}
+            loading={form.formLoading}
+            onClick={() => form.openCreateForm()}
+          />
+        ) : undefined
+      }
     >
-      <AppointmentsTable
+      <AppointmentsListBody
         items={paginatedItems}
         showArchived={filterForm.archived}
         sort={sort}

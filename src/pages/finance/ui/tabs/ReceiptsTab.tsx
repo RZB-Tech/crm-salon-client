@@ -8,7 +8,7 @@ import { sortTime, useTableSort } from '@/shared/lib/hooks/useTableSort';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { ReceiptHistoryModal } from './ReceiptHistoryModal';
 import { useI18n } from '@/shared/lib/i18n';
-import { ReceiptsTable } from './ReceiptsTable';
+import { ReceiptsListBody } from './ReceiptsListBody';
 
 const RECEIPT_SORT_GETTERS = {
   id: (item: Receipt) => item.id,
@@ -47,7 +47,7 @@ export const ReceiptsTab: React.FC<ReceiptsTabProps> = ({ receipts, onPayReceipt
   return (
     <Box className={listPageStyles.panel}>
       <ListPanelBody>
-        <ReceiptsTable
+        <ReceiptsListBody
           items={paginatedItems}
           sort={sort}
           onSort={toggleSort}

@@ -163,3 +163,254 @@
   align-items: center;
   gap: 20px;
 }
+
+.pageTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 32px;
+  color: #484848;
+  background: none;
+  border: none;
+}
+
+button.pageTitle {
+  cursor: pointer;
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.archiveBtn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+  color: #484848;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 88px;
+}
+
+.entityCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.tabsScroll {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tabsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.payCta {
+  width: 100%;
+  background: #f6f1ee;
+  color: #ad9178;
+}
+
+.filterTrigger {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  height: 40px;
+  padding: 8px 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 24px;
+  color: #484848;
+}
+
+.filterTriggerActive {
+  background: #f1eae3;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.cardBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cardChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: #f6f1ee;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #ad9178;
+  text-transform: uppercase;
+}
+
+.cardChipSuccess {
+  background: rgba(18, 184, 134, 0.1);
+  color: #12b886;
+}
+
+.cardChipDanger {
+  background: rgba(250, 82, 82, 0.1);
+  color: #fa5252;
+}
+
+.cardChipMuted {
+  background: #f6f1ee;
+  color: #ad9178;
+}
+
+.cardFields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardField {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.cardLabel {
+  color: #ad9178;
+}
+
+.cardValue {
+  color: #484848;
+  word-break: break-word;
+}
+
+.cardMeta {
+  font-size: 14px;
+  line-height: 20px;
+  color: #b6b6b6;
+}
+
+.cardMetaAccent {
+  color: #ad9178;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #484848;
+}
+
+.iconBtn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid #dee2e6;
+  color: #484848;
+}
+
+.stickyBar {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: #fff;
+}
+
+.entityCard:focus-visible {
+  outline: 2px solid #ad9178;
+  outline-offset: 2px;
+}
+
+@media (max-width: 47.99em) {
+  .page {
+    background: #fff;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 16px 16px 12px;
+    border-bottom: none;
+  }
+
+  .searchInput {
+    width: 100%;
+    flex: 1;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px 16px;
+  }
+
+  .paginationMeta {
+    position: static;
+    transform: none;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .summaryRow {
+    grid-template-columns: 1fr;
+    border-bottom: none;
+  }
+
+  .summaryItem {
+    border-color: #f1eae3;
+    border-radius: 12px;
+  }
+
+  .summaryItem:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .panelToolbar {
+    padding: 0 16px 12px;
+    border-bottom: none;
+  }
+
+  .tabsScroll :global(.mantine-SegmentedControl-root) {
+    width: max-content;
+  }
+}

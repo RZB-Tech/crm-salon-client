@@ -1,20 +1,22 @@
 import React from 'react';
-import { Alert, Box, Button, Group, Skeleton, Stack } from '@mantine/core';
-import { PlusIcon } from '@phosphor-icons/react';
+import { Alert, Box, Skeleton, Stack } from '@mantine/core';
 import { useTransactions } from '@/shared/api/hooks/useTransactions';
 import { useReceipts } from '@/shared/api/hooks/useReceipts';
-import { ListPageShell, ListTabs } from '@/shared/ui';
+import { ListCreateFab, ListPageShell } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { ReceiptsTab } from './tabs/ReceiptsTab';
 import { PaymentsTab } from './tabs/PaymentsTab';
 import { TransactionsTab, type TransactionsTabHandle } from './tabs/TransactionsTab';
 import { PayoutsTab, type PayoutsTabHandle } from './tabs/PayoutsTab';
 import { ReceiptFormModal } from './ReceiptFormModal';
 import { PaymentFormModal } from './PaymentFormModal';
+import { FinanceToolbar } from './FinanceToolbar';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useI18n } from '@/shared/lib/i18n';
 
 export const FinancePage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
   const [tab, setTab] = React.useState<string>('receipts');
   const [receiptFormOpen, setReceiptFormOpen] = React.useState(false);
@@ -31,59 +33,41 @@ export const FinancePage: React.FC = () => {
     setPaymentFormOpen(true);
   }, []);
 
+  const openCreateReceipt = React.useCallback(() => setReceiptFormOpen(true), []);
+  const openCreateTransaction = React.useCallback(() => transactionsRef.current?.openCreate(), []);
+  const openCreatePayout = React.useCallback(() => payoutsRef.current?.openCreate(), []);
+
+  const canPay = hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT);
+  const canCreateReceipt = hasPermission(PermissionCode.RECEIPT_CREATE);
+  const canCreateTransaction = hasPermission(PermissionCode.TRANSACTION_CREATE);
+  const canCreatePayout = hasPermission(PermissionCode.PAYOUT_CREATE);
+
+  const fab = React.useMemo(() => {
+    if (!isMobile) return undefined;
+    if ((tab === 'receipts' || tab === 'payments') && canCreateReceipt) {
+      return <ListCreateFab label={t('form.newReceipt')} onClick={openCreateReceipt} />;
+    }
+    if (tab === 'transactions' && canCreateTransaction) {
+      return <ListCreateFab label={t('form.newTransaction')} onClick={openCreateTransaction} />;
+    }
+    if (tab === 'payouts' && canCreatePayout) {
+      return <ListCreateFab label={t('form.newPayout')} onClick={openCreatePayout} />;
+    }
+    return undefined;
+  }, [
+    isMobile,
+    tab,
+    canCreateReceipt,
+    canCreateTransaction,
+    canCreatePayout,
+    t,
+    openCreateReceipt,
+    openCreateTransaction,
+    openCreatePayout,
+  ]);
+
   const isLoading = receiptsLoading || paymentsLoading;
   const isError = receiptsError || paymentsError;
-
-  const toolbarActions = (() => {
-    if (tab === 'receipts' || tab === 'payments') {
-      return (
-        <Group gap={8} wrap="nowrap">
-          {hasPermission(PermissionCode.RECEIPT_MAKE_PAYMENT) && (
-            <Button variant="light" color="sage" size="sm" onClick={() => openPaymentForm()}>
-              {t('form.makePayment')}
-            </Button>
-          )}
-          {hasPermission(PermissionCode.RECEIPT_CREATE) && (
-            <Button
-              color="sage.7"
-              rightSection={<PlusIcon size={16} />}
-              size="sm"
-              onClick={() => setReceiptFormOpen(true)}
-            >
-              {t('form.newReceipt')}
-            </Button>
-          )}
-        </Group>
-      );
-    }
-    if (tab === 'transactions') {
-      if (!hasPermission(PermissionCode.TRANSACTION_CREATE)) return null;
-      return (
-        <Button
-          color="sage.7"
-          rightSection={<PlusIcon size={16} />}
-          size="sm"
-          onClick={() => transactionsRef.current?.openCreate()}
-        >
-          {t('form.newTransaction')}
-        </Button>
-      );
-    }
-    if (tab === 'payouts') {
-      if (!hasPermission(PermissionCode.PAYOUT_CREATE)) return null;
-      return (
-        <Button
-          color="sage.7"
-          rightSection={<PlusIcon size={16} />}
-          size="sm"
-          onClick={() => payoutsRef.current?.openCreate()}
-        >
-          {t('form.newPayout')}
-        </Button>
-      );
-    }
-    return null;
-  })();
 
   if (isLoading) {
     return (
@@ -119,20 +103,21 @@ export const FinancePage: React.FC = () => {
   return (
     <ListPageShell
       toolbar={
-        <>
-          <ListTabs
-            value={tab}
-            onChange={setTab}
-            data={[
-              { value: 'receipts', label: t('finance.receipts') },
-              { value: 'payments', label: t('finance.payments') },
-              { value: 'transactions', label: t('finance.transactions') },
-              { value: 'payouts', label: t('finance.payouts') },
-            ]}
-          />
-          {toolbarActions}
-        </>
+        <FinanceToolbar
+          tab={tab}
+          onTabChange={setTab}
+          isMobile={isMobile}
+          canPay={canPay}
+          canCreateReceipt={canCreateReceipt}
+          canCreateTransaction={canCreateTransaction}
+          canCreatePayout={canCreatePayout}
+          onPay={() => openPaymentForm()}
+          onCreateReceipt={openCreateReceipt}
+          onCreateTransaction={openCreateTransaction}
+          onCreatePayout={openCreatePayout}
+        />
       }
+      fab={fab}
     >
       {tab === 'receipts' && <ReceiptsTab receipts={receipts ?? []} onPayReceipt={openPaymentForm} />}
       {tab === 'payments' && <PaymentsTab payments={payments ?? []} />}

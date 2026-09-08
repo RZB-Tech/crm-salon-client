@@ -69,12 +69,40 @@
   background: var(--mantine-color-white);
 }
 
-@media (max-width: 768px) {
-  .salaryGrid {
-    grid-template-columns: 1fr;
+@media (max-width: 47.99em) {
+  .pageTop {
+    padding: 16px 16px 0;
+    gap: 12px;
   }
 
   .headerCard {
     flex-direction: column;
+  }
+
+  .headerCard :global(.mantine-Button-root) {
+    height: 40px;
+    background: #f6f1ee;
+    color: #6e483c;
+  }
+
+  .pageBody :global(.mantine-Tabs-list) {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .salaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .salaryItem {
+    border-color: #dee2e6;
+  }
+
+  .pageBody {
+    overflow-x: auto;
+  }
+
+  .pageBody :global(table) {
+    min-width: 520px;
   }
 }

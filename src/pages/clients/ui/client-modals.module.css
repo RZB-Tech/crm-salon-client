@@ -115,3 +115,13 @@
 .incomeBadge {
   composes: statusBadge;
 }
+
+@media (max-width: 47.99em) {
+  .tableCard {
+    overflow-x: auto;
+  }
+
+  .tableCard :global(table) {
+    min-width: 520px;
+  }
+}

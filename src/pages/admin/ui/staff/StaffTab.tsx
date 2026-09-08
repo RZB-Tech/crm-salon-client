@@ -6,7 +6,7 @@ import { CreateStaffModal } from './CreateStaffModal';
 import { ResetPasswordModal } from './ResetPasswordModal';
 import { StaffDetailModal } from './StaffDetailModal';
 import { StaffPermissionsModal } from './StaffPermissionsModal';
-import { StaffTable } from './StaffTable';
+import { StaffListBody } from './StaffListBody';
 import { useStaffTab } from './useStaffTab';
 import type { StaffTabHandle } from './types';
 
@@ -25,7 +25,7 @@ export const StaffTab = React.forwardRef<StaffTabHandle>(function StaffTab(_prop
 
   return (
     <>
-      <StaffTable staffList={tab.staffList ?? []} onSelectStaff={tab.handleSelectStaff} />
+      <StaffListBody staffList={tab.staffList ?? []} onSelectStaff={tab.handleSelectStaff} />
 
       <StaffDetailModal
         opened={tab.detailOpened}

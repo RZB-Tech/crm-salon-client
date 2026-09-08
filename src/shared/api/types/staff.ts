@@ -15,6 +15,8 @@ export interface StaffLoginResponse extends BaseEntity {
   active: boolean;
   staff_type: string;
   tenant_name: string;
+  roles: number[];
+  permissions: number[];
 }
 
 export type StaffType = 'administrator' | 'employee';
@@ -91,4 +93,6 @@ export interface MeResponse extends BaseEntity {
   middlename: string | null;
   active: boolean;
   staff_type: StaffType;
+  roles: number[];
+  permissions: number[];
 }

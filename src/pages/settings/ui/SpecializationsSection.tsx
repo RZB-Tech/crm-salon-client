@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Button, Group, Text } from '@mantine/core';
-import { PlusIcon } from '@phosphor-icons/react';
+import { ActionIcon, Box, Button, Group, Text } from '@mantine/core';
+import { ArchiveIcon, PlusIcon } from '@phosphor-icons/react';
 import {
   useCreateSpecialization,
   useArchiveSpecialization,
@@ -8,14 +8,17 @@ import {
   useUpdateSpecialization,
 } from '@/shared/api/hooks/useSpecializations';
 import type { Specialization } from '@/shared/api/types';
-import { ConfirmModal } from '@/shared/ui';
+import { ConfirmModal, ListCardField, ListEntityCard } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { useResolvedById } from '@/shared/lib/hooks/useResolvedById';
 import { SpecializationFormModal } from './SpecializationFormModal';
 import { SpecializationsTable } from './SpecializationsTable';
+import styles from './settings-page.module.css';
 
 export const SpecializationsSection: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { data: specializations } = useSpecializations();
   const createSpec = useCreateSpecialization();
   const updateSpec = useUpdateSpecialization();
@@ -28,6 +31,7 @@ export const SpecializationsSection: React.FC = () => {
 
   const editing = useResolvedById(specializations, editingId);
   const archiveTarget = useResolvedById(specializations, archiveTargetId);
+  const list = specializations ?? [];
 
   const openCreate = React.useCallback(() => {
     setEditingId(null);
@@ -49,28 +53,69 @@ export const SpecializationsSection: React.FC = () => {
     }
   }, [name, editing, createSpec, updateSpec]);
 
-  const list = specializations ?? [];
-
   return (
     <>
-      <Group justify="space-between" mb="md">
-        <Text fw={600} size="sm" c="#484848">
-          {t('settings.specializations')}
-        </Text>
-        <Button
-          size="xs"
-          variant="light"
-          color="sage"
-          rightSection={<PlusIcon size={14} />}
-          onClick={openCreate}
-        >
-          {t('common.add')}
-        </Button>
-      </Group>
-
-      <Box style={{ border: '1px solid var(--mantine-color-gray-2)', borderRadius: 8, overflow: 'hidden' }}>
-        <SpecializationsTable items={list} onEdit={openEdit} onArchive={setArchiveTargetId} />
-      </Box>
+      {isMobile ? (
+        <Box className={styles.specList}>
+          <Text fw={600} size="lg" c="#484848">
+            {t('settings.specializations')}
+          </Text>
+          <Button
+            className={styles.addBtn}
+            size="md"
+            variant="light"
+            color="sage"
+            rightSection={<PlusIcon size={20} />}
+            onClick={openCreate}
+          >
+            {t('common.add')}
+          </Button>
+          {list.length === 0 ? (
+            <Text size="sm" c="dimmed" ta="center" py="md">
+              {t('settings.empty')}
+            </Text>
+          ) : (
+            list.map((spec) => (
+              <ListEntityCard key={spec.id} onClick={() => openEdit(spec)}>
+                <Group justify="space-between" wrap="nowrap">
+                  <ListCardField label={t('common.name')} value={spec.name} />
+                  <ActionIcon
+                    variant="subtle"
+                    color="orange"
+                    aria-label={t('common.archive')}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setArchiveTargetId(spec.id);
+                    }}
+                  >
+                    <ArchiveIcon size={18} />
+                  </ActionIcon>
+                </Group>
+              </ListEntityCard>
+            ))
+          )}
+        </Box>
+      ) : (
+        <>
+          <Group justify="space-between" mb="md">
+            <Text fw={600} size="sm" c="#484848">
+              {t('settings.specializations')}
+            </Text>
+            <Button
+              size="xs"
+              variant="light"
+              color="sage"
+              rightSection={<PlusIcon size={14} />}
+              onClick={openCreate}
+            >
+              {t('common.add')}
+            </Button>
+          </Group>
+          <Box style={{ border: '1px solid var(--mantine-color-gray-2)', borderRadius: 8, overflow: 'hidden' }}>
+            <SpecializationsTable items={list} onEdit={openEdit} onArchive={setArchiveTargetId} />
+          </Box>
+        </>
+      )}
 
       <SpecializationFormModal
         opened={formOpen}

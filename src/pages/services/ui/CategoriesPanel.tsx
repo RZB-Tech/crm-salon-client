@@ -4,6 +4,7 @@ import { PlusIcon } from '@phosphor-icons/react';
 import type { ServiceCategory } from '@/shared/api/types';
 import { ListTabs } from '@/shared/ui';
 import { useI18n } from '@/shared/lib/i18n';
+import styles from './categories-panel.module.css';
 
 interface CategoriesPanelProps {
   activeCategory: string;
@@ -28,23 +29,25 @@ export const CategoriesPanel: React.FC<CategoriesPanelProps> = ({
   }, [categories, t]);
 
   return (
-    <ListTabs
-      value={activeCategory}
-      onChange={onCategoryChange}
-      data={segmentData}
-      action={
-        <Tooltip label={t('services.addCategory')} position="bottom">
-          <ActionIcon
-            size="sm"
-            variant="subtle"
-            color="sage"
-            onClick={onAddCategory}
-            aria-label={t('services.addCategory')}
-          >
-            <PlusIcon size={16} />
-          </ActionIcon>
-        </Tooltip>
-      }
-    />
+    <div className={styles.scroll}>
+      <ListTabs
+        value={activeCategory}
+        onChange={onCategoryChange}
+        data={segmentData}
+        action={
+          <Tooltip label={t('services.addCategory')} position="bottom">
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              color="sage"
+              onClick={onAddCategory}
+              aria-label={t('services.addCategory')}
+            >
+              <PlusIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
+        }
+      />
+    </div>
   );
 };

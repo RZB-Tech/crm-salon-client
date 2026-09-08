@@ -13,6 +13,7 @@ export const LIST_PAGE_SIZE_OPTIONS = [
 interface ListPageShellProps {
   toolbar?: React.ReactNode;
   footer?: React.ReactNode;
+  fab?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -20,6 +21,7 @@ interface ListPageShellProps {
 export const ListPageShell: React.FC<ListPageShellProps> = ({
   toolbar,
   footer,
+  fab,
   children,
   className,
 }) => (
@@ -27,6 +29,7 @@ export const ListPageShell: React.FC<ListPageShellProps> = ({
     {toolbar != null && <Box className={styles.toolbar}>{toolbar}</Box>}
     <ScrollArea className={styles.content}>{children}</ScrollArea>
     {footer}
+    {fab}
   </Box>
 );
 

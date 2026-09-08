@@ -74,7 +74,7 @@ export function PermissionsResourceTree({
                 />
               </Group>
               <Collapse expanded={isExpanded}>
-                <SimpleGrid cols={2} spacing="xs" verticalSpacing={4} mt="xs">
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={4} mt="xs">
                   {perms.map((p) => (
                     <Checkbox
                       key={p.code}

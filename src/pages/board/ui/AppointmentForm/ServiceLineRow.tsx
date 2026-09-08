@@ -44,6 +44,7 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
   const { t } = useI18n();
   const changed = isPriceChanged(line);
   const isService = line.kind === 'service';
+  const filled = isService ? Boolean(line.serviceId) : Boolean(line.materialId);
 
   return (
     <div className={`${styles.lineCard} ${changed ? styles.lineCardChanged : ''}`}>
@@ -51,6 +52,7 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
         {isService ? (
           <Select
             className={styles.lineSelect}
+            label={t('form.service')}
             searchable
             placeholder={t('board.selectService')}
             data={serviceOptions}
@@ -62,6 +64,7 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
         ) : (
           <Select
             className={styles.lineSelect}
+            label={t('form.product')}
             searchable
             placeholder={t('board.selectProduct')}
             data={materialOptions}
@@ -74,10 +77,10 @@ export const ServiceLineRow: React.FC<ServiceLineRowProps> = ({
         {!readOnly && (
           <Tooltip label={t('board.deleteLine')} openDelay={300}>
             <ActionIcon
-              className={styles.lineTrash}
+              className={`${styles.lineTrash}${filled ? ` ${styles.lineTrashFilled}` : ''}`}
               variant="outline"
               color="gray"
-              size={32}
+              size={40}
               radius="md"
               aria-label={t('board.deleteLine')}
               onClick={() => onRemove(line.key)}

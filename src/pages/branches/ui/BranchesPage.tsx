@@ -1,6 +1,8 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
-import { ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { ListCreateFab, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useI18n } from '@/shared/lib/i18n';
 import type { BranchCredentials } from '@/shared/api/types';
 import { useBranchesPage } from '../lib/useBranchesPage';
@@ -8,12 +10,14 @@ import { BranchAdminModal } from './BranchAdminModal';
 import { BranchCreateModal } from './BranchCreateModal';
 import { BranchCredentialsModal } from './BranchCredentialsModal';
 import { BranchEditModal } from './BranchEditModal';
+import { BranchesListBody } from './BranchesListBody';
 import { BranchesReportTab } from './BranchesReportTab';
-import { BranchesTable } from './BranchesTable';
 import { BranchesToolbar } from './BranchesToolbar';
 
 export const BranchesPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
+  const { hasPermission } = useAccess();
   const [credentials, setCredentials] = React.useState<BranchCredentials | null>(null);
   const page = useBranchesPage();
 
@@ -61,6 +65,7 @@ export const BranchesPage: React.FC = () => {
   }
 
   const { paginatedItems, page: pageNum, pageSize, total, setPage, setPageSize } = page.pagination;
+  const canCreate = page.tab === 'list' && hasPermission(PermissionCode.TENANT_BRANCH_CREATE);
 
   return (
     <ListPageShell
@@ -86,9 +91,14 @@ export const BranchesPage: React.FC = () => {
           />
         ) : undefined
       }
+      fab={
+        isMobile && canCreate ? (
+          <ListCreateFab label={t('branches.add')} onClick={() => page.setCreateOpen(true)} />
+        ) : undefined
+      }
     >
       {page.tab === 'list' ? (
-        <BranchesTable
+        <BranchesListBody
           items={paginatedItems}
           sort={page.sort}
           onSort={page.toggleSort}

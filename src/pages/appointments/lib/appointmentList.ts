@@ -43,6 +43,28 @@ export const getAppointmentServicesLabel = (appointment: Appointment): string =>
   return lines.length > 0 ? lines.join('; ') : t('common.dash');
 };
 
+export const getAppointmentDateLabel = (appointment: Appointment): string => {
+  const date = parseApiDateFromDateTime(appointment.start_time_est);
+  const [year, month, day] = date.split('-').map(Number);
+  const local = new Date(year, month - 1, day);
+  return local.toLocaleDateString(getDateLocale(), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+export const getAppointmentPrimaryServiceName = (appointment: Appointment): string => {
+  const first = (appointment.records ?? []).flatMap((record) => record.services ?? [])[0];
+  if (!first) return t('common.dash');
+  return (
+    first.service?.name ??
+    (first.material_id != null
+      ? t('form.productNamed', { id: first.material_id })
+      : t('form.lineNamed', { id: first.id }))
+  );
+};
+
 export const getAppointmentWhenLabel = (appointment: Appointment): string => {
   const date = parseApiDateFromDateTime(appointment.start_time_est);
   const start = parseApiTimeFromDateTime(appointment.start_time_est);

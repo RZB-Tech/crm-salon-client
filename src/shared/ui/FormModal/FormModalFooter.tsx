@@ -19,6 +19,8 @@ export interface FormModalFooterProps {
   submitDisabled?: boolean;
   onSubmit?: () => void;
   loading?: boolean;
+  /** На mobile stacked: Отмена сверху, submit снизу (оплата). */
+  stackActions?: boolean;
   /** Полностью кастомные действия справа */
   children?: React.ReactNode;
 }
@@ -36,6 +38,7 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
   submitDisabled = false,
   onSubmit,
   loading = false,
+  stackActions = false,
   children,
 }) => {
   const { t } = useI18n();
@@ -44,7 +47,11 @@ export const FormModalFooter: React.FC<FormModalFooterProps> = ({
   const stretch = !hasMeta && !dangerActions && !children;
 
   return (
-    <footer className={styles.footer} data-stretch={stretch || undefined}>
+    <footer
+      className={styles.footer}
+      data-stretch={stretch || undefined}
+      data-stack={stackActions || undefined}
+    >
       {meta ??
         (metaValue != null ? (
           <div className={styles.footerMeta}>

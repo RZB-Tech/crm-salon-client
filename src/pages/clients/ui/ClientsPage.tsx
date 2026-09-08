@@ -4,10 +4,13 @@ import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
 import {
   ArchiveToggle,
   ConfirmModal,
+  ListCreateFab,
   ListPageShell,
+  ListPageTitle,
   ListPaginationFooter,
   listPageStyles,
 } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { getClientFullName } from '@/shared/lib/format';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
@@ -15,10 +18,11 @@ import { useClientsPage } from '../lib/useClientsPage';
 import { ClientFormModal } from './ClientFormModal';
 import { DepositModal } from './DepositModal';
 import { ClientDetailModal } from './ClientDetailModal';
-import { ClientsTable } from './ClientsTable';
+import { ClientsListBody } from './ClientsListBody';
 
 export const ClientsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
   const {
     search,
@@ -84,27 +88,38 @@ export const ClientsPage: React.FC = () => {
     <ListPageShell
       toolbar={
         <>
-          <TextInput
-            placeholder={t('clients.searchPlaceholder')}
-            leftSection={<MagnifyingGlassIcon size={16} />}
-            value={search}
-            onChange={(e) => setSearch(e.currentTarget.value)}
-            size="sm"
-            className={listPageStyles.searchInput}
-          />
-          <Group gap={8} wrap="nowrap">
-            {!showArchived && hasPermission(PermissionCode.CLIENT_CREATE) && (
-              <Button
-                color="sage.7"
-                rightSection={<PlusIcon size={16} />}
-                onClick={openCreate}
-                size="sm"
-              >
-                {t('clients.add')}
-              </Button>
-            )}
-            <ArchiveToggle active={showArchived} onChange={setShowArchived} />
-          </Group>
+          {isMobile && (
+            <ListPageTitle onBack={showArchived ? () => setShowArchived(false) : undefined}>
+              {showArchived ? t('clients.archiveTab') : t('clients.title')}
+            </ListPageTitle>
+          )}
+          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+            <TextInput
+              placeholder={t('clients.searchPlaceholder')}
+              leftSection={<MagnifyingGlassIcon size={16} />}
+              value={search}
+              onChange={(e) => setSearch(e.currentTarget.value)}
+              size="sm"
+              className={listPageStyles.searchInput}
+            />
+            <Group gap={8} wrap="nowrap">
+              {!isMobile && !showArchived && hasPermission(PermissionCode.CLIENT_CREATE) && (
+                <Button
+                  color="sage.7"
+                  rightSection={<PlusIcon size={16} />}
+                  onClick={openCreate}
+                  size="sm"
+                >
+                  {t('clients.add')}
+                </Button>
+              )}
+              <ArchiveToggle
+                className={isMobile ? listPageStyles.archiveBtn : undefined}
+                active={showArchived}
+                onChange={setShowArchived}
+              />
+            </Group>
+          </div>
         </>
       }
       footer={
@@ -116,8 +131,13 @@ export const ClientsPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && !showArchived && hasPermission(PermissionCode.CLIENT_CREATE) ? (
+          <ListCreateFab label={t('clients.add')} onClick={openCreate} />
+        ) : undefined
+      }
     >
-      <ClientsTable
+      <ClientsListBody
         items={paginatedItems}
         showArchived={showArchived}
         sort={sort}

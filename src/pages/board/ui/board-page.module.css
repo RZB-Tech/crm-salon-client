@@ -58,6 +58,12 @@
   overflow: hidden;
 }
 
+@media (max-width: 1100px) {
+  .skeletonBody > :last-child {
+    display: none;
+  }
+}
+
 .resourceLabel {
   display: flex;
   align-items: center;

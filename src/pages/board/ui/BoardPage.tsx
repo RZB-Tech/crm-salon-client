@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Box, Loader, Text } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { ConfirmModal } from '@/shared/ui/ConfirmModal';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useLoading } from '@/shared/lib/contexts/LoadingContext';
@@ -8,6 +9,11 @@ import { useBoardData } from '../lib/useBoardData';
 import { useBoardForm } from '../lib/useBoardForm';
 import { AppointmentFormModal } from './AppointmentForm';
 import { BoardCancelConfirmModal } from './BoardCancelConfirmModal';
+import { BoardCreateFab } from './BoardCreateFab';
+import { BoardDateSheet } from './BoardDateSheet';
+import { BoardMobileSchedule } from './BoardMobileSchedule';
+import { BoardMobileToolbar } from './BoardMobileToolbar';
+import { BoardRevenueSheet } from './BoardRevenueSheet';
 import { BoardSchedule } from './BoardSchedule';
 import { BoardSkeleton } from './BoardSkeleton';
 import { BoardToolbar } from './BoardToolbar';
@@ -19,6 +25,12 @@ export const BoardPage: React.FC = () => {
   const board = useBoardData();
   const { hasPermission } = useAccess();
   const { isLoading: globalLoading, setIsLoading } = useLoading();
+  const isMobile = useMediaQuery('(max-width: 47.99em)');
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [dateSheetOpen, setDateSheetOpen] = React.useState(false);
+  const [revenueSheetOpen, setRevenueSheetOpen] = React.useState(false);
+
   const form = useBoardForm({
     date: board.date,
     services: board.services,
@@ -35,6 +47,14 @@ export const BoardPage: React.FC = () => {
     }
   }, [board.isInitialLoading, globalLoading, setIsLoading]);
 
+  React.useEffect(() => {
+    if (isMobile) return;
+    setDateSheetOpen(false);
+    setRevenueSheetOpen(false);
+    setSearchOpen(false);
+    setSearchQuery('');
+  }, [isMobile]);
+
   const selectedEmployee = React.useMemo(
     () => board.allEmployees.find((e) => String(e.id) === form.formValues.employeeId),
     [board.allEmployees, form.formValues.employeeId],
@@ -44,6 +64,24 @@ export const BoardPage: React.FC = () => {
     () => board.buildServiceOptions(board.services, selectedEmployee),
     [board.services, selectedEmployee, board.buildServiceOptions],
   );
+
+  const mobileAppointments = React.useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return board.boardAppointments;
+    return board.boardAppointments.filter(
+      (appt) =>
+        appt.client.toLowerCase().includes(query) ||
+        appt.service.toLowerCase().includes(query) ||
+        appt.employeeName.toLowerCase().includes(query),
+    );
+  }, [board.boardAppointments, searchQuery]);
+
+  const canCreateAppointment = hasPermission(PermissionCode.APPOINTMENT_CREATE);
+  const canOpenCreateForm = board.employeeOptions.length > 0;
+
+  const handleOpenCreate = React.useCallback(() => {
+    form.openCreateForm();
+  }, [form]);
 
   if (board.isInitialLoading) {
     if (globalLoading) return null;
@@ -71,41 +109,99 @@ export const BoardPage: React.FC = () => {
         </Box>
       )}
 
-      <BoardToolbar
-        boardEmployees={board.boardEmployees}
-        employeeFilter={board.employeeFilter}
-        onEmployeeFilterChange={board.setEmployeeFilter}
-        showArchived={board.showArchived}
-        onShowArchivedChange={board.setShowArchived}
-        canCreateAppointment={hasPermission(PermissionCode.APPOINTMENT_CREATE)}
-        canOpenCreateForm={board.employeeOptions.length > 0}
-        onCreateAppointment={() => form.openCreateForm()}
-      />
+      {isMobile ? (
+        <BoardMobileToolbar
+          date={board.date}
+          showArchived={board.showArchived}
+          searchOpen={searchOpen}
+          searchQuery={searchQuery}
+          boardEmployees={board.boardEmployees}
+          employeeFilter={board.employeeFilter}
+          onEmployeeFilterChange={board.setEmployeeFilter}
+          onOpenDateSheet={() => setDateSheetOpen(true)}
+          onOpenRevenueSheet={() => setRevenueSheetOpen(true)}
+          onShowArchivedChange={board.setShowArchived}
+          onSearchOpenChange={setSearchOpen}
+          onSearchQueryChange={setSearchQuery}
+        />
+      ) : (
+        <BoardToolbar
+          boardEmployees={board.boardEmployees}
+          employeeFilter={board.employeeFilter}
+          onEmployeeFilterChange={board.setEmployeeFilter}
+          showArchived={board.showArchived}
+          onShowArchivedChange={board.setShowArchived}
+          canCreateAppointment={canCreateAppointment}
+          canOpenCreateForm={canOpenCreateForm}
+          onCreateAppointment={handleOpenCreate}
+        />
+      )}
 
       <Box className={styles.body}>
         <Box className={styles.main}>
-          <BoardSchedule
-            date={board.date}
-            dateStr={board.dateStr}
-            filteredEmployees={board.filteredEmployees}
-            boardEmployees={board.boardEmployees}
-            boardAppointments={board.boardAppointments}
-            employeeFilter={board.employeeFilter}
-            onEventClick={form.openEditForm}
-            onSlotCreate={(prefill) => form.openCreateForm(prefill, board.date)}
-          />
+          {isMobile ? (
+            <BoardMobileSchedule
+              dateStr={board.dateStr}
+              isAtToday={board.isAtToday}
+              filteredEmployees={board.filteredEmployees}
+              boardEmployees={board.boardEmployees}
+              boardAppointments={mobileAppointments}
+              employeeFilter={board.employeeFilter}
+              onEventClick={form.openEditForm}
+              onSlotCreate={(prefill) => form.openCreateForm(prefill, board.date)}
+            />
+          ) : (
+            <BoardSchedule
+              date={board.date}
+              dateStr={board.dateStr}
+              filteredEmployees={board.filteredEmployees}
+              boardEmployees={board.boardEmployees}
+              boardAppointments={board.boardAppointments}
+              employeeFilter={board.employeeFilter}
+              onEventClick={form.openEditForm}
+              onSlotCreate={(prefill) => form.openCreateForm(prefill, board.date)}
+            />
+          )}
         </Box>
 
-        <BoardSidebar
-          date={board.date}
-          isAtToday={board.isAtToday}
-          markedDates={board.appointmentDates}
-          dayRevenue={board.dayRevenue}
-          appointmentsCount={board.boardAppointments.length}
-          onDateChange={board.setDate}
-          onGoToday={board.goToday}
-        />
+        {!isMobile && (
+          <BoardSidebar
+            date={board.date}
+            isAtToday={board.isAtToday}
+            markedDates={board.appointmentDates}
+            dayRevenue={board.dayRevenue}
+            appointmentsCount={board.boardAppointments.length}
+            onDateChange={board.setDate}
+            onGoToday={board.goToday}
+          />
+        )}
       </Box>
+
+      {isMobile && canCreateAppointment && (
+        <BoardCreateFab
+          disabled={!canOpenCreateForm}
+          loading={form.isSaving || form.formLoading}
+          onClick={handleOpenCreate}
+        />
+      )}
+
+      {isMobile && (
+        <>
+          <BoardDateSheet
+            opened={dateSheetOpen}
+            date={board.date}
+            markedDates={board.appointmentDates}
+            onDateChange={board.setDate}
+            onClose={() => setDateSheetOpen(false)}
+          />
+          <BoardRevenueSheet
+            opened={revenueSheetOpen}
+            dayRevenue={board.dayRevenue}
+            appointmentsCount={board.boardAppointments.length}
+            onClose={() => setRevenueSheetOpen(false)}
+          />
+        </>
+      )}
 
       <AppointmentFormModal
         opened={form.formOpen}

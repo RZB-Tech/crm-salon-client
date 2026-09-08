@@ -101,3 +101,77 @@
 .day_selected.day_marked::after {
   background: var(--mantine-color-white);
 }
+
+.calendarOverlay {
+  gap: 20px;
+}
+
+.overlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.overlayTitle {
+  flex: 1;
+  min-width: 0;
+  color: #484848;
+  font-size: 16px;
+  line-height: 24px;
+  text-transform: capitalize;
+}
+
+.overlayNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.calendarOverlay .weekday {
+  font-size: 14px;
+  font-weight: 400;
+  color: #b6b6b6;
+  padding: 0;
+}
+
+.calendarOverlay .days {
+  gap: 0;
+}
+
+.calendarOverlay .day {
+  height: 40px;
+  aspect-ratio: auto;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.calendarOverlay .day_selected {
+  background: #ad9178;
+}
+
+.calendarOverlay .day_selected:hover {
+  background: #9d816a;
+}
+
+.calendarOverlay .day_today:not(.day_selected) {
+  background: transparent;
+  color: #484848;
+  font-weight: 600;
+}
+
+.calendarOverlay .day_marked::after {
+  background: #fa5252;
+  width: 5px;
+  height: 5px;
+  bottom: 3px;
+}
+
+.calendarOverlay .day_selected.day_marked::after {
+  background: #fff;
+}
+
+.day_outside {
+  opacity: 0.5;
+}

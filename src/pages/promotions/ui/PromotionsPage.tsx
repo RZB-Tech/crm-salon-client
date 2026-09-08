@@ -1,19 +1,25 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
-import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { ConfirmModal, ListCreateFab, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
+import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { usePromotionsPage } from '../lib/usePromotionsPage';
 import { PromotionFormModal } from './PromotionFormModal';
-import { PromotionsTable } from './PromotionsTable';
+import { PromotionsListBody } from './PromotionsListBody';
 import { PromotionsToolbar } from './PromotionsToolbar';
 
 export const PromotionsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
+  const { hasPermission } = useAccess();
   const {
     search,
     setSearch,
     filter,
     setFilter,
+    kindFilter,
+    setKindFilter,
     showArchived,
     setShowArchived,
     formOpen,
@@ -74,9 +80,12 @@ export const PromotionsPage: React.FC = () => {
         <PromotionsToolbar
           search={search}
           filter={filter}
+          kindFilter={kindFilter}
           showArchived={showArchived}
+          canCreate={hasPermission(PermissionCode.PROMOTION_CREATE)}
           onSearchChange={setSearch}
           onFilterChange={setFilter}
+          onKindFilterChange={setKindFilter}
           onShowArchivedChange={setShowArchived}
           onCreate={openCreate}
         />
@@ -90,10 +99,16 @@ export const PromotionsPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && !showArchived && hasPermission(PermissionCode.PROMOTION_CREATE) ? (
+          <ListCreateFab label={t('form.addPromo')} onClick={openCreate} />
+        ) : undefined
+      }
     >
-      <PromotionsTable
+      <PromotionsListBody
         items={paginatedItems}
         showArchived={showArchived}
+        restorePending={restorePromotion.isPending}
         sort={sort}
         onSort={toggleSort}
         serviceNameMap={serviceNameMap}

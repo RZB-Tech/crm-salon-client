@@ -108,3 +108,211 @@
   line-height: 1.4;
   color: var(--mantine-color-gray-6);
 }
+
+.issueInvoice {
+  composes: sectionCardMuted;
+}
+
+.issueInvoiceCard {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 47.99em) {
+  .payHero {
+    background: #f6f1ee;
+    border: 1px solid #f6f1ee;
+    padding: 16px 20px;
+  }
+
+  .payHeroText {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 4px 12px;
+    width: 100%;
+  }
+
+  .payHeroLabel {
+    text-transform: none;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #6e483c;
+  }
+
+  .payHeroLabel::after {
+    content: ':';
+  }
+
+  .payHeroAmount {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #6e483c;
+  }
+
+  .payHeroHint {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .payHeroIcon {
+    display: none;
+  }
+
+  .payStepsPreview {
+    display: none;
+  }
+
+  .issueInvoice {
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+
+  .issueInvoice .sectionTitleMuted {
+    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #1f2937;
+  }
+
+  .issueInvoice .sectionHint {
+    margin: 0 0 12px;
+    color: rgba(31, 41, 55, 0.6);
+  }
+
+  .issueInvoiceCard {
+    padding: 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .issueInvoiceBtn {
+    width: 100%;
+    height: 40px;
+    background: #ad9178;
+  }
+
+  .cancelReceiptBtn {
+    background: rgba(250, 82, 82, 0.1);
+    color: #fa5252;
+  }
+
+  .paySubmitRow {
+    width: 100%;
+  }
+
+  .paySubmitBtn {
+    width: 100%;
+    height: 40px;
+    background: #ad9178;
+  }
+
+  .payStepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .payStepperStep {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .payStepperNum {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #f6f1ee;
+    color: #484848;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  .payStepperStepDone .payStepperNum {
+    background: #ad9178;
+    color: #fff;
+  }
+
+  .payStepperLabel {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 16px;
+    color: #484848;
+  }
+
+  .payStepperStepDone .payStepperLabel {
+    color: #6e483c;
+  }
+
+  .payStepperLine {
+    flex: 1;
+    min-width: 12px;
+    height: 1px;
+    background: #dee2e6;
+  }
+
+  .receiptStatusPending {
+    color: #fab005;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  .receiptStatusPaid {
+    color: #12b886;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  .paidReceiptCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #12b886;
+    background: #fff;
+  }
+
+  .paidReceiptTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    color: #1f2937;
+  }
+
+  .sectionCard .sectionTitle {
+    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 16px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #1f2937;
+  }
+
+  .cancelReceiptBtn {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 4px 8px;
+    background: rgba(250, 82, 82, 0.1);
+    color: #fa5252;
+  }
+}

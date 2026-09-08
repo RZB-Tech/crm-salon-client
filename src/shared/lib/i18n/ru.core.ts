@@ -77,7 +77,7 @@ export const ru = {
     loaderBoard: 'Собираем рабочий стол',
     loaderClients: 'Загружаем клиентов',
     loaderSchedule: 'Настраиваем расписание',
-    loaderReady: 'Готовим салон к работе',
+    loaderReady: 'Готовим систему к работе...',
   },
   lang: {
     ru: 'RU',
@@ -108,6 +108,8 @@ export const ru = {
     allNotifications: 'Все уведомления',
     close: 'Закрыть',
     noNotifications: 'Нет уведомлений',
+    emptyTitle: 'Пусто',
+    emptyHint: 'У вас нет непрочитанных уведомлений',
     account: 'Аккаунт',
     changePassword: 'Сменить пароль',
     logout: 'Выйти',
@@ -123,8 +125,8 @@ export const ru = {
   },
   login: {
     brand: 'Рабочее пространство салона',
-    title: 'Вход',
-    subtitle: 'Введите логин и пароль, чтобы продолжить',
+    title: 'Вход в систему',
+    subtitle: 'Добро пожаловать! Пожалуйста, авторизуйтесь для доступа к аккаунту.',
     login: 'Логин',
     password: 'Пароль',
     submit: 'Войти',
@@ -164,8 +166,8 @@ export const ru = {
     },
     appointmentStatus: {
       awaiting: 'Ожидание',
-      started: 'Начата',
-      finished: 'Завершена',
+      started: 'Начато',
+      finished: 'Завершено',
       cancelled: 'Отменена',
     },
     receiptStatus: {
@@ -305,6 +307,7 @@ export const ru = {
     GIFT_CARD_INSUFFICIENT_AMOUNT: 'На купоне недостаточно средств',
     GIFT_CARD_CANCELLED: 'Купон отменён',
     GIFT_CARD_UNUSABLE: 'Купон нельзя использовать',
+    GIFT_CARD_UNSABLE: 'Купон нельзя использовать',
     GIFT_CARD_CLIENT_CONFLICT: 'Этот купон привязан к другому клиенту',
     OBJECT_IS_ARCHIVED: 'Объект в архиве — действие недоступно',
     FIELD_IS_EMPTY: 'Заполните обязательное поле',

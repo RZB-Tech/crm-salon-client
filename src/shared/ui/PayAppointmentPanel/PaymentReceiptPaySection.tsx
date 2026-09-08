@@ -9,9 +9,11 @@ import {
   Stack,
   Text,
 } from '@mantine/core';
+import { XIcon } from '@phosphor-icons/react';
 import type { PaymentMethod, Receipt } from '@/shared/api/types';
 import { GiftCardPaySelect } from '@/pages/gift-cards/ui/GiftCardPaySelect';
 import { PAYMENT_METHOD_OPTIONS, RECEIPT_STATUS_LABELS } from '@/shared/lib/format';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import styles from './pay-appointment-panel.module.css';
@@ -54,6 +56,7 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
   onOpenCancelConfirm,
 }) => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { isAdmin, hasPermission } = useAccess();
   const canUseGiftCard = isAdmin || hasPermission(PermissionCode.GIFT_CARD_GET);
   const methodOptions = React.useMemo(
@@ -64,19 +67,30 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
 
   return (
     <div className={styles.sectionCard}>
-      <Group justify="space-between" mb="sm">
+      <Group justify="space-between" mb="sm" wrap="nowrap" align="flex-start">
         <div>
           <p className={styles.sectionTitle} style={{ marginBottom: 4 }}>
             {t('form.receiptNamed', { id: receipt.id })}
           </p>
-          <Text size="xs" c="dimmed">
+          <Text
+            size="xs"
+            className={
+              receipt.status === 'pending'
+                ? styles.receiptStatusPending
+                : receipt.status === 'paid'
+                  ? styles.receiptStatusPaid
+                  : undefined
+            }
+          >
             {RECEIPT_STATUS_LABELS[receipt.status] ?? receipt.status}
           </Text>
         </div>
         <Button
+          className={styles.cancelReceiptBtn}
           variant="subtle"
-          color="orange"
+          color="red"
           size="xs"
+          leftSection={<XIcon size={12} />}
           onClick={onOpenCancelConfirm}
           loading={cancelPending}
         >
@@ -124,11 +138,18 @@ export const PaymentReceiptPaySection: React.FC<PaymentReceiptPaySectionProps> =
               {t('form.overpayAlert')}
             </Alert>
           )}
-          <Group justify="flex-end">
-            <Button onClick={onPay} loading={payPending} disabled={!canPay}>
-              {t('form.acceptPayment')}
-            </Button>
-          </Group>
+          {!isMobile && (
+            <Group className={styles.paySubmitRow} justify="flex-end">
+              <Button
+                className={styles.paySubmitBtn}
+                onClick={onPay}
+                loading={payPending}
+                disabled={!canPay}
+              >
+                {t('form.acceptPayment')}
+              </Button>
+            </Group>
+          )}
         </Stack>
       )}
     </div>

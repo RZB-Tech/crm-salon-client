@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button, Group, TextInput } from '@mantine/core';
 import { MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
-import { ListTabs, listPageStyles } from '@/shared/ui';
+import { ListPageTitle, ListTabs, listPageStyles } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { BranchFilter } from '../lib/branchForm';
@@ -26,19 +27,57 @@ export const BranchesToolbar: React.FC<BranchesToolbarProps> = ({
   onCreate,
 }) => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
+  const canCreate = hasPermission(PermissionCode.TENANT_BRANCH_CREATE);
+
+  const mainTabs = (
+    <ListTabs
+      value={tab}
+      onChange={onTabChange}
+      data={[
+        { value: 'list', label: t('branches.title') },
+        { value: 'report', label: t('branches.report') },
+      ]}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <ListPageTitle>{t('nav.branches')}</ListPageTitle>
+        {mainTabs}
+        {tab === 'list' && (
+          <>
+            <ListTabs
+              value={filter}
+              onChange={(value) => onFilterChange(value as BranchFilter)}
+              data={[
+                { value: 'all', label: t('common.all') },
+                { value: 'active', label: t('common.active') },
+                { value: 'inactive', label: t('common.inactive') },
+              ]}
+            />
+            <div className={listPageStyles.toolbarRow}>
+              <TextInput
+                placeholder={t('branches.searchPlaceholder')}
+                leftSection={<MagnifyingGlassIcon size={16} />}
+                value={search}
+                onChange={(event) => onSearchChange(event.currentTarget.value)}
+                size="sm"
+                className={listPageStyles.searchInput}
+              />
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
       <Group gap={8} wrap="nowrap">
-        <ListTabs
-          value={tab}
-          onChange={onTabChange}
-          data={[
-            { value: 'list', label: t('branches.title') },
-            { value: 'report', label: t('branches.report') },
-          ]}
-        />
+        {mainTabs}
         {tab === 'list' && (
           <>
             <ListTabs
@@ -61,13 +100,8 @@ export const BranchesToolbar: React.FC<BranchesToolbarProps> = ({
           </>
         )}
       </Group>
-      {tab === 'list' && hasPermission(PermissionCode.TENANT_BRANCH_CREATE) && (
-        <Button
-          color="sage.7"
-          rightSection={<PlusIcon size={16} />}
-          onClick={onCreate}
-          size="sm"
-        >
+      {tab === 'list' && canCreate && (
+        <Button color="sage.7" rightSection={<PlusIcon size={16} />} onClick={onCreate} size="sm">
           {t('branches.add')}
         </Button>
       )}

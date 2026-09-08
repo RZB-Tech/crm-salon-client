@@ -13,9 +13,9 @@ export const VisitAddButton: React.FC<VisitAddButtonProps> = ({ label, onClick, 
   <Button
     className={styles.ghostAddBtn}
     variant="light"
-    size="sm"
+    size="md"
     radius="xs"
-    leftSection={<PlusIcon size={16} />}
+    leftSection={<PlusIcon size={20} />}
     onClick={onClick}
     disabled={disabled}
   >

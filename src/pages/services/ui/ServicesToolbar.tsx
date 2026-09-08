@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, FileButton, Group, TextInput } from '@mantine/core';
+import { ActionIcon, Button, FileButton, Group, TextInput } from '@mantine/core';
 import { DownloadSimpleIcon, MagnifyingGlassIcon, PlusIcon } from '@phosphor-icons/react';
-import { ArchiveToggle, listPageStyles } from '@/shared/ui';
+import { ArchiveToggle, ListPageTitle, listPageStyles } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import type { ServiceCategory } from '@/shared/api/types';
 import { CategoriesPanel } from './CategoriesPanel';
@@ -40,60 +41,99 @@ export const ServicesToolbar: React.FC<ServicesToolbarProps> = ({
   onShowArchivedChange,
 }) => {
   const { t } = useI18n();
-  return (
-  <>
+  const isMobile = useIsMobile();
+
+  const importControl = canImport && !showArchived && (
+    <FileButton onChange={onImportFile} accept=".xlsx,.xls" resetRef={resetImportRef}>
+      {(props) =>
+        isMobile ? (
+          <ActionIcon
+            {...props}
+            className={listPageStyles.archiveBtn}
+            variant="default"
+            size={40}
+            radius={8}
+            loading={importPending}
+            aria-label={t('services.importExcel')}
+          >
+            <DownloadSimpleIcon size={18} />
+          </ActionIcon>
+        ) : (
+          <Button
+            {...props}
+            variant="light"
+            color="sage"
+            rightSection={<DownloadSimpleIcon size={16} />}
+            size="sm"
+            loading={importPending}
+          >
+            {t('services.importExcel')}
+          </Button>
+        )
+      }
+    </FileButton>
+  );
+
+  const searchInput = (
+    <TextInput
+      placeholder={t('services.searchPlaceholder')}
+      leftSection={<MagnifyingGlassIcon size={16} />}
+      value={search}
+      onChange={(e) => onSearchChange(e.currentTarget.value)}
+      size="sm"
+      className={listPageStyles.searchInput}
+    />
+  );
+
+  const categoriesPanel = (
     <CategoriesPanel
       activeCategory={activeCategory}
       categories={categories}
       onCategoryChange={onCategoryChange}
       onAddCategory={onAddCategory}
     />
+  );
 
-    <Group gap={8} wrap="nowrap">
-      <TextInput
-        placeholder={t('services.searchPlaceholder')}
-        leftSection={<MagnifyingGlassIcon size={16} />}
-        value={search}
-        onChange={(e) => onSearchChange(e.currentTarget.value)}
-        size="sm"
-        className={listPageStyles.searchInput}
-      />
-      {!showArchived && (
-        <>
-          {canImport && (
-            <FileButton
-              onChange={onImportFile}
-              accept=".xlsx,.xls"
-              resetRef={resetImportRef}
-            >
-              {(props) => (
-                <Button
-                  {...props}
-                  variant="light"
-                  color="sage"
-                  rightSection={<DownloadSimpleIcon size={16} />}
-                  size="sm"
-                  loading={importPending}
-                >
-                  {t('services.importExcel')}
-                </Button>
-              )}
-            </FileButton>
-          )}
-          {canCreate && (
-            <Button
-              color="sage.6"
-              rightSection={<PlusIcon size={16} />}
-              onClick={onCreate}
-              size="sm"
-            >
-              {t('services.add')}
-            </Button>
-          )}
-        </>
-      )}
-      <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />
-    </Group>
-  </>
+  if (isMobile) {
+    return (
+      <>
+        <ListPageTitle onBack={showArchived ? () => onShowArchivedChange(false) : undefined}>
+          {showArchived ? t('appointments.archiveTab') : t('services.title')}
+        </ListPageTitle>
+        <div className={listPageStyles.toolbarRow}>
+          {searchInput}
+          <Group gap={8} wrap="nowrap">
+            {importControl}
+            <ArchiveToggle
+              className={listPageStyles.archiveBtn}
+              active={showArchived}
+              onChange={onShowArchivedChange}
+            />
+          </Group>
+        </div>
+        {categoriesPanel}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {categoriesPanel}
+      <Group gap={8} wrap="nowrap">
+        {searchInput}
+        {importControl}
+        {canCreate && !showArchived && (
+          <Button
+            color="sage.6"
+            rightSection={<PlusIcon size={16} />}
+            onClick={onCreate}
+            size="sm"
+          >
+            {t('services.add')}
+          </Button>
+        )}
+        <ArchiveToggle active={showArchived} onChange={onShowArchivedChange} />
+      </Group>
+    </>
   );
 };

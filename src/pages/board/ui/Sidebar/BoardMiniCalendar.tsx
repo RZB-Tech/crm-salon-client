@@ -10,6 +10,13 @@ interface BoardMiniCalendarProps {
   date: Date;
   markedDates?: Set<string>;
   onDateChange: (date: Date) => void;
+  /** overlay — мобильный попover по макету; sidebar — десктоп */
+  variant?: 'sidebar' | 'overlay';
+}
+
+interface CalendarCell {
+  date: Date;
+  outside: boolean;
 }
 
 const WEEKDAY_LABELS = () => [
@@ -22,18 +29,30 @@ const WEEKDAY_LABELS = () => [
   t('labels.weekday.7'),
 ];
 
-const buildMonthGrid = (year: number, month: number): Array<Date | null> => {
+const buildMonthGrid = (
+  year: number,
+  month: number,
+  withAdjacent: boolean,
+): Array<CalendarCell | null> => {
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startOffset = (firstDay.getDay() + 6) % 7;
-  const cells: Array<Date | null> = Array.from({ length: startOffset }, () => null);
+  const cells: Array<CalendarCell | null> = [];
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    cells.push(new Date(year, month, day));
+  for (let index = 0; index < startOffset; index += 1) {
+    const date = new Date(year, month, 1 - (startOffset - index));
+    cells.push(withAdjacent ? { date, outside: true } : null);
   }
 
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    cells.push({ date: new Date(year, month, day), outside: false });
+  }
+
+  let nextDay = 1;
   while (cells.length % 7 !== 0) {
-    cells.push(null);
+    const date = new Date(year, month + 1, nextDay);
+    cells.push(withAdjacent ? { date, outside: true } : null);
+    nextDay += 1;
   }
 
   return cells;
@@ -42,7 +61,8 @@ const buildMonthGrid = (year: number, month: number): Array<Date | null> => {
 export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
   date,
   markedDates,
-  onDateChange
+  onDateChange,
+  variant = 'sidebar',
 }) => {
   const today = React.useMemo(() => new Date(), []);
   const [viewMonth, setViewMonth] = React.useState(() => ({
@@ -61,9 +81,10 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
     [viewMonth.month, viewMonth.year]
   );
 
+  const isOverlay = variant === 'overlay';
   const cells = React.useMemo(
-    () => buildMonthGrid(viewMonth.year, viewMonth.month),
-    [viewMonth.month, viewMonth.year]
+    () => buildMonthGrid(viewMonth.year, viewMonth.month, isOverlay),
+    [isOverlay, viewMonth.month, viewMonth.year],
   );
 
   const handlePrevMonth = React.useCallback(() => {
@@ -81,17 +102,35 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
   }, []);
 
   return (
-    <Box className={styles.calendar}>
-      <Box className={styles.calendarHeader}>
-        <ActionIcon variant='subtle' color='gray' size='sm' onClick={handlePrevMonth}>
-          <CaretLeftIcon size={16} />
-        </ActionIcon>
-        <Text size='sm' fw={600} tt='capitalize' className={styles.calendarTitle}>
-          {monthLabel}
-        </Text>
-        <ActionIcon variant='subtle' color='gray' size='sm' onClick={handleNextMonth}>
-          <CaretRightIcon size={16} />
-        </ActionIcon>
+    <Box className={`${styles.calendar}${isOverlay ? ` ${styles.calendarOverlay}` : ''}`}>
+      <Box className={isOverlay ? styles.overlayHeader : styles.calendarHeader}>
+        {isOverlay ? (
+          <>
+            <Text fw={600} className={styles.overlayTitle}>
+              {monthLabel}
+            </Text>
+            <Box className={styles.overlayNav}>
+              <ActionIcon variant="subtle" color="gray" size={24} onClick={handlePrevMonth}>
+                <CaretLeftIcon size={20} />
+              </ActionIcon>
+              <ActionIcon variant="subtle" color="gray" size={24} onClick={handleNextMonth}>
+                <CaretRightIcon size={20} />
+              </ActionIcon>
+            </Box>
+          </>
+        ) : (
+          <>
+            <ActionIcon variant="subtle" color="gray" size="sm" onClick={handlePrevMonth}>
+              <CaretLeftIcon size={16} />
+            </ActionIcon>
+            <Text size="sm" fw={600} tt="capitalize" className={styles.calendarTitle}>
+              {monthLabel}
+            </Text>
+            <ActionIcon variant="subtle" color="gray" size="sm" onClick={handleNextMonth}>
+              <CaretRightIcon size={16} />
+            </ActionIcon>
+          </>
+        )}
       </Box>
 
       <Box className={styles.weekdays}>
@@ -108,9 +147,9 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
             return <Box component="span" key={`empty-${index}`} className={styles.dayEmpty} />;
           }
 
-          const dateKey = toDateInput(cell);
-          const isSelected = isSameDay(cell, date);
-          const isToday = isSameDay(cell, today);
+          const dateKey = toDateInput(cell.date);
+          const isSelected = isSameDay(cell.date, date);
+          const isToday = isSameDay(cell.date, today);
           const hasAppointments = markedDates?.has(dateKey);
 
           return (
@@ -120,13 +159,14 @@ export const BoardMiniCalendar: React.FC<BoardMiniCalendarProps> = ({
                 styles.day,
                 isSelected ? styles.day_selected : '',
                 isToday ? styles.day_today : '',
-                hasAppointments ? styles.day_marked : ''
+                hasAppointments ? styles.day_marked : '',
+                cell.outside ? styles.day_outside : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
-              onClick={() => onDateChange(cell)}
+              onClick={() => onDateChange(cell.date)}
             >
-              {cell.getDate()}
+              {cell.date.getDate()}
             </UnstyledButton>
           );
         })}

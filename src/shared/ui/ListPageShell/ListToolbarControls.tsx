@@ -14,6 +14,7 @@ import {
   TableIcon,
 } from '@phosphor-icons/react';
 import { useI18n } from '@/shared/lib/i18n';
+import styles from './list-page-shell.module.css';
 
 type ListTabsProps = SegmentedControlProps & {
   /** Контрол внутри трека табов (например, «добавить категорию»). */
@@ -26,33 +27,39 @@ const TABS_TRACK_BG = '#F9F6F3';
 export const ListTabs: React.FC<ListTabsProps> = ({ action, ...props }) => {
   if (!action) {
     return (
-      <SegmentedControl {...props} styles={{ root: { background: TABS_TRACK_BG } }} />
+      <div className={styles.tabsScroll}>
+        <SegmentedControl {...props} styles={{ root: { background: TABS_TRACK_BG } }} />
+      </div>
     );
   }
 
   return (
-    <Group gap={4} p={4} wrap="nowrap" bg={TABS_TRACK_BG} style={{ borderRadius: 'var(--mantine-radius-xs)' }}>
-      <SegmentedControl
-        {...props}
-        styles={{ root: { background: 'transparent', padding: 0 } }}
-      />
-      {action}
-    </Group>
+    <div className={styles.tabsScroll}>
+      <Group gap={4} p={4} wrap="nowrap" bg={TABS_TRACK_BG} style={{ borderRadius: 'var(--mantine-radius-xs)' }}>
+        <SegmentedControl
+          {...props}
+          styles={{ root: { background: 'transparent', padding: 0 } }}
+        />
+        {action}
+      </Group>
+    </div>
   );
 };
 
 interface ArchiveToggleProps {
   active: boolean;
   onChange: (active: boolean) => void;
+  className?: string;
 }
 
 /** Архив — ActionIcon size="input-sm" (= высота Input/Button sm). */
-export const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ active, onChange }) => {
+export const ArchiveToggle: React.FC<ArchiveToggleProps> = ({ active, onChange, className }) => {
   const { t } = useI18n();
   const label = active ? t('common.showActive') : t('common.showArchive');
   return (
   <Tooltip label={label} position="bottom">
     <ActionIcon
+      className={className}
       size="input-sm"
       variant={active ? 'light' : 'default'}
       color={active ? 'orange' : 'gray'}

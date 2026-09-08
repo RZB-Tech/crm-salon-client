@@ -1,6 +1,7 @@
 import React from 'react';
-import { ActionIcon, Popover, ScrollArea } from '@mantine/core';
-import { ArrowSquareOutIcon, BellIcon, XIcon } from '@phosphor-icons/react';
+import { ActionIcon, Button, Drawer, Popover, ScrollArea } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
+import { ArrowSquareOutIcon, BellIcon, BellRingingIcon, XIcon } from '@phosphor-icons/react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/shared/api/hooks/useNotifications';
 import { sortTime } from '@/shared/lib/hooks/useTableSort';
@@ -10,9 +11,11 @@ import { HeaderNotificationItem } from './HeaderNotificationItem';
 import styles from './header-notifications.module.css';
 
 const LIST_LIMIT = 8;
+const MOBILE_QUERY = '(max-width: 47.99em)';
 
-export function HeaderNotifications() {
+export const HeaderNotifications: React.FC = () => {
   const [opened, setOpened] = React.useState(false);
+  const isMobile = useMediaQuery(MOBILE_QUERY);
   const navigate = useNavigate();
   const { t } = useI18n();
   const { data: notifications } = useNotifications();
@@ -29,10 +32,118 @@ export function HeaderNotifications() {
       .slice(0, LIST_LIMIT);
   }, [notifications]);
 
-  const openAll = () => {
+  const openAll = React.useCallback(() => {
     setOpened(false);
     navigate('/notifications');
-  };
+  }, [navigate]);
+
+  const close = React.useCallback(() => setOpened(false), []);
+
+  const bell = (
+    <ActionIcon
+      className={styles.bell}
+      variant="default"
+      radius={8}
+      aria-label={t('header.notifications')}
+      aria-expanded={opened}
+      onClick={() => setOpened((value) => !value)}
+    >
+      <BellIcon size={16} />
+    </ActionIcon>
+  );
+
+  const panel = (
+    <>
+      {isMobile && <div className={styles.handle} />}
+      <div className={styles.header}>
+        <div className={styles.headerLead}>
+          <div className={styles.headerIcon}>
+            <BellIcon size={20} />
+          </div>
+          <h2 className={styles.title}>{t('header.notifications')}</h2>
+        </div>
+        <div className={styles.headerActions}>
+          {!isMobile && (
+            <ActionIcon
+              className={styles.iconBtn}
+              variant="subtle"
+              size={32}
+              radius={8}
+              aria-label={t('header.allNotifications')}
+              onClick={openAll}
+            >
+              <ArrowSquareOutIcon size={20} />
+            </ActionIcon>
+          )}
+          <ActionIcon
+            className={styles.closeBtn}
+            variant="default"
+            size={32}
+            radius={8}
+            aria-label={t('header.close')}
+            onClick={close}
+          >
+            <XIcon size={20} />
+          </ActionIcon>
+        </div>
+      </div>
+      <ScrollArea.Autosize mah={isMobile ? (items.length === 0 ? 360 : 420) : 360} type="auto">
+        <div className={styles.list}>
+          {items.length === 0 ? (
+            isMobile ? (
+              <div className={styles.emptyState}>
+                <BellRingingIcon className={styles.emptyIcon} size={76} />
+                <div>
+                  <p className={styles.emptyTitle}>{t('header.emptyTitle')}</p>
+                  <p className={styles.emptyHint}>{t('header.emptyHint')}</p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.empty}>{t('header.noNotifications')}</div>
+            )
+          ) : (
+            items.map((item) => <HeaderNotificationItem key={item.id} item={item} />)
+          )}
+        </div>
+      </ScrollArea.Autosize>
+      {isMobile && (
+        <div className={styles.sheetFooter}>
+          <Button className={styles.allBtn} fullWidth onClick={openAll}>
+            {t('header.allNotifications')}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        {bell}
+        <Drawer
+          opened={opened}
+          onClose={close}
+          position="bottom"
+          size="auto"
+          padding={0}
+          radius={24}
+          withCloseButton={false}
+          overlayProps={{ backgroundOpacity: 0.5, blur: 4 }}
+          classNames={{ content: styles.sheet }}
+          styles={{
+            content: {
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+              overflow: 'hidden',
+            },
+          }}
+          transitionProps={{ duration: 380, timingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }}
+        >
+          {panel}
+        </Drawer>
+      </>
+    );
+  }
 
   return (
     <Popover
@@ -46,60 +157,10 @@ export function HeaderNotifications() {
       withinPortal
       zIndex={400}
     >
-      <Popover.Target>
-        <ActionIcon
-          className={styles.bell}
-          variant="default"
-          size={32}
-          radius={8}
-          aria-label={t('header.notifications')}
-          aria-expanded={opened}
-          onClick={() => setOpened((value) => !value)}
-        >
-          <BellIcon size={16} />
-        </ActionIcon>
-      </Popover.Target>
+      <Popover.Target>{bell}</Popover.Target>
       <Popover.Dropdown className={styles.dropdown} p={0}>
-        <div className={styles.header}>
-          <div className={styles.headerLead}>
-            <div className={styles.headerIcon}>
-              <BellIcon size={20} />
-            </div>
-            <h2 className={styles.title}>{t('header.notifications')}</h2>
-          </div>
-          <div className={styles.headerActions}>
-            <ActionIcon
-              className={styles.iconBtn}
-              variant="subtle"
-              size={32}
-              radius={8}
-              aria-label={t('header.allNotifications')}
-              onClick={openAll}
-            >
-              <ArrowSquareOutIcon size={20} />
-            </ActionIcon>
-            <ActionIcon
-              className={styles.closeBtn}
-              variant="default"
-              size={32}
-              radius={8}
-              aria-label={t('header.close')}
-              onClick={() => setOpened(false)}
-            >
-              <XIcon size={20} />
-            </ActionIcon>
-          </div>
-        </div>
-        <ScrollArea.Autosize mah={360} type="auto">
-          <div className={styles.list}>
-            {items.length === 0 ? (
-              <div className={styles.empty}>{t('header.noNotifications')}</div>
-            ) : (
-              items.map((item) => <HeaderNotificationItem key={item.id} item={item} />)
-            )}
-          </div>
-        </ScrollArea.Autosize>
+        {panel}
       </Popover.Dropdown>
     </Popover>
   );
-}
+};

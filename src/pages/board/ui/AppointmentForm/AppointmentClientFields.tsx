@@ -1,11 +1,10 @@
 import React from 'react';
-import { Select } from '@mantine/core';
-import { Phone } from '@phosphor-icons/react';
+import { ActionIcon, Select } from '@mantine/core';
+import { Phone, PlusIcon } from '@phosphor-icons/react';
 import type { Client } from '@/shared/api/types';
 import type { AppointmentFormValues } from '../../lib/appointmentForm';
 import { useI18n } from '@/shared/lib/i18n';
 import { QuickClientForm } from './QuickClientForm';
-import { VisitAddButton } from './VisitAddButton';
 import styles from './appointment-form-modal.module.css';
 
 interface AppointmentClientFieldsProps {
@@ -52,7 +51,16 @@ export const AppointmentClientFields: React.FC<AppointmentClientFieldsProps> = (
           placeholder={t('form.selectClient')}
         />
         {!fieldsLocked && !showQuickClient && (
-          <VisitAddButton label={t('form.client')} onClick={() => setShowQuickClient(true)} />
+          <ActionIcon
+            className={styles.clientAddBtn}
+            variant="subtle"
+            size={40}
+            radius="md"
+            aria-label={t('form.client')}
+            onClick={() => setShowQuickClient(true)}
+          >
+            <PlusIcon size={20} />
+          </ActionIcon>
         )}
       </div>
 

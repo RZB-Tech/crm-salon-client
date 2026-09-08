@@ -1,0 +1,12 @@
+.fab {
+  background: #ad9178;
+  color: var(--mantine-color-white);
+}
+
+.fab:hover:not(:disabled) {
+  background: var(--mantine-color-sage-7);
+}
+
+.fab:disabled {
+  opacity: 0.55;
+}

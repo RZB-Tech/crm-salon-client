@@ -5,6 +5,7 @@ import { usePromotions } from '@/shared/api/hooks/usePromotions';
 import { useResetOnOpen } from '@/shared/lib/hooks/useResetOnOpen';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { FormModal } from '@/shared/ui';
+import type { PaymentFooterActions } from '@/shared/ui/PayAppointmentPanel';
 import type { AppointmentFormValues, MaterialOption, ServiceOption } from '../../lib/appointmentForm';
 import { AppointmentPaidBadge, AppointmentStateBadges } from './AppointmentFormBadges';
 import { AppointmentFormFooter } from './AppointmentFormFooter';
@@ -65,6 +66,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
   } = props;
 
   const [tab, setTab] = React.useState('main');
+  const [paymentFooter, setPaymentFooter] = React.useState<PaymentFooterActions | null>(null);
 
   useResetOnOpen(opened ? `${mode}:${appointment?.id ?? 'new'}` : false, () => setTab('main'));
 
@@ -146,6 +148,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
           archived={archived}
           paid={paid}
           structureLocked={structureLocked}
+          paymentSubmit={tab === 'payment' ? paymentFooter : null}
           onClose={onClose}
           onSubmit={onSubmit}
           onDelete={onDelete}
@@ -159,6 +162,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = (props)
           appointment={appointment}
           tab={tab}
           onTabChange={(value) => setTab(value ?? 'main')}
+          onPaymentFooterChange={setPaymentFooter}
           mainForm={mainForm}
         />
       ) : (

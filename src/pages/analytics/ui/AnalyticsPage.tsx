@@ -1,5 +1,7 @@
 import React from 'react';
 import { Alert, ScrollArea } from '@mantine/core';
+import { ListPageTitle } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { useAnalyticsPage } from '../lib/useAnalyticsPage';
 import { AnalyticsHero } from './AnalyticsHero';
@@ -13,13 +15,18 @@ import styles from './analytics.module.css';
 
 export const AnalyticsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const page = useAnalyticsPage();
 
   return (
     <div className={styles.page}>
       <header className={styles.topbar}>
         <div className={styles.titleBlock}>
-          <h1 className={styles.title}>{t('nav.analytics')}</h1>
+          {isMobile ? (
+            <ListPageTitle>{t('nav.analytics')}</ListPageTitle>
+          ) : (
+            <h1 className={styles.title}>{t('nav.analytics')}</h1>
+          )}
           <p className={styles.subtitle}>{page.rangeLabel}</p>
         </div>
         <AnalyticsToolbar

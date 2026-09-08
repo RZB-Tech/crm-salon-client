@@ -1,0 +1,20 @@
+.scroll {
+  max-width: 100%;
+}
+
+@media (max-width: 47.99em) {
+  .scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroll :global(.mantine-Group-root),
+  .scroll :global(.mantine-SegmentedControl-root) {
+    flex-wrap: nowrap;
+    width: max-content;
+  }
+}

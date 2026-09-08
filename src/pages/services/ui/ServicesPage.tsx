@@ -1,16 +1,18 @@
 import React from 'react';
 import { Alert, Box, Skeleton, Stack } from '@mantine/core';
-import { ConfirmModal, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { ConfirmModal, ListCreateFab, ListPageShell, ListPaginationFooter } from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useServicesPage } from '../lib/useServicesPage';
 import { ServiceFormModal } from './ServiceFormModal';
 import { CategoryFormModal } from './CategoryFormModal';
-import { ServicesTable } from './ServicesTable';
+import { ServicesListBody } from './ServicesListBody';
 import { ServicesToolbar } from './ServicesToolbar';
 
 export const ServicesPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
   const {
     activeCategory,
@@ -106,11 +108,17 @@ export const ServicesPage: React.FC = () => {
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && !showArchived && hasPermission(PermissionCode.SERVICE_CREATE) ? (
+          <ListCreateFab label={t('services.add')} onClick={openServiceCreate} />
+        ) : undefined
+      }
     >
-      <ServicesTable
+      <ServicesListBody
         items={paginatedItems}
         categoryMap={categoryMap}
         showArchived={showArchived}
+        restorePending={restoreService.isPending}
         sort={sort}
         onSort={toggleSort}
         onEdit={openServiceEdit}

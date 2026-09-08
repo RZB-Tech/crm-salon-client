@@ -1,7 +1,9 @@
 import React from 'react';
 import { Box } from '@mantine/core';
 import { AnimatedLogo } from './AnimatedLogo';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
+import splashLogo from '@/shared/assets/splash-logo.png';
 import styles from './branded-loader.module.css';
 
 const LINE_INTERVAL_MS = 1200;
@@ -13,6 +15,7 @@ interface BrandedLoaderProps {
 
 export const BrandedLoader: React.FC<BrandedLoaderProps> = ({ exiting = false }) => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const statusLines = [
     t('common.loaderEmployees'),
     t('common.loaderBoard'),
@@ -24,6 +27,8 @@ export const BrandedLoader: React.FC<BrandedLoaderProps> = ({ exiting = false })
   const [visible, setVisible] = React.useState(true);
 
   React.useEffect(() => {
+    if (isMobile) return undefined;
+
     let fadeTimer: number | undefined;
 
     const timer = window.setInterval(() => {
@@ -38,7 +43,20 @@ export const BrandedLoader: React.FC<BrandedLoaderProps> = ({ exiting = false })
       window.clearInterval(timer);
       if (fadeTimer) window.clearTimeout(fadeTimer);
     };
-  }, []);
+  }, [isMobile, statusLines.length]);
+
+  if (isMobile) {
+    return (
+      <Box className={styles.root} data-exiting={exiting} data-mobile>
+        <div className={styles.mobileStage}>
+          <img src={splashLogo} alt="" className={styles.mark} width={180} height={180} />
+          <p className={styles.status} aria-live="polite">
+            {t('common.loaderReady')}
+          </p>
+        </div>
+      </Box>
+    );
+  }
 
   return (
     <Box className={styles.root} data-exiting={exiting}>

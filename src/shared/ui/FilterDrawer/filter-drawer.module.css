@@ -36,3 +36,18 @@
 .footer :global(.mantine-Button-root) {
   width: 100%;
 }
+
+.sheet {
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  flex-shrink: 0;
+  border-radius: 100px;
+  background: #dee2e6;
+  margin: 8px auto 0;
+}

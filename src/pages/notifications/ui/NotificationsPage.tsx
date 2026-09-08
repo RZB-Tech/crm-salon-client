@@ -1,41 +1,45 @@
 import React from 'react';
 import { Alert, Box, Button, Skeleton, Stack } from '@mantine/core';
 import { PlusIcon } from '@phosphor-icons/react';
-import { ListPageShell, ListPaginationFooter, ListTabs } from '@/shared/ui';
+import {
+  ListCreateFab,
+  ListPageShell,
+  ListPageTitle,
+  ListPaginationFooter,
+  ListTabs,
+} from '@/shared/ui';
+import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
 import { useNotificationsPage } from '../lib/useNotificationsPage';
 import { NotificationFormModal } from './NotificationFormModal';
-import { NotificationsTable } from './NotificationsTable';
+import { NotificationsListBody } from './NotificationsListBody';
 import { ReadNotificationModal } from './ReadNotificationModal';
 
 export const NotificationsPage: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useIsMobile();
   const { hasPermission } = useAccess();
-  const {
-    formOpen,
-    setFormOpen,
-    statusFilter,
-    setStatusFilter,
-    readTarget,
-    readComment,
-    setReadComment,
-    notifications,
-    pendingCount,
-    isLoading,
-    isError,
-    pagination,
-    sort,
-    toggleSort,
-    cancelNotification,
-    readNotification,
-    openReadModal,
-    closeReadModal,
-    confirmRead,
-    confirmCancel,
-  } = useNotificationsPage();
+  const page = useNotificationsPage();
+  const canCreate = hasPermission(PermissionCode.NOTIFICATION_CREATE);
 
-  if (isLoading) {
+  const tabData = React.useMemo(
+    () => [
+      {
+        value: 'all',
+        label: isMobile ? t('common.all') : t('notifications.allItems', { count: (page.notifications ?? []).length }),
+      },
+      {
+        value: 'pending',
+        label: isMobile ? t('notifications.newTab') : t('notifications.newItems', { count: page.pendingCount }),
+      },
+      { value: 'read', label: t('notifications.read') },
+      { value: 'cancelled', label: t('notifications.cancelled') },
+    ],
+    [isMobile, page.notifications, page.pendingCount, t],
+  );
+
+  if (page.isLoading) {
     return (
       <ListPageShell
         toolbar={
@@ -54,7 +58,7 @@ export const NotificationsPage: React.FC = () => {
     );
   }
 
-  if (isError) {
+  if (page.isError) {
     return (
       <ListPageShell>
         <Box p="xl">
@@ -66,27 +70,19 @@ export const NotificationsPage: React.FC = () => {
     );
   }
 
-  const { page, pageSize, paginatedItems, total, setPage, setPageSize } = pagination;
+  const { page: pageNum, pageSize, paginatedItems, total, setPage, setPageSize } = page.pagination;
 
   return (
     <ListPageShell
       toolbar={
         <>
-          <ListTabs
-            value={statusFilter}
-            onChange={setStatusFilter}
-            data={[
-              { value: 'all', label: t('notifications.allItems', { count: (notifications ?? []).length }) },
-              { value: 'pending', label: t('notifications.newItems', { count: pendingCount }) },
-              { value: 'read', label: t('notifications.read') },
-              { value: 'cancelled', label: t('notifications.cancelled') },
-            ]}
-          />
-          {hasPermission(PermissionCode.NOTIFICATION_CREATE) && (
+          {isMobile && <ListPageTitle>{t('notifications.title')}</ListPageTitle>}
+          <ListTabs value={page.statusFilter} onChange={page.setStatusFilter} data={tabData} />
+          {!isMobile && canCreate && (
             <Button
               color="sage.7"
               rightSection={<PlusIcon size={16} />}
-              onClick={() => setFormOpen(true)}
+              onClick={() => page.setFormOpen(true)}
               size="sm"
             >
               {t('notifications.create')}
@@ -96,33 +92,38 @@ export const NotificationsPage: React.FC = () => {
       }
       footer={
         <ListPaginationFooter
-          page={page}
+          page={pageNum}
           pageSize={pageSize}
           total={total}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
         />
       }
+      fab={
+        isMobile && canCreate ? (
+          <ListCreateFab label={t('notifications.create')} onClick={() => page.setFormOpen(true)} />
+        ) : undefined
+      }
     >
-      <NotificationsTable
+      <NotificationsListBody
         items={paginatedItems}
-        sort={sort}
-        onSort={toggleSort}
-        cancelPending={cancelNotification.isPending}
-        onMarkRead={openReadModal}
-        onCancel={openReadModal}
+        sort={page.sort}
+        onSort={page.toggleSort}
+        cancelPending={page.cancelNotification.isPending}
+        onMarkRead={page.openReadModal}
+        onCancel={page.openReadModal}
       />
 
-      <NotificationFormModal opened={formOpen} onClose={() => setFormOpen(false)} />
+      <NotificationFormModal opened={page.formOpen} onClose={() => page.setFormOpen(false)} />
 
       <ReadNotificationModal
-        opened={readTarget != null}
-        comment={readComment}
-        loading={readNotification.isPending || cancelNotification.isPending}
-        onCommentChange={setReadComment}
-        onClose={closeReadModal}
-        onConfirm={confirmRead}
-        onCancelNotification={confirmCancel}
+        opened={page.readTarget != null}
+        comment={page.readComment}
+        loading={page.readNotification.isPending || page.cancelNotification.isPending}
+        onCommentChange={page.setReadComment}
+        onClose={page.closeReadModal}
+        onConfirm={page.confirmRead}
+        onCancelNotification={page.confirmCancel}
       />
     </ListPageShell>
   );

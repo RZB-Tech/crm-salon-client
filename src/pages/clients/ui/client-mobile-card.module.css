@@ -1,0 +1,69 @@
+.top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f1eae3;
+  color: #ad9178;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nameBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #484848;
+}
+
+.sex {
+  font-size: 14px;
+  line-height: 20px;
+  color: #484848;
+}
+
+.sexLabel {
+  color: #ad9178;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #484848;
+}
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.depositLabel {
+  color: #ad9178;
+}
+
+.archiveBtn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid #dee2e6;
+  color: #484848;
+}

@@ -33,7 +33,7 @@
   font-size: 11px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 47.99em) {
   .dayCard {
     padding: 8px 4px;
     min-height: 56px;

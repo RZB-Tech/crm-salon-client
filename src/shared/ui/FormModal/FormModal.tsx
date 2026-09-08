@@ -1,7 +1,15 @@
 import React from 'react';
-import { Modal, type ModalProps } from '@mantine/core';
+import { Drawer, Modal, type ModalProps } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { FormModalHeader, type FormModalTone } from './FormModalHeader';
 import styles from './form-modal.module.css';
+
+const SheetScrollArea: React.FC<{ children?: React.ReactNode }> = ({ children }) => <>{children}</>;
+
+const MOBILE_QUERY = '(max-width: 47.99em)';
+
+const getIsMobile = (): boolean =>
+  typeof window !== 'undefined' ? window.matchMedia(MOBILE_QUERY).matches : false;
 
 export interface FormModalProps {
   opened: boolean;
@@ -37,7 +45,82 @@ export const FormModal: React.FC<FormModalProps> = ({
   children,
 }) => {
   const stackId = React.useId();
+  const isMobile = useMediaQuery(MOBILE_QUERY, getIsMobile(), { getInitialValueInEffect: false });
   const [renderKey, setRenderKey] = React.useState(0);
+
+  const handleEntered = React.useCallback(() => {
+    setRenderKey((key) => key + 1);
+  }, []);
+
+  const inner = (
+    <>
+      <FormModalHeader
+        title={title}
+        subtitle={subtitle}
+        initials={initials}
+        icon={icon}
+        tone={tone}
+        aside={headerAside}
+        onClose={onClose}
+      />
+
+      {badges != null && <div className={styles.badgeRow}>{badges}</div>}
+
+      <div className={styles.content} data-no-footer={footer == null}>
+        {children}
+      </div>
+
+      {footer}
+    </>
+  );
+
+  const body = (
+    <div
+      className={`${styles.modalBody}${isMobile ? ` ${styles.sheetFill}` : ''}`}
+      key={renderKey}
+    >
+      {isMobile && <div className={styles.handle} />}
+      {isMobile ? <div className={styles.sheetScroll}>{inner}</div> : inner}
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        opened={opened}
+        onClose={onClose}
+        position="bottom"
+        size="84%"
+        radius={24}
+        padding={0}
+        withCloseButton={false}
+        scrollAreaComponent={SheetScrollArea}
+        overlayProps={{
+          backgroundOpacity: 0.5,
+          blur: 4,
+          transitionProps: { duration: 380, timingFunction: 'ease-out' },
+        }}
+        classNames={{ content: styles.sheetShell, body: styles.sheetDrawerBody }}
+        styles={{
+          content: {
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+          },
+          body: { flex: 1, minHeight: 0, height: '100%', overflow: 'hidden', padding: 0 },
+        }}
+        transitionProps={{
+          duration: 420,
+          timingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+          onEntered: handleEntered,
+        }}
+      >
+        {body}
+      </Drawer>
+    );
+  }
 
   return (
     <Modal
@@ -55,28 +138,10 @@ export const FormModal: React.FC<FormModalProps> = ({
       transitionProps={{
         transition: 'pop',
         duration: 220,
-        onEntered: () => setRenderKey((key) => key + 1),
+        onEntered: handleEntered,
       }}
     >
-      <div className={styles.modalBody} key={renderKey}>
-        <FormModalHeader
-          title={title}
-          subtitle={subtitle}
-          initials={initials}
-          icon={icon}
-          tone={tone}
-          aside={headerAside}
-          onClose={onClose}
-        />
-
-        {badges != null && <div className={styles.badgeRow}>{badges}</div>}
-
-        <div className={styles.content} data-no-footer={footer == null}>
-          {children}
-        </div>
-
-        {footer}
-      </div>
+      {body}
     </Modal>
   );
 };
