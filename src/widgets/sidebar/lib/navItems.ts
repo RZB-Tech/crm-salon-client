@@ -15,7 +15,7 @@ import {
   UsersIcon,
   BellIcon,
 } from '@phosphor-icons/react';
-import { PermissionCode, type PermissionCodeValue } from '@/shared/lib/permissions';
+import { ANALYTICS_PERMISSIONS, PermissionCode, type PermissionCodeValue } from '@/shared/lib/permissions';
 
 export interface NavItem {
   path: string;
@@ -92,14 +92,7 @@ export const NAV_ITEMS: NavItem[] = [
     path: '/analytics',
     labelKey: 'nav.analytics',
     Icon: ChartLineUpIcon,
-    permissions: [
-      PermissionCode.ANALYTICS_RECEIPT,
-      PermissionCode.ANALYTICS_APPOINTMENT,
-      PermissionCode.ANALYTICS_TRANSACTION,
-      PermissionCode.ANALYTICS_EMPLOYEE,
-      PermissionCode.ANALYTICS_SERVICE,
-      PermissionCode.ANALYTICS_MANAGE,
-    ],
+    permissions: ANALYTICS_PERMISSIONS,
   },
   {
     path: '/notifications',

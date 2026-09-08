@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, ScrollArea } from '@mantine/core';
+import { ScrollArea } from '@mantine/core';
 import { ListPageTitle } from '@/shared/ui';
 import { useIsMobile } from '@/shared/lib/hooks/useIsMobile';
 import { useI18n } from '@/shared/lib/i18n';
@@ -42,43 +42,37 @@ export const AnalyticsPage: React.FC = () => {
         />
       </header>
       <ScrollArea className={styles.body}>
-        {!page.hasAnySection ? (
-          <Alert color="yellow" title={t('analytics.noAccess')} mx="xl" mt="md">
-            {t('analytics.noAccessHint')}
-          </Alert>
-        ) : (
-          <div className={styles.grid}>
-            <AnalyticsHero
+        <div className={styles.grid}>
+          <AnalyticsHero
+            filters={page.filters}
+            previousFilters={page.previousFilters}
+            canReceipts={page.canReceipts}
+            canAppointments={page.canAppointments}
+            canTransactions={page.canTransactions}
+          />
+          {page.canTransactions ? (
+            <TransactionsSection
               filters={page.filters}
-              previousFilters={page.previousFilters}
-              canReceipts={page.canReceipts}
-              canAppointments={page.canAppointments}
-              canTransactions={page.canTransactions}
+              period={page.period}
+              periodValid={page.periodValid}
+              startDate={page.startDate}
+              endDate={page.endDate}
+              onPeriodChange={page.setPeriod}
             />
-            {page.canTransactions ? (
-              <TransactionsSection
-                filters={page.filters}
-                period={page.period}
-                periodValid={page.periodValid}
-                startDate={page.startDate}
-                endDate={page.endDate}
-                onPeriodChange={page.setPeriod}
-              />
-            ) : null}
-            {page.canTransactions || page.canAppointments ? (
-              <div className={styles.split}>
-                {page.canTransactions ? <MethodsSection filters={page.filters} /> : null}
-                {page.canAppointments ? <AppointmentsSection filters={page.filters} /> : null}
-              </div>
-            ) : null}
-            {page.canEmployees || page.canServices ? (
-              <div className={styles.split}>
-                {page.canEmployees ? <EmployeesSection filters={page.filters} /> : null}
-                {page.canServices ? <ServicesSection filters={page.filters} /> : null}
-              </div>
-            ) : null}
-          </div>
-        )}
+          ) : null}
+          {page.canTransactions || page.canAppointments ? (
+            <div className={styles.split}>
+              {page.canTransactions ? <MethodsSection filters={page.filters} /> : null}
+              {page.canAppointments ? <AppointmentsSection filters={page.filters} /> : null}
+            </div>
+          ) : null}
+          {page.canEmployees || page.canServices ? (
+            <div className={styles.split}>
+              {page.canEmployees ? <EmployeesSection filters={page.filters} /> : null}
+              {page.canServices ? <ServicesSection filters={page.filters} /> : null}
+            </div>
+          ) : null}
+        </div>
       </ScrollArea>
     </div>
   );

@@ -5,6 +5,8 @@ export type DatePreset = 'last7' | 'last30' | 'month' | 'year' | 'custom';
 
 export const ANALYTICS_PERIODS: AnalyticsPeriod[] = ['by day', 'by week', 'by month', 'by year'];
 
+const RANGE_PRESETS: Exclude<DatePreset, 'custom'>[] = ['last7', 'last30', 'month', 'year'];
+
 export const PERIOD_LABEL_KEY: Record<AnalyticsPeriod, string> = {
   'by day': 'analytics.period.day',
   'by week': 'analytics.period.week',
@@ -69,10 +71,19 @@ export const rangeForPreset = (preset: Exclude<DatePreset, 'custom'>): {
   return { start_date: toDateInput(start), end_date: endDate };
 };
 
+export const matchPreset = (startDate: string, endDate: string): DatePreset => {
+  for (const preset of RANGE_PRESETS) {
+    const range = rangeForPreset(preset);
+    if (range.start_date === startDate && range.end_date === endDate) return preset;
+  }
+  return 'custom';
+};
+
 export const formatPeriodLabel = (date: string, period: AnalyticsPeriod): string => {
   const [year, month, day] = date.split('-');
   if (period === 'by year') return year;
   if (period === 'by month') return `${month}.${year}`;
+  if (period === 'by week') return String(isoWeek(toLocalDate(date)));
   return `${day}.${month}`;
 };
 

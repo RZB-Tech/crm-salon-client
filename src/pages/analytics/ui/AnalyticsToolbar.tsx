@@ -32,21 +32,30 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
   const { t } = useI18n();
   const isMobile = useIsMobile();
 
+  const presetData = React.useMemo(
+    () => [
+      { value: 'last7', label: t('analytics.preset7') },
+      { value: 'last30', label: t('analytics.preset30') },
+      { value: 'month', label: t('analytics.presetMonth') },
+      { value: 'year', label: t('analytics.presetYear') },
+      { value: 'custom', label: t('analytics.presetCustom') },
+    ],
+    [t],
+  );
+
+  const handlePresetChange = React.useCallback(
+    (value: string) => {
+      if (value) onPresetChange(value as DatePreset);
+    },
+    [onPresetChange],
+  );
+
   const controls = (
     <>
-      <ListTabs
-        value={preset}
-        onChange={(value) => onPresetChange(value as DatePreset)}
-        data={[
-          { value: 'last7', label: t('analytics.preset7') },
-          { value: 'last30', label: t('analytics.preset30') },
-          { value: 'month', label: t('analytics.presetMonth') },
-          { value: 'year', label: t('analytics.presetYear') },
-        ]}
-      />
+      <ListTabs value={preset} onChange={handlePresetChange} data={presetData} />
       <DateInput
         placeholder={t('form.periodFrom')}
-        value={startDate}
+        value={startDate || null}
         maxDate={endDate}
         onChange={(value) => {
           if (value) onRangeChange(value, endDate);
@@ -56,7 +65,7 @@ export const AnalyticsToolbar: React.FC<AnalyticsToolbarProps> = ({
       />
       <DateInput
         placeholder={t('form.periodTo')}
-        value={endDate}
+        value={endDate || null}
         minDate={startDate}
         onChange={(value) => {
           if (value) onRangeChange(startDate, value);

@@ -1,3 +1,5 @@
+import type { AnalyticsFilters, AnalyticsPeriodFilters } from './types';
+
 export const queryKeys = {
   clients: {
     all: ['clients'] as const,
@@ -80,11 +82,12 @@ export const queryKeys = {
     reportDetail: (id: number) => ['tenant-branches', 'report', id] as const,
   },
   analytics: {
-    receipts: (params: object) => ['analytics', 'receipts', params] as const,
-    appointments: (params: object) => ['analytics', 'appointments', params] as const,
-    transactions: (params: object) => ['analytics', 'transactions', params] as const,
-    transactionsByPeriod: (params: object) => ['analytics', 'transactions-period', params] as const,
-    employees: (params: object) => ['analytics', 'employees', params] as const,
-    services: (params: object) => ['analytics', 'services', params] as const,
+    receipts: (params: AnalyticsFilters) => ['analytics', 'receipts', params] as const,
+    appointments: (params: AnalyticsFilters) => ['analytics', 'appointments', params] as const,
+    transactions: (params: AnalyticsFilters) => ['analytics', 'transactions', params] as const,
+    transactionsByPeriod: (params: AnalyticsPeriodFilters) =>
+      ['analytics', 'transactions-period', params] as const,
+    employees: (params: AnalyticsFilters) => ['analytics', 'employees', params] as const,
+    services: (params: AnalyticsFilters) => ['analytics', 'services', params] as const,
   },
 };

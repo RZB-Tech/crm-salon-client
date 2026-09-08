@@ -55,6 +55,12 @@
   gap: 12px;
 }
 
+.heroStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .kpi {
   display: flex;
   flex-direction: column;
@@ -199,6 +205,19 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.mixGroup + .mixGroup {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.mixGroupTitle {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mantine-color-gray-6);
 }
 
 .mixRow {

@@ -32,6 +32,21 @@ export const TransactionsSection: React.FC<TransactionsSectionProps> = ({
   const { t } = useI18n();
   const periodQuery = useTransactionPeriodAnalytics({ ...filters, period }, periodValid);
   const periodItems = periodQuery.data?.items ?? [];
+  const periodTabs = React.useMemo(
+    () =>
+      ANALYTICS_PERIODS.map((value) => ({
+        value,
+        label: t(PERIOD_LABEL_KEY[value]),
+        disabled: !isPeriodValid(startDate, endDate, value),
+      })),
+    [endDate, startDate, t],
+  );
+  const handlePeriodChange = React.useCallback(
+    (value: string) => {
+      if (value) onPeriodChange(value as AnalyticsPeriod);
+    },
+    [onPeriodChange],
+  );
 
   return (
     <AnalyticsSection
@@ -39,18 +54,7 @@ export const TransactionsSection: React.FC<TransactionsSectionProps> = ({
       loading={periodQuery.isLoading}
       error={periodQuery.isError}
       action={
-        <ListTabs
-          size="xs"
-          value={period}
-          onChange={(value) => {
-            if (value) onPeriodChange(value as AnalyticsPeriod);
-          }}
-          data={ANALYTICS_PERIODS.map((value) => ({
-            value,
-            label: t(PERIOD_LABEL_KEY[value]),
-            disabled: !isPeriodValid(startDate, endDate, value),
-          }))}
-        />
+        <ListTabs size="xs" value={period} onChange={handlePeriodChange} data={periodTabs} />
       }
     >
       {!periodValid ? (

@@ -4,7 +4,7 @@ import { AppLayout } from '@/shared/ui/AppLayout';
 import { ProtectedRoute } from '@/app/router/ProtectedRoute';
 import { PermissionGuard } from '@/app/router/PermissionGuard';
 import { SmartRedirect } from '@/app/router/SmartRedirect';
-import { PermissionCode } from '@/shared/lib/permissions';
+import { ANALYTICS_PERMISSIONS, PermissionCode } from '@/shared/lib/permissions';
 import { AUTH_ENABLED } from '@/shared/config/env';
 import { BoardPage } from '@/pages/board';
 import { LoginPage } from '@/pages/login';
@@ -103,14 +103,7 @@ export const AppRouter: React.FC = () => (
         />
         <Route
           path="/analytics"
-          element={guardedPage(<AnalyticsPage />, [
-            PermissionCode.ANALYTICS_RECEIPT,
-            PermissionCode.ANALYTICS_APPOINTMENT,
-            PermissionCode.ANALYTICS_TRANSACTION,
-            PermissionCode.ANALYTICS_EMPLOYEE,
-            PermissionCode.ANALYTICS_SERVICE,
-            PermissionCode.ANALYTICS_MANAGE,
-          ])}
+          element={guardedPage(<AnalyticsPage />, ANALYTICS_PERMISSIONS)}
         />
         <Route
           path="/notifications"

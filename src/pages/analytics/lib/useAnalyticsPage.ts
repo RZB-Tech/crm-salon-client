@@ -2,24 +2,17 @@ import React from 'react';
 import { useTenantBranches } from '@/shared/api/hooks/useTenantBranches';
 import type { AnalyticsFilters, AnalyticsPeriod } from '@/shared/api/types';
 import { PermissionCode, useAccess } from '@/shared/lib/permissions';
+import { addNotification } from '@/shared/lib/notifications';
 import { useI18n } from '@/shared/lib/i18n';
 import {
   firstValidPeriod,
   formatRangeLabel,
   isPeriodValid,
+  matchPreset,
   previousRange,
   rangeForPreset,
   type DatePreset,
 } from './analyticsHelpers';
-
-const ANALYTICS_ANY = [
-  PermissionCode.ANALYTICS_RECEIPT,
-  PermissionCode.ANALYTICS_APPOINTMENT,
-  PermissionCode.ANALYTICS_TRANSACTION,
-  PermissionCode.ANALYTICS_EMPLOYEE,
-  PermissionCode.ANALYTICS_SERVICE,
-  PermissionCode.ANALYTICS_MANAGE,
-] as const;
 
 const defaultRange = rangeForPreset('last30');
 
@@ -48,7 +41,7 @@ export const useAnalyticsPage = () => {
   const [period, setPeriodState] = React.useState<AnalyticsPeriod>('by day');
 
   const applyRange = React.useCallback((nextStart: string, nextEnd: string, nextPreset: DatePreset) => {
-    if (!nextStart || !nextEnd || nextStart > nextEnd) return;
+    if (!nextStart || !nextEnd) return;
     setStartDate(nextStart);
     setEndDate(nextEnd);
     setPresetState(nextPreset);
@@ -73,9 +66,17 @@ export const useAnalyticsPage = () => {
 
   const setRange = React.useCallback(
     (nextStart: string, nextEnd: string) => {
-      applyRange(nextStart, nextEnd, 'custom');
+      if (!nextStart || !nextEnd) return;
+      let start = nextStart;
+      let end = nextEnd;
+      if (start > end) {
+        start = nextEnd;
+        end = nextStart;
+        addNotification.info({ message: t('analytics.rangeSwapped') });
+      }
+      applyRange(start, end, matchPreset(start, end));
     },
-    [applyRange],
+    [applyRange, t],
   );
 
   const setPeriod = React.useCallback(
@@ -129,7 +130,6 @@ export const useAnalyticsPage = () => {
     canTransactions,
     canEmployees,
     canServices,
-    hasAnySection: hasAnyPermission([...ANALYTICS_ANY]),
     periodValid: isPeriodValid(startDate, endDate, period),
   };
 };
