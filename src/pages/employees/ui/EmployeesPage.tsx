@@ -66,7 +66,7 @@ export const EmployeesPage: React.FC = () => {
               {page.showArchived ? t('appointments.archiveTab') : t('employees.title')}
             </ListPageTitle>
           )}
-          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+          <div className={listPageStyles.toolbarRow}>
             {!isMobile && <ViewModeToggle value={page.view} onChange={page.setView} />}
             <Group gap={8} wrap="nowrap" ml={isMobile ? 'auto' : undefined}>
               {!isMobile && !page.showArchived && page.canCreate && (

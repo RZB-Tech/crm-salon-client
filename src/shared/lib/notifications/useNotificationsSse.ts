@@ -1,5 +1,5 @@
 import React from 'react';
-import { API_BASE_URL, authStorage, isSessionAlive } from '@/shared/api/client';
+import { API_BASE_URL, authStorage } from '@/shared/api/client';
 import type { SalonNotificationWsPayload } from '@/shared/api/types';
 import { RECONNECT_DELAY_MS } from './notificationWsConstants';
 
@@ -19,7 +19,6 @@ export const useNotificationsSse = (
     }
 
     let cancelled = false;
-    let probing = false;
     let eventSource: EventSource | null = null;
     let reconnectTimer: number | null = null;
 
@@ -35,25 +34,18 @@ export const useNotificationsSse = (
       reconnectTimer = window.setTimeout(connect, RECONNECT_DELAY_MS);
     };
 
-    const handleStreamError = () => {
-      if (cancelled) return;
+    const closeConnection = () => {
       setConnected(false);
       eventSource?.close();
       eventSource = null;
-      if (!authStorage.isAuthenticated() || probing) return;
-
-      probing = true;
-      void isSessionAlive()
-        .then((alive) => {
-          if (cancelled || !alive || !authStorage.isAuthenticated()) return;
-          scheduleReconnect();
-        })
-        .finally(() => {
-          probing = false;
-        });
     };
 
-    const connect = () => {
+    const handleStreamError = () => {
+      if (cancelled) return;
+      closeConnection();
+    };
+
+    const connect = async () => {
       if (cancelled) return;
       if (
         eventSource?.readyState === EventSource.OPEN ||
@@ -62,30 +54,54 @@ export const useNotificationsSse = (
         return;
       }
 
-      eventSource?.close();
-      eventSource = new EventSource(`${API_BASE_URL}/api/v1/notifications/stream`, {
-        withCredentials: true,
-      });
+      if (!authStorage.isAuthenticated()) return;
 
-      eventSource.onopen = () => {
-        if (!cancelled) setConnected(true);
-      };
+      try {
+        const probe = await fetch(`${API_BASE_URL}/api/v1/notifications/stream`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: { Accept: 'text/event-stream' },
+        });
 
-      eventSource.addEventListener('connected', () => {
-        if (!cancelled) setConnected(true);
-      });
+        if (cancelled) return;
 
-      eventSource.addEventListener('notification', (event) => {
-        try {
-          const payload = JSON.parse(event.data) as SalonNotificationWsPayload;
-          setLiveNotifications((prev) => [payload, ...prev].slice(0, 50));
-          onNotificationRef.current(payload);
-        } catch (err) {
-          console.error('Ошибка обработки SSE уведомления:', err);
+        if (probe.status === 403) {
+          closeConnection();
+          return;
         }
-      });
 
-      eventSource.onerror = handleStreamError;
+        if (!probe.ok) {
+          scheduleReconnect();
+          return;
+        }
+
+        eventSource?.close();
+        eventSource = new EventSource(`${API_BASE_URL}/api/v1/notifications/stream`, {
+          withCredentials: true,
+        });
+
+        eventSource.onopen = () => {
+          if (!cancelled) setConnected(true);
+        };
+
+        eventSource.addEventListener('connected', () => {
+          if (!cancelled) setConnected(true);
+        });
+
+        eventSource.addEventListener('notification', (event) => {
+          try {
+            const payload = JSON.parse(event.data) as SalonNotificationWsPayload;
+            setLiveNotifications((prev) => [payload, ...prev].slice(0, 50));
+            onNotificationRef.current(payload);
+          } catch (err) {
+            console.error('Ошибка обработки SSE уведомления:', err);
+          }
+        });
+
+        eventSource.onerror = handleStreamError;
+      } catch {
+        if (!cancelled) scheduleReconnect();
+      }
     };
 
     connect();

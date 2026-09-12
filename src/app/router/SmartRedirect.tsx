@@ -1,8 +1,10 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { Center, Loader } from '@mantine/core';
+import { Center, Loader, Stack, Text } from '@mantine/core';
+import { ShieldSlashIcon } from '@phosphor-icons/react';
 import { ANALYTICS_PERMISSIONS, PermissionCode, useAccess } from '@/shared/lib/permissions';
 import type { PermissionCodeValue } from '@/shared/lib/permissions';
+import { useI18n } from '@/shared/lib/i18n';
 
 interface RouteEntry {
   path: string;
@@ -32,6 +34,7 @@ const ROUTE_PRIORITY: RouteEntry[] = [
  */
 export const SmartRedirect: React.FC = () => {
   const { ready, isAdmin, hasAnyPermission } = useAccess();
+  const { t } = useI18n();
 
   if (!ready) {
     return (
@@ -51,6 +54,14 @@ export const SmartRedirect: React.FC = () => {
     }
   }
 
-  // Fallback — если вообще ничего не доступно
-  return <Navigate to="/board" replace />;
+  return (
+    <Center h="100%">
+      <Stack align="center" gap="md">
+        <ShieldSlashIcon size={48} color="#ad9178" />
+        <Text size="lg" fw={500} c="dimmed">
+          {t('common.noAccess')}
+        </Text>
+      </Stack>
+    </Center>
+  );
 };

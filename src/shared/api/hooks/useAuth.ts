@@ -14,11 +14,14 @@ export interface PasswordResetResponse {
   new_password: string;
 }
 
-export const useLogin = () =>
-  useMutation({
+export const useLogin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: (payload: LoginPayload) =>
       apiPost<StaffLoginResponse, LoginPayload>('/api/v1/auth/login', payload),
     onSuccess: (staff) => {
+      queryClient.clear();
       authStorage.setAuthenticated(true);
       if (staff.tenant_name) {
         authStorage.setTenantName(staff.tenant_name);
@@ -26,6 +29,7 @@ export const useLogin = () =>
       addNotification.success({ message: t('toast.loggedIn') });
     },
   });
+};
 
 export const useLogout = () => {
   const queryClient = useQueryClient();

@@ -27,7 +27,7 @@ export const AdminPage: React.FC = () => {
       toolbar={
         <>
           {isMobile && <ListPageTitle>{t('admin.title')}</ListPageTitle>}
-          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+          <div className={listPageStyles.toolbarRow}>
             <Group justify="space-between" wrap="nowrap" w={isMobile ? '100%' : undefined}>
               <ListTabs
                 value={activeTab}

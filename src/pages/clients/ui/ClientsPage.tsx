@@ -93,7 +93,7 @@ export const ClientsPage: React.FC = () => {
               {showArchived ? t('clients.archiveTab') : t('clients.title')}
             </ListPageTitle>
           )}
-          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+          <div className={listPageStyles.toolbarRow}>
             <TextInput
               placeholder={t('clients.searchPlaceholder')}
               leftSection={<MagnifyingGlassIcon size={16} />}

@@ -75,15 +75,20 @@ export function PermissionsResourceTree({
               </Group>
               <Collapse expanded={isExpanded}>
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs" verticalSpacing={4} mt="xs">
-                  {perms.map((p) => (
-                    <Checkbox
-                      key={p.code}
-                      label={p.name}
-                      size="xs"
-                      checked={selectedPerms.includes(p.code)}
-                      onChange={() => onTogglePermission(p.code)}
-                    />
-                  ))}
+                  {perms.map((p) => {
+                    const permKey = `permissions.codes.${p.code}`;
+                    const permLabel = t(permKey);
+                    const displayPerm = permLabel === permKey ? p.name : permLabel;
+                    return (
+                      <Checkbox
+                        key={p.code}
+                        label={displayPerm}
+                        size="xs"
+                        checked={selectedPerms.includes(p.code)}
+                        onChange={() => onTogglePermission(p.code)}
+                      />
+                    );
+                  })}
                 </SimpleGrid>
               </Collapse>
             </Paper>

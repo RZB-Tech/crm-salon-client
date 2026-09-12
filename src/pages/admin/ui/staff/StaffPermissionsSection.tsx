@@ -25,11 +25,19 @@ export function StaffPermissionsSection({
           {staff.permissions.length > 0 ? (
             <ScrollArea.Autosize mah={150} type="auto">
               <Stack gap={4}>
-                {getPermissionNames(staff.permissions).map((permission) => (
-                  <Text key={permission.code} size="xs" c="dimmed">
-                    {permission.resource} → {permission.name}
-                  </Text>
-                ))}
+                {getPermissionNames(staff.permissions).map((permission) => {
+                  const resourceKey = `permissions.resources.${permission.resource}`;
+                  const resourceLabel = t(resourceKey);
+                  const displayResource = resourceLabel === resourceKey ? permission.resource : resourceLabel;
+                  const permKey = `permissions.codes.${permission.code}`;
+                  const permLabel = t(permKey);
+                  const displayName = permLabel === permKey ? permission.name : permLabel;
+                  return (
+                    <Text key={permission.code} size="xs" c="dimmed">
+                      {displayResource} → {displayName}
+                    </Text>
+                  );
+                })}
               </Stack>
             </ScrollArea.Autosize>
           ) : (

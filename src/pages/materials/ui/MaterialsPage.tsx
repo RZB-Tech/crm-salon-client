@@ -90,7 +90,7 @@ export const MaterialsPage: React.FC = () => {
               {showArchived ? t('appointments.archiveTab') : t('materials.title')}
             </ListPageTitle>
           )}
-          <div className={isMobile ? listPageStyles.toolbarRow : undefined}>
+          <div className={listPageStyles.toolbarRow}>
             <TextInput
               placeholder={t('materials.searchPlaceholder')}
               leftSection={<MagnifyingGlassIcon size={16} />}
